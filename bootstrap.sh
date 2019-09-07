@@ -109,7 +109,7 @@ if [[ $1 == "vagrant" ]]; then
   dpkg-reconfigure --frontend noninteractive tzdata
 
   # install personalize development environment
-  su -l -c '[ ! -d ~/.dotfiles ] && git clone git://github.com/szetobo/dotfiles.git ~/.dotfiles; ~/.dotfiles/run.sh install' vagrant
+  su -l -c '[ ! -d ~/.dotfiles ] && git clone git://github.com/kansetsu7/dotfiles.git ~/.dotfiles; ~/.dotfiles/run.sh install' vagrant
   chsh -s /bin/zsh vagrant
 
   # install phantomjs, dependency of rails integration test
