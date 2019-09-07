@@ -80,7 +80,7 @@ fi
 if [ ! -d ~/src/chruby ]; then
   git clone git://github.com/postmodern/chruby.git ~/src/chruby
   cd ~/src/chruby
-  make install
+  sudo make install
 fi
 
 #
@@ -89,7 +89,7 @@ fi
 if [ ! -d ~/src/ruby-install ]; then
   git clone git://github.com/postmodern/ruby-install.git ~/src/ruby-install
   cd ~/src/ruby-install
-  make install
+  sudo make install
 fi
 
 #
@@ -99,7 +99,7 @@ if [ ! -d ~/src/git-extras ]; then
   git clone git://github.com/tj/git-extras ~/src/git-extras
   cd ~/src/git-extras
   git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
-  make install
+  sudo make install
 fi
 
 
