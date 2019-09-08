@@ -40,6 +40,7 @@ set hidden
 set hlsearch
 set nowrap
 set cursorline
+set cursorcolumn
 set nostartofline
 set tabstop=2
 set softtabstop=2
@@ -49,6 +50,7 @@ set ignorecase
 set smartcase
 set relativenumber
 set regexpengine=1
+set noswapfile
 
 set scrolloff=1
 set sidescrolloff=5
@@ -126,6 +128,11 @@ nnoremap <leader>ew :e <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
+nnoremap <leader>p obinding.pry<Esc>
+nmap 0 ^
+
+map <Down> gj
+map <Up>   gk
 
 vmap <Enter> <Plug>(EasyAlign)
 
