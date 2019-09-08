@@ -80,6 +80,9 @@ case "$1" in
     # refresh vim bundle plugins
     sh -c 'vim +BundleInstall +qall'
 
+    # copy ssh.config 
+    cp ~/config/example-ssh-config ~/.ssh/config
+
     echo "installation completed"
     ;;
 
