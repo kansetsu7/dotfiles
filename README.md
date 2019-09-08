@@ -7,7 +7,7 @@ Ubuntu/Debian & ArchLinux), but should also working for Mac OS/X as well.
 
 ## Installation
 
-    curl -L https://github.com/szetobo/dotfiles/raw/master/zshrc > ~/.zshrc
+    curl -L https://github.com/kansetsu7/dotfiles/raw/master/zshrc > ~/.zshrc
 
 ## Bootstrap
 
