@@ -32,7 +32,7 @@ if [[ ! -d ~/.dotfiles ]]; then
   ln -sf ~/.dotfiles/zshrc               ~/.zshrc
 
   mkdir -p ~/.config/nvim
-  ln -sh ~/.dotfiles/init.vim            ~/.config/nvim/init.vim
+  ln -sf ~/.dotfiles/init.vim            ~/.config/nvim/init.vim
 
   sudo update-alternatives --install /usr/bin/vi vi /usr/bin/nvim 60
   sudo update-alternatives --auto vi
