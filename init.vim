@@ -13,7 +13,7 @@ Plug 'Shougo/denite.nvim'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
 Plug 'w0rp/ale'
-Plug 'justinmk/vim-sneak'
+" Plug 'justinmk/vim-sneak'
 Plug 'Yggdroot/indentLine'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'airblade/vim-gitgutter'
@@ -83,19 +83,19 @@ autocmd FileType clojure setlocal commentstring=;;%s
 autocmd FileType clojure setlocal formatoptions+=r
 let g:sexp_enable_insert_mode_mappings = 0
 
-let g:sneak#s_next=1
-nmap f <Plug>Sneak_f
-nmap F <Plug>Sneak_F
-xmap f <Plug>Sneak_f
-xmap F <Plug>Sneak_F
-omap f <Plug>Sneak_f
-omap F <Plug>Sneak_F
-nmap t <Plug>Sneak_t
-nmap T <Plug>Sneak_T
-xmap t <Plug>Sneak_t
-xmap T <Plug>Sneak_T
-omap t <Plug>Sneak_t
-omap T <Plug>Sneak_T
+" let g:sneak#s_next=1
+" nmap f <Plug>Sneak_f
+" nmap F <Plug>Sneak_F
+" xmap f <Plug>Sneak_f
+" xmap F <Plug>Sneak_F
+" omap f <Plug>Sneak_f
+" omap F <Plug>Sneak_F
+" nmap t <Plug>Sneak_t
+" nmap T <Plug>Sneak_T
+" xmap t <Plug>Sneak_t
+" xmap T <Plug>Sneak_T
+" omap t <Plug>Sneak_t
+" omap T <Plug>Sneak_T
 
 let mapleader=","
 
