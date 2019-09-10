@@ -134,6 +134,8 @@ alias ksk='pkill -fe sidekiq'
 alias rcsb='rc --sandbox'
 
 alias sprs='spring stop && spring binstub'
+rdrd() { rake db:migrate:redo STEP="$1" }
+rdrv() { rake db:migrate:redo VERSION="$1" }
 
 # skip patching migrate
 alias mg="rake db:migrate SKIP_PATCHING_MIGRATION='skip_any_patching_related_migrations'"
@@ -361,6 +363,7 @@ alias gpcc='cop master... && gpc'
 alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
+alias gfco="gfo $1 && gco $1"
 
 alias ha=hanami
 alias hac='ha console'
@@ -371,12 +374,14 @@ alias has='ha server'
 alias har='ha routes'
 
 alias rgm='rails g migration'
-alias rdr1='rake db:migrate:redo STEP=1'
 
 alias lsl='ls -al'
 
 alias dumpdb='/vagrant/scripts/dump_db.zsh'
 
+alias dotfiles='cd ~/.dotfiles'
+alias dotfile='dotfiles'
+alias df='dotfiles'
 alias nerv='cd ~/nerv'
 alias nface='cd ~/nerv/face'
 alias perv='cd ~/perv'
