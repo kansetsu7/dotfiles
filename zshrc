@@ -364,6 +364,7 @@ alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
 alias gfco="gfo $1 && gco $1"
+grbh() { git rebase -i HEAD~"$1"}
 
 alias ha=hanami
 alias hac='ha console'
@@ -390,6 +391,8 @@ alias aba='cd ~/amoeba'
 alias cam='cd ~/cam'
 alias ndb='cd ~/tmp/dumpdb/nerv_development'
 alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
+
+alias stock='cd ~/stock'
 # }}}
 
 # environment variables {{{
