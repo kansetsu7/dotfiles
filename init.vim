@@ -52,6 +52,8 @@ set relativenumber
 set regexpengine=1
 set noswapfile
 
+hi CursorLine ctermbg=234
+
 set scrolloff=1
 set sidescrolloff=5
 
