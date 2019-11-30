@@ -355,6 +355,7 @@ alias vsup='va suspend'
 alias vhalt='va halt'
 
 alias gws=gwS
+alias ws=gws
 alias gsh='git show'
 alias gba='gb -a'
 alias gcm='git checkout master'
@@ -391,6 +392,8 @@ alias aba='cd ~/amoeba'
 alias cam='cd ~/cam'
 alias ndb='cd ~/tmp/dumpdb/nerv_development'
 alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
+
+alias viz='vi ~/.zshrc'
 
 alias stock='cd ~/stock'
 # }}}
