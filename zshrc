@@ -365,7 +365,10 @@ alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
 alias gfco="gfo $1 && gco $1"
-grbh() { git rebase -i HEAD~"$1"}
+alias grb="rebase_func $1"
+rebase_func() {
+  git rebase -i HEAD~$1
+}
 
 alias ha=hanami
 alias hac='ha console'
