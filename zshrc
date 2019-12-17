@@ -140,6 +140,13 @@ rdrv() { rake db:migrate:redo VERSION="$1" }
 # skip patching migrate
 alias mg="rake db:migrate SKIP_PATCHING_MIGRATION='skip_any_patching_related_migrations'"
 
+ys() {
+  if [[ `basename $PWD` != "face" ]]; then
+    cd face
+  fi
+  yarn start
+}
+
 # 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
 rpy() {
   if bundle show pry-remote > /dev/null 2>&1; then
