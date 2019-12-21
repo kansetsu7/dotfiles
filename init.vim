@@ -56,6 +56,8 @@ set relativenumber
 set regexpengine=1
 set noswapfile
 
+hi clear Search
+hi Search  cterm=underline
 hi CursorLine ctermbg=234
 
 set scrolloff=1
@@ -71,6 +73,7 @@ autocmd FileType eruby.yaml setlocal commentstring=#\ %s
 let g:gitgutter_enabled=1
 let g:indentLine_enabled=1
 let g:NERDTreeQuitOnOpen=1
+let g:NERDTreeShowHidden=1
 let g:ctrlp_cmd='CtrlPMixed'
 let g:ctrlp_match_window='order:ttb,max:20'
 set wildignore+=*/.git/*,*/node_modules/*
@@ -127,11 +130,13 @@ cnoremap <C-h> <Left>
 cnoremap <C-j> <Down>
 cnoremap <C-k> <Up>
 cnoremap <C-l> <Right>
+noremap <leader>n :noh<CR>
 
 nnoremap <leader>f :NERDTreeFind<CR>
 nnoremap <leader>d :NERDTreeToggle<CR>
 
 nnoremap <leader>b :CtrlPBuffer<CR>
+noremap <silent><leader>V :source ~/.dotfiles/init.vim<CR>:filetype detect<CR>:exe ":echo 'vim setting reloaded'"<CR>
 
 " nnoremap <leader>s  :set nolist! nolist?<CR>
 " nnoremap <leader>n  :set number! number?<CR>
@@ -144,6 +149,7 @@ nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>p obinding.pry<Esc>
 nmap 0 ^
+nmap <leader>gb :Gblame<cr>
 
 map <Down> gj
 map <Up>   gk
