@@ -32,6 +32,9 @@ Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
 Plug 'guns/vim-sexp'
 Plug 'tpope/vim-sexp-mappings-for-regular-people'
+Plug 'mxw/vim-jsx'
+Plug 'moll/vim-node'
+Plug 'mattn/emmet-vim'
 Plug 'tpope/vim-abolish'
 call plug#end()
 
