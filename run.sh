@@ -81,7 +81,7 @@ case "$1" in
     sh -c 'vim +BundleInstall +qall'
 
     # copy ssh.config 
-    cp ~/config/example-ssh-config ~/.ssh/config
+    cp /vagrant/config/example-ssh-config ~/.ssh/config
 
     echo "installation completed"
     ;;

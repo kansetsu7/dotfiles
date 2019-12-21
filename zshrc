@@ -30,6 +30,7 @@ if [[ ! -d ~/.dotfiles ]]; then
   ln -sf ~/.dotfiles/tigrc               ~/.tigrc
   ln -sf ~/.dotfiles/tmux.conf           ~/.tmux.conf
   ln -sf ~/.dotfiles/zshrc               ~/.zshrc
+  ln -sf ~/.dotfiles/.pryrc              ~/.pryrc
 
   mkdir -p ~/.config/nvim
   ln -sf ~/.dotfiles/init.vim            ~/.config/nvim/init.vim
