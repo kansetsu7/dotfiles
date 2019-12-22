@@ -407,6 +407,7 @@ alias ndb='cd ~/tmp/dumpdb/nerv_development'
 alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
 
 alias viz='vi ~/.zshrc'
+alias viv='vi ~/.dotfiles/init.vim'
 
 alias stock='cd ~/stock'
 # }}}
