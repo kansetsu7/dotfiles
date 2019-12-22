@@ -1,43 +1,71 @@
 call plug#begin()
+" ===========================
+" Vim Enhancement
+" ===========================
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-rails' ", {'for': ['ruby', 'haml', 'eruby', 'coffee']}
-Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
 Plug 'junegunn/vim-easy-align'
 Plug 'scrooloose/nerdtree'
-Plug 'dracula/vim'
 Plug 'Shougo/denite.nvim'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
-Plug 'w0rp/ale'
-" Plug 'justinmk/vim-sneak'
-Plug 'Yggdroot/indentLine'
-Plug 'michaeljsmith/vim-indent-object'
-Plug 'airblade/vim-gitgutter'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'slim-template/vim-slim' ", {'for': ['slim']}
-Plug 'vim-ruby/vim-ruby' ", {'for': ['ruby', 'haml', 'eruby']}
-Plug 'janko-m/vim-test'
 Plug 'kassio/neoterm'
-Plug 'tpope/vim-salve'
 Plug 'tpope/vim-projectionist'
-Plug 'tpope/vim-dispatch'
-Plug 'tpope/vim-fireplace'
 Plug 'junegunn/rainbow_parentheses.vim'
-Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
 Plug 'guns/vim-sexp'
 Plug 'tpope/vim-sexp-mappings-for-regular-people'
+" temp disable because it's for nvim 0.3+
+" Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
+
+" ===========================
+" Dev tools
+" ===========================
+Plug 'w0rp/ale'
+Plug 'Yggdroot/indentLine'
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'thinca/vim-quickrun'
+Plug 'bootleq/vim-qrpsqlpq'
+Plug 'janko-m/vim-test'
+Plug 'tpope/vim-dispatch'
+
+" ===========================
+" Git
+" ===========================
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+
+" ===========================
+" Theme
+" ===========================
+Plug 'dracula/vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+" ===========================
+" Ruby and Rails
+" ===========================
+Plug 'tpope/vim-rails' ", {'for': ['ruby', 'haml', 'eruby', 'coffee']}
+Plug 'slim-template/vim-slim' ", {'for': ['slim']}
+Plug 'vim-ruby/vim-ruby' ", {'for': ['ruby', 'haml', 'eruby']}
+
+
+" ===========================
+" JS
+" ===========================
 Plug 'mxw/vim-jsx'
 Plug 'moll/vim-node'
 Plug 'mattn/emmet-vim'
 Plug 'tpope/vim-abolish'
-Plug 'thinca/vim-quickrun'
-Plug 'bootleq/vim-qrpsqlpq'
+
+" ===========================
+" Clojure
+" ===========================
+Plug 'tpope/vim-salve'
+Plug 'tpope/vim-fireplace'
+Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
 call plug#end()
 
 color dracula
