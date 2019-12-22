@@ -1,3 +1,6 @@
+" INFO: vimscript cheatsheet
+" https://devhints.io/vimscript
+
 call plug#begin()
 " ===========================
 " Vim Enhancement
@@ -68,8 +71,7 @@ Plug 'tpope/vim-fireplace'
 Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
 call plug#end()
 
-color dracula
-
+" General {{{
 set hidden
 set hlsearch
 set nowrap
@@ -85,19 +87,26 @@ set smartcase
 set relativenumber
 set regexpengine=1
 set noswapfile
-
-hi clear Search
-hi Search  cterm=underline
-hi CursorLine ctermbg=234
-
 set scrolloff=1
 set sidescrolloff=5
 
 autocmd BufRead,BufNewFile *.thor set filetype=ruby
-
 autocmd FileType markdown setlocal wrap
 autocmd FileType eruby.yaml setlocal commentstring=#\ %s
+" }}}
 
+" Theme {{{
+color dracula
+
+hi clear Search
+hi Search  cterm=underline
+hi CursorLine ctermbg=234
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled=1
+let g:airline#extensions#tabline#buffer_nr_show=1
+"}}}
+
+" Plugin {{{
 " let g:python_host_prog = '/usr/bin/python'
 " let g:python3_host_prog = '/usr/bin/python3'
 let g:gitgutter_enabled=1
@@ -123,27 +132,16 @@ augroup END
 autocmd FileType clojure setlocal commentstring=;;%s
 autocmd FileType clojure setlocal formatoptions+=r
 let g:sexp_enable_insert_mode_mappings = 0
+"}}}
 
-" let g:sneak#s_next=1
-" nmap f <Plug>Sneak_f
-" nmap F <Plug>Sneak_F
-" xmap f <Plug>Sneak_f
-" xmap F <Plug>Sneak_F
-" omap f <Plug>Sneak_f
-" omap F <Plug>Sneak_F
-" nmap t <Plug>Sneak_t
-" nmap T <Plug>Sneak_T
-" xmap t <Plug>Sneak_t
-" xmap T <Plug>Sneak_T
-" omap t <Plug>Sneak_t
-" omap T <Plug>Sneak_T
-
+" Remap {{{
 let mapleader=","
-
 nnoremap ' `
 nnoremap ` '
-inoremap jj <esc>
-inoremap jk <esc>
+nmap 0 ^
+"}}}
+
+" Shortcut {{{
 inoremap ,, <esc>
 nnoremap <Tab> :bnext!<CR>
 nnoremap <S-Tab> :bprev!<CR>
@@ -166,25 +164,24 @@ nnoremap <leader>f :NERDTreeFind<CR>
 nnoremap <leader>d :NERDTreeToggle<CR>
 
 nnoremap <leader>b :CtrlPBuffer<CR>
-noremap <silent><leader>V :source ~/.dotfiles/init.vim<CR>:filetype detect<CR>:exe ":echo 'vim setting reloaded'"<CR>
+noremap <silent><leader>V :so $MYVIMRC<CR>:echo 'reloaded!'<CR>
 
-" nnoremap <leader>s  :set nolist! nolist?<CR>
-" nnoremap <leader>n  :set number! number?<CR>
 nnoremap <leader>g  :GitGutterToggle<CR>
-" nnoremap <Leader>hl :set hlsearch! hlsearch?<CR>
-" nnoremap <leader>iw :set invwrap wrap?<CR>
 nnoremap <leader>ew :e <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>p obinding.pry<Esc>
-nmap 0 ^
 nmap <leader>gb :Gblame<cr>
 
 map <Down> gj
 map <Up>   gk
 
 vmap <Enter> <Plug>(EasyAlign)
+" nnoremap <leader>s  :set nolist! nolist?<CR>
+" nnoremap <leader>n  :set number! number?<CR>
+" nnoremap <Leader>hl :set hlsearch! hlsearch?<CR>
+" nnoremap <leader>iw :set invwrap wrap?<CR>
 
 " nnoremap <silent> <Leader>tn :TestNearest<CR>
 " nnoremap <silent> <Leader>tf :TestFile<CR>
