@@ -40,7 +40,7 @@ set refs-view = \
   commit-title
 
 color id           red   default
-color author       black default bold
+color author       white default bold
 color graph-commit black default bold
 
 color cursor      white blue  bold
