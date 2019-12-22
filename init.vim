@@ -207,6 +207,10 @@ function! TmuxNewWindow(...)
   let remember_pane = get(options, 'remember_pane', 0)
   let pane = ''
 
+  if method == 'file'
+    let method = 'h'
+  end
+
   if method == 'last'
     if !exists('s:last_tmux_pane') || empty(s:last_tmux_pane)
       echohl WarningMsg | echomsg "Can't find last tmux pane. Continue with 'horizontal-split'." | echohl None
@@ -284,6 +288,7 @@ function! s:rails_test_helpers()
     nnoremap <silent> [rtest]. :call <SID>rails_test_tmux('last')<CR>
     nnoremap <silent> [rtest]t :call <SID>rails_test_tmux('last')<CR>
     nnoremap <silent> [rtest]q :call <SID>rails_test_tmux('quit')<CR>
+    nnoremap <silent> [rtest]f :call <SID>rails_test_tmux('file')<CR>
   end
 endfunction
 
@@ -346,7 +351,12 @@ function! s:rails_test_tmux(method)
   "   let test_command = printf('RAILS_RELATIVE_URL_ROOT= bundle exec rake test:integration TEST=%s', path)
   "   let title = matchstr(rails_type, '\vtest-\zs.{4}')
   else
-    let test_command = printf('be ruby -Itest %s --name /%s/', path, shellescape(escape(it, '()')))
+    if a:method == 'file'
+      let test_command = printf('be ruby -Itest %s', path)
+    else
+      let test_command = printf('be ruby -Itest %s --name /%s/', path, shellescape(escape(it, '()')))
+    end
+
     let type_short = matchstr(rails_type, '\vtest-\zs.{4}')
     if type_short == 'unit'
       let title = type_short
@@ -360,10 +370,12 @@ function! s:rails_test_tmux(method)
   call TmuxNewWindow({
         \   "text": test_command,
         \   "title": '∫ ' . title,
-        \   "directory": rails#app().root,
         \   "remember_pane": 1,
         \   "method": a:method
         \ })
+        " unable to access rails#app().root, so remove it
+        " can use getcwd() as alternative
+        " \   "directory": rails#app().root,
 endfunction
 
 autocmd User Rails call s:rails_test_helpers()
