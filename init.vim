@@ -28,7 +28,7 @@ Plug 'Yggdroot/indentLine'
 Plug 'michaeljsmith/vim-indent-object'
 Plug 'thinca/vim-quickrun'
 Plug 'bootleq/vim-qrpsqlpq'
-Plug 'janko-m/vim-test'
+" Plug 'janko-m/vim-test'
 Plug 'tpope/vim-dispatch'
 
 " ===========================
@@ -108,10 +108,10 @@ let g:ctrlp_cmd='CtrlPMixed'
 let g:ctrlp_match_window='order:ttb,max:20'
 set wildignore+=*/.git/*,*/node_modules/*
 let g:deoplete#enable_at_startup=1
-let g:airline#extensions#tabline#enabled=1
-let g:airline#extensions#tabline#buffer_nr_show=1
-let test#strategy='dispatch'
-let g:dispatch_quickfix_height=20
+" let test#strategy='neovim'
+" let g:test#preserve_screen = 1
+" let test#neovim#term_position = 'vert'
+" let g:dispatch_quickfix_height=20
 " let g:neoterm_default_mod='belowright'
 " let g:neoterm_keep_term_open=0
 " let g:neoterm_autoscroll=1
@@ -191,6 +191,10 @@ vmap <Enter> <Plug>(EasyAlign)
 " nnoremap <silent> <Leader>ts :TestSuite<CR>
 " nnoremap <silent> <Leader>tl :TestLast<CR>
 " nnoremap <silent> <Leader>tv :TestVisit<CR>
+" if has('nvim')
+"   tmap <C-o> <C-\><C-n>
+" endif
+"}}}
 
 "Tmux {{{
 function! TmuxNewWindow(...)
