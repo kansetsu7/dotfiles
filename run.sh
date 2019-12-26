@@ -81,9 +81,16 @@ case "$1" in
     sh -c 'vim +BundleInstall +qall'
 
     # copy ssh.config 
-    cp /vagrant/config/example-ssh-config ~/.ssh/config
+    sudo cp /vagrant/config/example-ssh-config ~/.ssh/config
 
     echo "installation completed"
+
+    # vim-plug
+    curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
+    vi -E -s -u ~/.config/nvim/init.vim +PlugInstall +qall
+    echo "vim plug install done"
     ;;
 
   relink)
