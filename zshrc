@@ -411,6 +411,7 @@ alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
 
 alias viz='vi ~/.zshrc'
 alias viv='vi ~/.dotfiles/init.vim'
+alias szsh="reload_zshrc"
 
 alias stock='cd ~/stock'
 # }}}
@@ -432,6 +433,16 @@ bindkey '^o' autosuggest-accept
 bindkey '^p' history-substring-search-up
 bindkey '^n' history-substring-search-down
 # }}}
+
+reload_zshrc() {
+  case "$(uname -s)" in
+    Linux)
+      source ~/.zshrc
+      ;;
+    Darwin)
+      exec $SHELL
+  esac
+}
 
 fix_zhistory() {
   mv /home/vagrant/.zhistory /home/vagrant/.zhistory_bad
