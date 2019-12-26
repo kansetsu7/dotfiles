@@ -354,12 +354,18 @@ alias -g HED='HANAMI_ENV=development'
 alias -g HEP='HANAMI_ENV=production'
 alias -g HET='HANAMI_ENV=test'
 
-alias va=vagrant
+alias va='cd ~/vm;vagrant'
 alias vsh='va ssh'
-alias vsf='va ssh -- -L 0.0.0.0:8080:localhost:80 -L 1080:localhost:1080'
+alias vsf='va ssh -- -L 8088:localhost:88 \
+  -L 8080:localhost:80 \
+  -L 1080:localhost:1080 \
+  -L 22222:localhost:22 \
+  -L 3000:localhost:3000 \
+  -L 3310:localhost:3310'
 alias vup='va up'
 alias vsup='va suspend'
 alias vhalt='va halt'
+alias vus="vup;vsf"
 
 alias gws=gwS
 alias ws=gws
