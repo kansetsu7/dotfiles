@@ -134,6 +134,7 @@ alias ksk='pkill -fe sidekiq'
 alias rcsb='rc --sandbox'
 
 alias sprs='spring stop && spring binstub'
+alias rdr1="rake db:migrate:redo STEP=1"
 rdrd() { rake db:migrate:redo STEP="$1" }
 rdrv() { rake db:migrate:redo VERSION="$1" }
 
@@ -344,6 +345,7 @@ alias agi='ag -i'
 alias agiw='ag -i -w'
 alias agr='ag --ruby'
 alias agri='ag --ruby -i'
+alias aga="ag $1 app/"
 
 alias -g G='| ag'
 alias -g P='| $PAGER'
@@ -413,7 +415,7 @@ alias viz='vi ~/.zshrc'
 alias viv='vi ~/.dotfiles/init.vim'
 alias szsh="reload_zshrc"
 
-alias stock='cd ~/stock'
+alias krpu='rpu kill'
 # }}}
 
 # environment variables {{{
