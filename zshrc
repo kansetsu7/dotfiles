@@ -30,6 +30,7 @@ if [[ ! -d ~/.dotfiles ]]; then
   ln -sf ~/.dotfiles/tigrc               ~/.tigrc
   ln -sf ~/.dotfiles/tmux.conf           ~/.tmux.conf
   ln -sf ~/.dotfiles/zshrc               ~/.zshrc
+  ln -sf ~/.dotfiles/gitconfig           ~/gitconfig
   ln -sf ~/.dotfiles/.pryrc              ~/.pryrc
 
   mkdir -p ~/.config/nvim
@@ -68,8 +69,6 @@ zplug "junegunn/fzf", as:command, hook-build:"./install --bin", use:"bin/{fzf-tm
 
 zplug "zsh-users/zsh-autosuggestions", defer:3
 
-zplug "zdharma/zsh-diff-so-fancy", as:command, use:bin/git-dsf
-
 # zim {{{
 zplug "zimfw/zimfw", as:plugin, use:"init.zsh", hook-build:"ln -sf $ZPLUG_REPOS/zimfw/zimfw ~/.zim"
 
@@ -104,6 +103,12 @@ export FZF_TMUX=1
 
 # }}}
 
+# diff-highlight {{{
+if [[ ! -e /usr/local/bin/diff-highlight ]]; then
+  sudo wget https://raw.githubusercontent.com/git/git/3dadfc7e173e27db641291d8f049ab487b696704/contrib/diff-highlight/diff-highlight > /usr/local/bin/diff-highlight
+  chmod +x /usr/local/bin/diff-highlight
+fi
+# }}}
 
 # customization {{{
 

@@ -6,8 +6,7 @@ bind main C !git checkout -B tig %(commit)
 set line-graphics  = utf-8
 # set focus-child    = false
 set wrap-search    = true
-# set diff-highlight = true
-
+set diff-highlight = true
 
 set main-view = \
   line-number:no,interval=5 \
