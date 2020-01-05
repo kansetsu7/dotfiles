@@ -350,7 +350,8 @@ alias agi='ag -i'
 alias agiw='ag -i -w'
 alias agr='ag --ruby'
 alias agri='ag --ruby -i'
-alias aga="ag $1 app/"
+alias aga="ag_in_app $1"
+alias agan="ag_in_app_nv $1"
 
 alias -g G='| ag'
 alias -g P='| $PAGER'
@@ -440,6 +441,16 @@ bindkey '^o' autosuggest-accept
 bindkey '^p' history-substring-search-up
 bindkey '^n' history-substring-search-down
 # }}}
+
+# ag functions {{{
+ag_in_app() {
+  ag $1 app/ --ignore app/assets
+}
+
+ag_in_app_nv() {
+  ag $1 app/ --ignore app/views --ignore app/assets
+}
+#}}}
 
 reload_zshrc() {
   case "$(uname -s)" in
