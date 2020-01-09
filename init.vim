@@ -140,7 +140,7 @@ nnoremap ' `
 nnoremap ` '
 nmap 0 ^
 " Don't copy the contents of an overwritten selection.
-vnoremap p "_dP 
+vnoremap p "_s<Esc>a<Space><Esc>Pl"_x
 "}}}
 
 " Shortcut {{{
