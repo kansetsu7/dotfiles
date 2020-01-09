@@ -165,6 +165,7 @@ noremap <leader>n :noh<CR>
 nnoremap <leader>f :NERDTreeFind<CR>
 nnoremap <leader>d :NERDTreeToggle<CR>
 
+nnoremap <leader>s :%s/
 nnoremap <leader>b :CtrlPBuffer<CR>
 noremap <silent><leader>V :so $MYVIMRC<CR>:echo 'reloaded!'<CR>
 
