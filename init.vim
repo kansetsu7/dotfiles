@@ -166,6 +166,7 @@ nnoremap <leader>f :NERDTreeFind<CR>
 nnoremap <leader>d :NERDTreeToggle<CR>
 
 nnoremap <leader>s :%s/
+vnoremap <leader>s "hy:%s/<C-r>h
 nnoremap <leader>b :CtrlPBuffer<CR>
 noremap <silent><leader>V :so $MYVIMRC<CR>:echo 'reloaded!'<CR>
 
@@ -175,6 +176,7 @@ nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>p obinding.pry<Esc>
+nnoremap <leader>c console.log()<Esc>
 nmap <leader>gb :Gblame<cr>
 
 map <Down> gj
