@@ -2,26 +2,28 @@
 if defined?(Nerv)
   module Nerv::Pry
     RESOURCE_TYPES = {
-      bp:   'BasicPlan',
-      tu:   'TopUp',
-      mp:   'MasterPlan',
-      sr:   'ServiceRecord',
-      cb:   'ContributionBatch',
-      cc:   'ContributionCollection',
-      cr:   'ContributionRecord',
-      pd:   'PlanDealing',
-      pdi:  'PlanDealingItem',
-      fd:   'FundDealing',
-      fdi:  'FundDealingItem',
-      hd:   'Holding',
-      ii:   'InitialInstallment',
-      pc:   'Producer',
-      cl:   'Client',
-      tb:   'TransferBatch',
-      itb:  'ItemTransferBatch',
-      mev:  'MonthEndValuation',
-      imev: 'ItemMonthEndValuation',
-      mevd: 'MonthEndValuationDetail'
+      bp:    'BasicPlan',
+      tu:    'TopUp',
+      mp:    'MasterPlan',
+      sr:    'ServiceRecord',
+      cb:    'ContributionBatch',
+      cc:    'ContributionCollection',
+      cr:    'ContributionRecord',
+      pd:    'PlanDealing',
+      pdi:   'PlanDealingItem',
+      fd:    'FundDealing',
+      fdi:   'FundDealingItem',
+      hd:    'Holding',
+      ii:    'InitialInstallment',
+      pc:    'Producer',
+      cl:    'Client',
+      tb:    'TransferBatch',
+      itb:   'ItemTransferBatch',
+      mev:   'MonthEndValuation',
+      imev:  'ItemMonthEndValuation',
+      mevd:  'MonthEndValuationDetail',
+      com_b: 'CommissionBatch',
+      con_b: 'ContributionBatch'
     }
 
     DEV_PASSWORD = '666'
