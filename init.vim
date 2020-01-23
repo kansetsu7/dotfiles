@@ -145,6 +145,7 @@ vnoremap p "_da<Space><Esc>Pl"_x
 
 " Shortcut {{{
 inoremap ,, <esc>
+inoremap ,jj ,<esc>
 nnoremap <Tab> :bnext!<CR>
 nnoremap <S-Tab> :bprev!<CR>
 nnoremap <leader>w <c-w>
@@ -163,7 +164,7 @@ cnoremap <C-l> <Right>
 noremap <leader>n :noh<CR>
 
 nnoremap <leader>f :NERDTreeFind<CR>
-nnoremap <leader>d :NERDTreeToggle<CR>
+nnoremap <leader>d :bd<CR>
 
 nnoremap <leader>s :%s/
 vnoremap <leader>s "hy:%s/<C-r>h
