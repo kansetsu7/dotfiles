@@ -289,7 +289,12 @@ pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22222 -t $1
 cop() {
   local exts=('rb,thor,jbuilder')
   local excludes=':(top,exclude)db/schema.rb'
-  local extra_options='--display-cop-names --rails'
+  local app=${$(pwd):t}
+  if [[ $app != "magi" ]]; then
+    local extra_options='--display-cop-names --rails'
+  else
+    local extra_options='--display-cop-names --require rubocop-rails'
+  fi
 
   if [[ $# -gt 0 ]]; then
     local files=$(eval "git diff $@ --name-only -- \*.{$exts} '$excludes'")
@@ -416,6 +421,7 @@ alias aba='cd ~/amoeba'
 alias cam='cd ~/cam'
 alias ndb='cd ~/tmp/dumpdb/nerv_development'
 alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
+alias magi='cd ~/magi'
 
 alias viz='vi ~/.zshrc'
 alias viv='vi ~/.dotfiles/init.vim'
