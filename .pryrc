@@ -1,3 +1,26 @@
+Pry.commands.alias_command 'd-p', 'disable-pry'
+
+Pry::Commands.create_command 'load_tools' do
+  group 'All'
+  description 'load ./tmp/tools'
+  def process
+    # raise Pry::CommandError, "Wrong number of arguments (given 0, expected at least 1) " if args.empty?
+    if args.empty?
+      path = "./tmp/tools/tester.rb"
+      res  = load path
+      puts "load #{path} = #{res}"
+    else
+      args.map do |file_name|
+        path = "./tmp/tools/#{file_name.underscore}.rb"
+        res  = load path
+        puts "load #{path} = #{res}"
+      end
+    end
+  end
+end
+Pry.commands.alias_command('loadt', 'load_tools')
+Pry.commands.alias_command('load_t', 'load_tools')
+
 # Nerv {{{
 if defined?(Nerv)
   module Nerv::Pry
@@ -28,24 +51,6 @@ if defined?(Nerv)
 
     DEV_PASSWORD = '666'
   end
-
-  Pry.commands.alias_command 'd-p', 'disable-pry'
-
-  Pry::Commands.create_command 'load_tools' do
-    group 'Nerv'
-    description 'load ./tmp/tools'
-    def process
-      raise Pry::CommandError, "Wrong number of arguments (given 0, expected at least 1) " if args.empty?
-
-      args.map do |file_name|
-        path = "./tmp/tools/#{file_name.underscore}.rb"
-        res  = load path
-        puts "load #{path} = #{res}"
-      end
-    end
-  end
-  Pry.commands.alias_command('loadt', 'load_tools')
-  Pry.commands.alias_command('load_t', 'load_tools')
 
   # nerv-resource {{{
   Pry::Commands.create_command 'nerv-resource' do
