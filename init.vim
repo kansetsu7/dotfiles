@@ -178,7 +178,7 @@ nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>p obinding.pry<Esc>
-nnoremap <leader>c console.log()<Esc>
+nnoremap <leader>c oconsole.log()<Esc>
 nmap <leader>gb :Gblame<cr>
 
 map <Down> gj
