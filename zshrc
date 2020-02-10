@@ -467,6 +467,11 @@ ag_method_def() {
 }
 #}}}
 
+clean_tmp() {
+  ls -d ./tmp/* | grep -P "tmp/statement_.*.pdf$" | xargs -d"\n" rm
+  ls -d ./tmp/* | grep -P "tmp/valuation_logo_.*.pdf$" | xargs -d"\n" rm
+}
+
 reload_zshrc() {
   case "$(uname -s)" in
     Linux)
