@@ -357,6 +357,7 @@ alias agr='ag --ruby'
 alias agri='ag --ruby -i'
 alias aga="ag_in_app $1"
 alias agan="ag_in_app_nv $1"
+alias agdef="ag_method_def $1"
 
 alias -g G='| ag'
 alias -g P='| $PAGER'
@@ -455,6 +456,10 @@ ag_in_app() {
 
 ag_in_app_nv() {
   ag $1 app/ --ignore app/views --ignore app/assets
+}
+
+ag_method_def() {
+  ag "def $1"
 }
 #}}}
 
