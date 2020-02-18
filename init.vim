@@ -93,6 +93,7 @@ set sidescrolloff=5
 autocmd BufRead,BufNewFile *.thor set filetype=ruby
 autocmd FileType markdown setlocal wrap
 autocmd FileType eruby.yaml setlocal commentstring=#\ %s
+autocmd BufWritePre * :%s/\s\+$//e " trim trailing space on save
 " }}}
 
 " Theme {{{
@@ -140,7 +141,7 @@ nnoremap ' `
 nnoremap ` '
 nmap 0 ^
 " Don't copy the contents of an overwritten selection.
-vnoremap p "_dP 
+vnoremap p "_dP
 "}}}
 
 " Shortcut {{{
