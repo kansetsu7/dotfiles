@@ -23,6 +23,8 @@ Pry.commands.alias_command('load_t', 'load_tools')
 
 # Nerv {{{
 if defined?(Nerv)
+  CMB = CommissionBatch
+
   module Nerv::Pry
     RESOURCE_TYPES = {
       bp:    'BasicPlan',
@@ -30,6 +32,7 @@ if defined?(Nerv)
       mp:    'MasterPlan',
       sr:    'ServiceRecord',
       cb:    'ContributionBatch',
+      cmb:   'CommissionBatch',
       cc:    'ContributionCollection',
       cr:    'ContributionRecord',
       pd:    'PlanDealing',
