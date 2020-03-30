@@ -70,6 +70,7 @@ Plug 'tpope/vim-abolish'
 Plug 'tpope/vim-salve'
 Plug 'tpope/vim-fireplace'
 Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
+Plug 'Olical/conjure', {'tag': 'v2.1.2', 'do': 'bin/compile'}
 call plug#end()
 
 " General {{{
@@ -119,6 +120,7 @@ let g:ctrlp_cmd='CtrlPMixed'
 let g:ctrlp_match_window='order:ttb,max:20'
 set wildignore+=*/.git/*,*/node_modules/*
 let g:deoplete#enable_at_startup=1
+let g:rainbow#blacklist = [117]
 " let test#strategy='neovim'
 " let g:test#preserve_screen = 1
 " let test#neovim#term_position = 'vert'
@@ -409,3 +411,7 @@ if executable('psql')
   autocmd FileType sql call s:init_qrpsqlpq()
 endif
 "}}}
+
+let g:conjure_map_prefix=","
+let g:conjure_log_direction="horizontal"
+let g:conjure_log_size_small=15
