@@ -33,6 +33,7 @@ Plug 'thinca/vim-quickrun'
 Plug 'bootleq/vim-qrpsqlpq'
 " Plug 'janko-m/vim-test'
 Plug 'tpope/vim-dispatch'
+Plug 'AndrewRadev/splitjoin.vim'
 
 " ===========================
 " Git
@@ -146,6 +147,7 @@ vnoremap p "_dP
 
 " Shortcut {{{
 inoremap ,, <esc>
+vnoremap ,, <esc>
 inoremap ,jj ,<esc>
 nnoremap <Tab> :bnext!<CR>
 nnoremap <S-Tab> :bprev!<CR>
@@ -170,6 +172,7 @@ nnoremap <leader>d :bd<CR>
 nnoremap <leader>s :%s/
 vnoremap <leader>s "hy:%s/<C-r>h
 vnoremap <leader>/ "hy/<C-r>h<CR>
+nnoremap <leader>/ "hye/<C-r>h<CR>
 nnoremap <leader>b :CtrlPBuffer<CR>
 noremap <silent><leader>V :so $MYVIMRC<CR>:echo 'reloaded!'<CR>
 
