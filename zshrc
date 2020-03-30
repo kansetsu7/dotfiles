@@ -414,6 +414,7 @@ alias upload_ndb="scp ~/tmp/dumpdb/nerv_development/$1 dev.abagile.com:~/tmp/sna
 alias upload_pdb="scp ~/tmp/dumpdb/nerv_ck_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
 alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_development/$2"
 alias download_pdb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_ck_development/$2"
+alias download_log="scp -r dev.abagile.com:~/nerv_production_log ~/tmp/nerv_production_log;scp -r dev.abagile.com:~/nerv_production_log_ck ~/tmp/nerv_production_log_ck"
 
 alias dotfiles='cd ~/.dotfiles'
 alias dotfile='dotfiles'
