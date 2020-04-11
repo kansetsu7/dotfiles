@@ -68,7 +68,8 @@ Plug 'tpope/vim-abolish'
 " Clojure
 " ===========================
 Plug 'tpope/vim-salve'
-Plug 'tpope/vim-fireplace'
+" Plug 'tpope/vim-fireplace'
+Plug 'Olical/conjure', {'tag': 'v2.1.2', 'do': 'bin/compile'}
 Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
 Plug 'Olical/conjure', {'tag': 'v2.1.2', 'do': 'bin/compile'}
 call plug#end()
