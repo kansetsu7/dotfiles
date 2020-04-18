@@ -410,6 +410,7 @@ alias rgm='rails g migration'
 alias lsl='ls -al'
 
 alias dumpdb='/vagrant/scripts/dump_db.zsh'
+alias magidb='~/.dotfiles/magi_db.zsh'
 alias upload_ndb="scp ~/tmp/dumpdb/nerv_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
 alias upload_pdb="scp ~/tmp/dumpdb/nerv_ck_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
 alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_development/$2"
