@@ -207,4 +207,39 @@ if defined?(Nerv)
   # }}}
 end
 # }}}
+
+# Amoeba {{{
+if defined?(Amoeba)
+  module Amoeba::Pry
+    DEV_PASSWORD = '666'
+  end
+  # change-password {{{
+  Pry::Commands.create_command 'change-password' do
+    group 'Amoeba'
+    description 'Change user password for development convenience'
+
+    banner <<-BANNER
+      Usage: change-password mt000439     Change user with specific login_id
+             change-password              Change users (predefined within snippet)
+    BANNER
+
+    def process
+      login = args.shift
+
+      if login.blank?
+        puts 'not support blank args for Amoeba'
+      else
+        login.downcase!
+        cmd = <<-END.gsub(/^\s{4}/, '')
+          User.find_by_login!('#{login}').tap do |u|
+            u.password = '#{Amoeba::Pry::DEV_PASSWORD}'
+            u.password_confirmation = '#{Amoeba::Pry::DEV_PASSWORD}'
+            u.save
+          end
+        END
+        eval_string << cmd
+      end
+    end
+  end
+end
 # vim: filetype=ruby
