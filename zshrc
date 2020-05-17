@@ -126,6 +126,7 @@ compctl -W ~/vagrant -/ vm
 alias pa!='[[ -f config/puma.rb ]] && RAILS_RELATIVE_URL_ROOT=/`basename $PWD` bundle exec puma -C $PWD/config/puma.rb'
 alias pa='[[ -f config/puma.rb ]] && RAILS_RELATIVE_URL_ROOT=/`basename $PWD` bundle exec puma -C $PWD/config/puma.rb -d'
 alias kpa='[[ -f tmp/pids/puma.state ]] && bundle exec pumactl -S tmp/pids/puma.state stop'
+alias rs='rails s'
 
 alias apa!='RAILS_RELATIVE_URL_ROOT=/angel bundle exec puma -C config/puma.rb'
 alias apa='RAILS_RELATIVE_URL_ROOT=/angel bundle exec puma -C config/puma.rb -d'
@@ -496,4 +497,27 @@ if [ -f ~/.config/exercism/exercism_completion.zsh ]; then
 fi
 
 path+=~/bin
+
+if [[ "$TERM" != "screen" ]] ; then
+    # Attempt to discover a detached session and attach
+    # it, else create a new session
+
+    WHOAMI=$(whoami)
+    if tmux has-session -t $WHOAMI 2>/dev/null; then
+        tmux -2 attach-session -t $WHOAMI
+    else
+        tmux -2 new-session -s $WHOAMI
+    fi
+else
+
+    # One might want to do other things in this case,
+    # here I print my motd, but only on servers where
+    # one exists
+
+    # If inside tmux session then print MOTD
+    MOTD=/etc/motd.tcl
+    if [ -f $MOTD ]; then
+        $MOTD
+    fi
+fi
 # }}}
