@@ -242,4 +242,99 @@ if defined?(Amoeba)
     end
   end
 end
+
+# Magi {{{
+if defined?(Magi)
+  module Magi::Pry
+    RESOURCE_TYPES = {
+      ft: 'Future',
+      fp: 'FuturePrice'
+    }
+  end
+
+  # magi-resource {{{
+  Pry::Commands.create_command 'magi-resource' do
+    group 'Magi'
+    description 'Get magi resource and assign to variable'
+
+    banner <<-BANNER
+      Usage: magi-resource TYPE QUERY
+             magi-resource TYPE QUERY [ --to VAR ]
+
+      Get magi resource by id or keyword, and assign it to a variable.
+      Supported types:
+        [#{Magi::Pry::RESOURCE_TYPES.keys.join(' ')}]
+        check `Magi::Pry::RESOURCE_TYPES` for detail mapping
+
+      Examples:
+
+      magi-resource sr 666               get SR #666 and assign to `sr`
+      magi-resource bp r1677 --to bp2    get BP R01001677 and assign to `bp2`
+      magi-resource fd2 42               get FD #42 and assign to `fd2`
+      magi-resource pdi 0                get frist PDI, 0 can be replaced by ^ or :first
+      magi-resource pdi -1               get last PDI, -1 can be replaced by $ or :last
+      magi-resource pdi                  get last item if no query given
+
+      Append `;` to suppress the eval output.
+      By default `=` is aliased to this command, try `=sr 666` shortcut usage.
+    BANNER
+
+    command_options :listing => "magi-resource"
+
+    def options(opt)
+      opt.on '-t', '--to=', 'variable name to assign to'
+    end
+
+    def process
+      type = args[0].to_s
+      var  = opts.to? ? opts[:to] : type
+      q    = args.from(1).join(' ').strip
+      mod  = ''
+
+      # 1st argument can be parsed as 'type + var'
+      type = Magi::Pry::RESOURCE_TYPES.keys.sort_by(&:length).reverse.detect do |short_name|
+        type.start_with? short_name.to_s
+      end
+
+      if opts.to? && (args[0] != type.to_s) && (opts[:to] != args[0])
+        msg = "WARNING: var name from arg (#{args[0]}) overwritten by option (#{opts[:to]})"
+        output.puts _pry_.config.color ? Pry::Helpers::Text.bright_red(msg) : msg
+      end
+
+      raise Pry::CommandError, "Unknown resource type '#{type}'"          if type.nil?
+      raise Pry::CommandError, "Invalid variable name '#{var}'"           if var !~ /\A[a-z0-9_]+\z/
+
+      klass = Magi::Pry::RESOURCE_TYPES.fetch(type)
+
+      [q, var].each do |s|
+        if %[;].include?(s[-1])
+          s.chop!
+          mod = ';'
+        end
+      end
+
+      if q.empty? || %w[-1 $ :last].include?(q)
+        cmd = "#{var} = #{klass}.last"
+      elsif %w[0 ^ :first].include?(q)
+        cmd = "#{var} = #{klass}.first"
+      elsif q =~ /^[a-zA-z]+$/
+        case type
+        when :ft
+          cmd = "#{var} = Future.find_by(code: '#{q.upcase}')"
+        else
+          raise Pry::CommandError, "Can't query #{klass} by string condition"
+        end
+      else
+        cmd = "#{var} = #{klass}.find(#{q})"
+      end
+
+      eval_string << cmd << mod.to_s
+    end
+  end
+
+  Pry.commands.alias_command('=', 'magi-resource')
+  Pry.commands.alias_command(/=((?:#{Magi::Pry::RESOURCE_TYPES.keys.join('|')})\w*)/, "magi-resource")
+end
+# }}}
+
 # vim: filetype=ruby
