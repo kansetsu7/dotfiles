@@ -70,6 +70,9 @@ zplug "junegunn/fzf", as:command, hook-build:"./install --bin", use:"bin/{fzf-tm
 zplug "zsh-users/zsh-autosuggestions", defer:3
 
 # zim {{{
+zstyle ':zim:git' aliases-prefix 'g'
+zplug "zimfw/git"
+
 zplug "zimfw/zimfw", as:plugin, use:"init.zsh", hook-build:"ln -sf $ZPLUG_REPOS/zimfw/zimfw ~/.zim"
 
 zmodules=(directory environment git git-info history input ssh utility \
