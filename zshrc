@@ -390,16 +390,14 @@ alias ws=gws
 alias gsh='git show'
 alias gba='gb -a'
 alias gcm='git checkout master'
-alias ggpull='git pull origin $(git-branch-current)'
+alias ggpull='git pull origin $(git_branch_current)'
+alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
 alias gpcc='cop master... && gpc'
 alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
 alias gfco="gfo $1 && gco $1"
 alias grb="rebase_func $1"
-rebase_func() {
-  git rebase -i HEAD~$1
-}
 
 alias ha=hanami
 alias hac='ha console'
@@ -458,6 +456,15 @@ bindkey '^o' autosuggest-accept
 
 bindkey '^p' history-substring-search-up
 bindkey '^n' history-substring-search-down
+# }}}
+
+# git functions {{{
+rebase_func() {
+  git rebase -i HEAD~$1
+}
+git_branch_current() {
+  git rev-parse --abbrev-ref HEAD
+}
 # }}}
 
 # ag functions {{{
