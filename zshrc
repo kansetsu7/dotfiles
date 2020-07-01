@@ -49,60 +49,102 @@ fi
 # }}}
 
 # zplug {{{
-
-# install zplug, if necessary
-if [[ ! -d ~/.zplug ]]; then
-  export ZPLUG_HOME=~/.zplug
-  git clone https://github.com/zplug/zplug $ZPLUG_HOME
+### Added by Zinit's installer
+# install zinit, if necessary
+if [[ ! -f $HOME/.zinit/bin/zinit.zsh ]]; then
+    print -P "%F{33}▓▒░ %F{220}Installing %F{33}DHARMA%F{220} Initiative Plugin Manager (%F{33}zdharma/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.zinit" && command chmod g-rwX "$HOME/.zinit"
+    command git clone https://github.com/zdharma/zinit "$HOME/.zinit/bin" && \
+        print -P "%F{33}▓▒░ %F{34}Installation successful.%f%b" || \
+        print -P "%F{160}▓▒░ The clone has failed.%f%b"
 fi
 
-source ~/.zplug/init.zsh
+source "$HOME/.zinit/bin/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
 
-zplug "plugins/vi-mode", from:oh-my-zsh
-# zplug "plugins/chruby",  from:oh-my-zsh
-zplug "plugins/asdf",    from:oh-my-zsh
-zplug "plugins/bundler", from:oh-my-zsh
-zplug "plugins/rails",   from:oh-my-zsh
+### End of Zinit's installer chunk
 
-zplug "b4b4r07/enhancd", use:init.sh
-zplug "junegunn/fzf", as:command, hook-build:"./install --bin", use:"bin/{fzf-tmux,fzf}"
+zinit light zsh-users/zsh-autosuggestions
+zinit light zsh-users/zsh-history-substring-search
+zinit light zdharma/fast-syntax-highlighting
 
-zplug "zsh-users/zsh-autosuggestions", defer:3
+zinit ice as="program" pick="$ZPFX/bin/(fzf|fzf-tmux)" \
+  atclone="./install;cp bin/(fzf|fzf-tmux) $ZPFX/bin"
+zinit light junegunn/fzf
 
-# zim {{{
-zstyle ':zim:git' aliases-prefix 'g'
-zplug "zimfw/git"
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-zplug "zimfw/zimfw", as:plugin, use:"init.zsh", hook-build:"ln -sf $ZPLUG_REPOS/zimfw/zimfw ~/.zim"
-
-zmodules=(directory environment git git-info history input ssh utility \
-          prompt completion syntax-highlighting history-substring-search)
-
-zhighlighters=(main brackets pattern cursor root)
-
-zplug 'dracula/zsh', as:theme
-# zplug denysdovhan/spaceship-prompt, use:spaceship.zsh, from:github, as:theme
-
-# if [[ "$NAME" = "Ubuntu" ]]; then
-#   zprompt_theme='eriner'
-# else
-#   zprompt_theme='liquidprompt'
-# fi
-# }}}
-
-if ! zplug check --verbose; then
-  zplug install
-fi
-
-zplug load #--verbose
-
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=240'
-
-source ~/.zplug/repos/junegunn/fzf/shell/key-bindings.zsh
-source ~/.zplug/repos/junegunn/fzf/shell/completion.zsh
-
-export FZF_COMPLETION_TRIGGER=';'
 export FZF_TMUX=1
+
+# Load the pure theme, with zsh-async library that's bundled with it.
+zinit ice pick"async.zsh" src"pure.zsh"
+zinit light sindresorhus/pure
+
+# need to install svn, `sudo apt-get install subversion`
+# keep git after pure, don't know why
+zinit ice svn
+zinit snippet PZT::modules/git
+
+zinit snippet PZT::modules/environment
+zinit snippet PZT::modules/completion
+zinit snippet PZT::modules/history
+zinit snippet PZT::modules/rsync
+zinit snippet PZT::modules/directory
+
+# # install zplug, if necessary
+# if [[ ! -d ~/.zplug ]]; then
+#   export ZPLUG_HOME=~/.zplug
+#   git clone https://github.com/zplug/zplug $ZPLUG_HOME
+# fi
+
+# source ~/.zplug/init.zsh
+
+# zplug "plugins/vi-mode", from:oh-my-zsh
+# # zplug "plugins/chruby",  from:oh-my-zsh
+# zplug "plugins/asdf",    from:oh-my-zsh
+# zplug "plugins/bundler", from:oh-my-zsh
+# zplug "plugins/rails",   from:oh-my-zsh
+
+# zplug "b4b4r07/enhancd", use:init.sh
+# zplug "junegunn/fzf", as:command, hook-build:"./install --bin", use:"bin/{fzf-tmux,fzf}"
+
+# zplug "zsh-users/zsh-autosuggestions", defer:3
+
+# # zim {{{
+# zstyle ':zim:git' aliases-prefix 'g'
+# zplug "zimfw/git"
+
+# zplug "zimfw/zimfw", as:plugin, use:"init.zsh", hook-build:"ln -sf $ZPLUG_REPOS/zimfw/zimfw ~/.zim"
+
+# zmodules=(directory environment git git-info history input ssh utility \
+#           prompt completion syntax-highlighting history-substring-search)
+
+# zhighlighters=(main brackets pattern cursor root)
+
+# zplug 'dracula/zsh', as:theme
+# # zplug denysdovhan/spaceship-prompt, use:spaceship.zsh, from:github, as:theme
+
+# # if [[ "$NAME" = "Ubuntu" ]]; then
+# #   zprompt_theme='eriner'
+# # else
+# #   zprompt_theme='liquidprompt'
+# # fi
+# # }}}
+
+# if ! zplug check --verbose; then
+#   zplug install
+# fi
+
+# zplug load #--verbose
+
+# ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=240'
+
+# source ~/.zplug/repos/junegunn/fzf/shell/key-bindings.zsh
+# source ~/.zplug/repos/junegunn/fzf/shell/completion.zsh
+
+# export FZF_COMPLETION_TRIGGER=';'
+# export FZF_TMUX=1
 
 # }}}
 
@@ -432,6 +474,8 @@ alias cam='cd ~/cam'
 alias ndb='cd ~/tmp/dumpdb/nerv_development'
 alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
 alias magi='cd ~/magi'
+alias melchior='cd ~/magi/clojure/melchior'
+alias melc=melchior
 
 alias viz='vi ~/.zshrc'
 alias viv='vi ~/.dotfiles/init.vim'
