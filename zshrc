@@ -493,6 +493,10 @@ export VISUAL=vi
 bindkey -M vicmd '^a' beginning-of-line
 bindkey -M vicmd '^e' end-of-line
 
+# emacs style
+bindkey '^a' beginning-of-line
+bindkey '^e' end-of-line
+
 bindkey '^f' vi-forward-word
 bindkey '^b' vi-backward-word
 
