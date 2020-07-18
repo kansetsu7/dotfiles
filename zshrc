@@ -91,6 +91,7 @@ zinit snippet PZT::modules/completion
 zinit snippet PZT::modules/history
 zinit snippet PZT::modules/rsync
 zinit snippet PZT::modules/directory
+zinit snippet PZT::modules/ssh
 
 # asdf setting
 . $HOME/.asdf/asdf.sh
