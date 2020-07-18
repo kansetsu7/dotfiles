@@ -183,7 +183,8 @@ nnoremap <leader>ew :e <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
-nnoremap <leader>p obinding.pry<Esc>
+autocmd FileType ruby nnoremap <leader>p obinding.pry<Esc>
+autocmd FileType clojure nnoremap <leader>p o(println<Esc>
 nnoremap <leader>c oconsole.log()<Esc>
 nmap <leader>gb :Gblame<cr>
 

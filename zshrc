@@ -482,6 +482,9 @@ alias viv='vi ~/.dotfiles/init.vim'
 alias szsh="reload_zshrc"
 
 alias krpu='rpu kill'
+
+# clojure
+alias cljp='clj -A:dev:prepl'
 # }}}
 
 # environment variables {{{
