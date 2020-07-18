@@ -155,7 +155,7 @@ zinit snippet PZT::modules/directory
 # diff-highlight {{{
 if [[ ! -e /usr/local/bin/diff-highlight ]]; then
   sudo curl https://raw.githubusercontent.com/git/git/3dadfc7e173e27db641291d8f049ab487b696704/contrib/diff-highlight/diff-highlight --create-dirs -o /usr/local/bin/diff-highlight
-  chmod +x /usr/local/bin/diff-highlight
+  sudo chmod +x /usr/local/bin/diff-highlight
 fi
 # }}}
 
