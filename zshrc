@@ -402,6 +402,10 @@ fixssh() {
 }
 # }}}
 
+# setup color
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
 # aliases {{{
 alias px='ps aux'
 alias vt='vi -c :CtrlP'
