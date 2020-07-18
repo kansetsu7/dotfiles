@@ -95,6 +95,12 @@ zinit snippet PZT::modules/ssh
 zinit snippet OMZ::plugins/rails/rails.plugin.zsh
 zinit snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
 zinit snippet OMZ::plugins/bundler/bundler.plugin.zsh
+zinit cdclear -q
+
+autoload -Uz compinit
+compinit
+zinit cdreplay -q # <- execute compdefs provided by rest of plugins
+# zinit cdlist # look at gathered compdefs
 
 # asdf setting
 . $HOME/.asdf/asdf.sh
