@@ -92,6 +92,10 @@ zinit snippet PZT::modules/history
 zinit snippet PZT::modules/rsync
 zinit snippet PZT::modules/directory
 
+# asdf setting
+. $HOME/.asdf/asdf.sh
+. $HOME/.asdf/completions/asdf.bash
+
 # # install zplug, if necessary
 # if [[ ! -d ~/.zplug ]]; then
 #   export ZPLUG_HOME=~/.zplug
