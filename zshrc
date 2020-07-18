@@ -92,6 +92,9 @@ zinit snippet PZT::modules/history
 zinit snippet PZT::modules/rsync
 zinit snippet PZT::modules/directory
 zinit snippet PZT::modules/ssh
+zinit snippet OMZ::plugins/rails/rails.plugin.zsh
+zinit snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
+zinit snippet OMZ::plugins/bundler/bundler.plugin.zsh
 
 # asdf setting
 . $HOME/.asdf/asdf.sh
