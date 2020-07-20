@@ -195,6 +195,8 @@ alias sk='[[ -f config/sidekiq.yml ]] && bundle exec sidekiq -C $PWD/config/side
 alias ksk='pkill -fe sidekiq'
 
 alias rcsb='rc --sandbox'
+alias rct='rc test'
+alias rdrst='rake db:reset RAILS_ENV=test'
 
 alias sprs='spring stop && spring binstub'
 alias rdr1="rake db:migrate:redo STEP=1"
