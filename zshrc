@@ -496,7 +496,7 @@ alias magi='cd ~/magi'
 alias melchior='cd ~/magi/clojure/melchior'
 alias melc=melchior
 
-alias viz='vi ~/.zshrc'
+alias viz='vi ~/.dotfiles/zshrc'
 alias viv='vi ~/.dotfiles/init.vim'
 alias szsh="reload_zshrc"
 
