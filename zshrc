@@ -68,6 +68,7 @@ autoload -Uz _zinit
 zinit light zsh-users/zsh-autosuggestions
 zinit light zsh-users/zsh-history-substring-search
 zinit light zdharma/fast-syntax-highlighting
+zinit ice depth=1; zinit light romkatv/powerlevel10k
 
 zinit ice as="program" pick="$ZPFX/bin/(fzf|fzf-tmux)" \
   atclone="./install;cp bin/(fzf|fzf-tmux) $ZPFX/bin"
@@ -77,12 +78,7 @@ zinit light junegunn/fzf
 
 export FZF_TMUX=1
 
-# Load the pure theme, with zsh-async library that's bundled with it.
-zinit ice pick"async.zsh" src"pure.zsh"
-zinit light sindresorhus/pure
-
 # need to install svn, `sudo apt-get install subversion`
-# keep git after pure, don't know why
 zinit ice svn
 zinit snippet PZT::modules/git
 
@@ -601,3 +597,6 @@ else
     fi
 fi
 # }}}
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
