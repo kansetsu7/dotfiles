@@ -96,6 +96,7 @@ zinit snippet PZT::modules/history
 zinit snippet PZT::modules/rsync
 zinit snippet PZT::modules/directory
 zinit snippet PZT::modules/ssh
+for index ({1..9}) alias "$index"="$index"; unset index  # to revert the shitty alias from directory module
 zinit snippet OMZ::plugins/rails/rails.plugin.zsh
 zinit snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
 zinit snippet OMZ::plugins/bundler/bundler.plugin.zsh
