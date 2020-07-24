@@ -95,7 +95,7 @@ set sidescrolloff=5
 autocmd BufRead,BufNewFile *.thor set filetype=ruby
 autocmd FileType markdown setlocal wrap
 autocmd FileType eruby.yaml setlocal commentstring=#\ %s
-autocmd BufWritePre * :%s/\s\+$//e " trim trailing space on save
+autocmd BufWritePre * call StripTrailingWhitespace() " trim trailing space on save
 " }}}
 
 " Theme {{{
@@ -390,6 +390,16 @@ function! s:rails_test_tmux(method)
 endfunction
 
 autocmd User Rails call s:rails_test_helpers()
+"}}}
+
+" Trim whitespace {{{
+fun! StripTrailingWhitespace()
+    " Don't strip on these filetypes
+    if &ft =~ 'markdown\|text'
+        return
+    endif
+    %s/\s\+$//e
+endfun
 "}}}
 
 " SQL helpers {{{
