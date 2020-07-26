@@ -513,7 +513,7 @@ alias szsh="reload_zshrc"
 alias krpu='rpu kill'
 
 # clojure
-alias cljp='clj -A:dev:prepl'
+alias cjp='clj -A:dev:prepl'
 # }}}
 
 # environment variables {{{
