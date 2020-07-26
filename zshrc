@@ -501,6 +501,7 @@ alias aba='cd ~/amoeba'
 alias cam='cd ~/cam'
 alias ndb='cd ~/tmp/dumpdb/nerv_development'
 alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
+alias mdb='cd ~/tmp/dumpdb/magi_ck_development'
 alias magi='cd ~/magi'
 alias melchior='cd ~/magi/clojure/melchior'
 alias melc=melchior
