@@ -176,6 +176,13 @@ fi
 
 # customization {{{
 
+# set nvim for macOS {{{
+case "$NAME" in
+  Darwin)
+    alias vi='nvim'
+esac
+# }}}
+
 # directory shortcut {{{
 p()  { cd ~/proj/$1;}
 h()  { cd ~/$1;}
