@@ -24,6 +24,12 @@ Pry.commands.alias_command('load_t', 'load_tools')
 # Nerv {{{
 if defined?(Nerv)
   CMB = CommissionBatch
+  PA  = PaymentArrangement
+  SRT = ServiceRecordType
+  TU  = TopUp
+  MP  = MasterPlan
+  PO  = PlanOwner
+  FI  = FinalizedInfo
 
   module Nerv::Pry
     RESOURCE_TYPES = {
@@ -49,7 +55,8 @@ if defined?(Nerv)
       imev:  'ItemMonthEndValuation',
       mevd:  'MonthEndValuationDetail',
       com_b: 'CommissionBatch',
-      con_b: 'ContributionBatch'
+      con_b: 'ContributionBatch',
+      pa:    'PaymentArrangement',
     }
 
     DEV_PASSWORD = '666'
