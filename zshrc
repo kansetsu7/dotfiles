@@ -450,12 +450,14 @@ alias -g HET='HANAMI_ENV=test'
 
 alias va='cd ~/vm;vagrant'
 alias vsh='va ssh'
-alias vsf='va ssh -- -L 8088:localhost:88 \
+alias vsf='va ssh -- \
+  -L 8088:localhost:88 \
   -L 8080:localhost:80 \
   -L 1080:localhost:1080 \
   -L 22222:localhost:22 \
   -L 3000:localhost:3000 \
-  -L 3310:localhost:3310'
+  -L 3310:localhost:3310 \
+  -L 9630:localhost:9630'
 alias vup='va up'
 alias vsup='va suspend'
 alias vhalt='va halt'
@@ -504,6 +506,8 @@ alias nface='cd ~/nerv/face'
 alias perv='cd ~/perv'
 alias angel='cd ~/angel'
 alias adam='cd clojure/adam'
+alias asuka='cd eva/asuka'
+alias kaworu='cd eva/kaworu'
 alias aba='cd ~/amoeba'
 alias cam='cd ~/cam'
 alias ndb='cd ~/tmp/dumpdb/nerv_development'
