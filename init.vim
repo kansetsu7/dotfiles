@@ -192,6 +192,9 @@ map <Down> gj
 map <Up>   gk
 
 vmap <Enter> <Plug>(EasyAlign)
+
+autocmd FileType clojure set iskeyword-=.
+autocmd FileType clojure set iskeyword-=/
 " nnoremap <leader>s  :set nolist! nolist?<CR>
 " nnoremap <leader>n  :set number! number?<CR>
 " nnoremap <Leader>hl :set hlsearch! hlsearch?<CR>
