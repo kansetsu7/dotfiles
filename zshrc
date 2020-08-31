@@ -228,6 +228,19 @@ ys() {
   yarn start
 }
 
+nrw() {
+  local app=$PWD
+  if [[ $app =~ 'nerv' ]]; then
+    echo 'run npm for hk...'
+    cd ~/nerv/eva/asuka && npm run watch
+  fi
+
+  if [[ $app =~ 'perv' ]]; then
+    echo 'run npm for ck...'
+    cd ~/perv/eva/asuka && API_BASE=http://localhost:8088/perv npm run watch
+  fi
+}
+
 # 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
 rpy() {
   if bundle show pry-remote > /dev/null 2>&1; then
