@@ -185,6 +185,7 @@ nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
 nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
 autocmd FileType ruby nnoremap <leader>p obinding.pry<Esc>
 autocmd FileType clojure nnoremap <leader>p o(println<Esc>
+autocmd BufEnter,BufNew *.cljs nnoremap <leader>p o(js/console.log<Esc>
 nnoremap <leader>c oconsole.log()<Esc>
 nmap <leader>gb :Gblame<cr>
 
