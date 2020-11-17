@@ -385,7 +385,7 @@ cop() {
   fi
 
   if [[ $# -gt 0 ]]; then
-    local files=$(eval "git diff $@ --name-only -- \*.{$exts} '$excludes'")
+    local files=$(eval "git diff $@ --diff-filter=d --name-only -- \*.{$exts} '$excludes'")
   else
     local files=$(eval "git status --porcelain -- \*.{$exts} '$excludes' | sed -e '/^\s\?[DRC] /d' -e 's/^.\{3\}//g'")
   fi
