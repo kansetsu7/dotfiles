@@ -457,7 +457,6 @@ fixssh() {
     export $(tmux showenv SSH_AUTH_SOCK)
   fi
 }
-if [ "$TMUX" = "" ]; then tx; fi
 # }}}
 
 # setup color
@@ -649,6 +648,14 @@ fi
 path+=~/bin
 
 # }}}
+if [ "$TMUX" = "" ]; then
+  WHOAMI=$(whoami)
+  if tmux has-session -t $WHOAMI 2>/dev/null; then
+    tmux -2 attach-session -t $WHOAMI
+  else
+    tmux -2 new-session -s $WHOAMI
+  fi
+fi
 
 # p10k setting backup
 #
