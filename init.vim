@@ -170,6 +170,7 @@ noremap <leader>n :noh<CR>
 
 nnoremap <leader>f :NERDTreeFind<CR>
 nnoremap <leader>d :bd<CR>
+nnoremap :bd! :bdelete!<CR>
 
 nnoremap <leader>s :%s/
 vnoremap <leader>s "hy:%s/<C-r>h
