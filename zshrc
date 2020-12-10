@@ -495,6 +495,7 @@ alias vsf='va ssh -- \
   -L 22222:localhost:22 \
   -L 3000:localhost:3000 \
   -L 3310:localhost:3310 \
+  -L 6666:localhost:6666 \
   -L 9630:localhost:9630'
 alias vup='va up'
 alias vsup='va suspend'
@@ -565,6 +566,8 @@ alias krpu='rpu kill'
 
 # clojure
 alias cjp='clj -A:dev:prepl'
+alias cljp='cjp'
+alias clj-st='clj -A:dev -m abagile.adam.core'
 # }}}
 
 # environment variables {{{
