@@ -230,6 +230,29 @@ ys() {
   yarn start
 }
 
+kond() {
+  local app=$PWD
+
+  if [[ $app =~ 'nerv' || $app =~ 'perv' ]]; then
+    if [[ `basename $PWD` == "asuka" || `basename $PWD` == "adam" ]]; then
+      clj-kondo --lint src
+    else
+      echo 'asuka:'
+      clj-kondo --lint eva/asuka/src
+      # echo ''
+      # echo 'adam:'
+      # clj-kondo --lint clojure/adam/src
+    fi
+  fi
+
+  if [[ $app =~ 'magi' ]]; then
+    if [[ `basename $PWD` == "melchior" ]]; then
+      clj-kondo --lint src
+    else
+      clj-kondo --lint clojure/melchior/src
+    fi
+  fi
+}
 nrw() {
   local app=$PWD
   if [[ $app =~ 'nerv' ]]; then
@@ -485,7 +508,7 @@ alias gba='gb -a'
 alias gcm='git checkout master'
 alias ggpull='git pull origin $(git_branch_current)'
 alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
-alias gpcc='cop master... && gpc'
+alias gpcc='cop master... && kond && gpc'
 alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
