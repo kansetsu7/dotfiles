@@ -264,6 +264,11 @@ nrw() {
     echo 'run npm for ck...'
     cd ~/perv/eva/asuka && API_BASE=http://localhost:8088/perv npm run watch
   fi
+
+  if [[ $app =~ 'magi' ]]; then
+    echo 'run npm for magi...'
+    cd ~/magi/eva/asuka && npm run watch
+  fi
 }
 
 # 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
@@ -548,6 +553,7 @@ alias perv='cd ~/perv'
 alias angel='cd ~/angel'
 alias adam='cd clojure/adam'
 alias asuka='cd eva/asuka'
+alias asu=asuka
 alias kaworu='cd eva/kaworu'
 alias aba='cd ~/amoeba'
 alias cam='cd ~/cam'
