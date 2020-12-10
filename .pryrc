@@ -211,6 +211,7 @@ if defined?(Nerv)
       # TODO: return void
     end
   end
+  Pry.commands.alias_command('chpw', 'change-password')
   # }}}
 end
 # }}}
