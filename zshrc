@@ -213,6 +213,8 @@ alias rcsb='rc --sandbox'
 alias rct='rc test'
 alias rdrst='rake db:reset RAILS_ENV=test'
 
+alias nginx_test_and_reload='sudo nginx -t && sudo service nginx reload'
+
 alias sprs='spring stop && spring binstub'
 alias rdr1="rake db:migrate:redo STEP=1"
 rdrd() { rake db:migrate:redo STEP="$1" }
