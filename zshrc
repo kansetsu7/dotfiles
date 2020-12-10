@@ -17,12 +17,12 @@ esac
 
 case "$NAME" in
   Ubuntu)
-    for tool (git-extras htop silversearcher-ag tree neovim); do
+    for tool (git-extras htop tree neovim); do
       [[ -z $(dpkg -l | grep $tool) ]] && sudo apt-get install -y $tool
     done
     ;;
   Darwin)
-    for tool (git-extras htop the_silver_searcher neovim); do
+    for tool (git-extras htop neovim); do
       [[ -z $(brew list | grep $tool) ]] && brew install $tool
     done
     ;;
@@ -39,6 +39,7 @@ if [[ ! -d ~/.dotfiles ]]; then
   ln -sf ~/.dotfiles/zshrc               ~/.zshrc
   ln -sf ~/.dotfiles/gitconfig           ~/.gitconfig
   ln -sf ~/.dotfiles/.pryrc              ~/.pryrc
+  ln -sf ~/.dotfiles/ripgreprc           ~/ripgreprc
   ln -sf ~/.dotfiles/p10k.zsh            ~/.p10k.zsh
 
   mkdir -p ~/.config/nvim
@@ -100,6 +101,12 @@ for index ({1..9}) alias "$index"="$index"; unset index  # to revert the shitty 
 zinit snippet OMZ::plugins/rails/rails.plugin.zsh
 zinit snippet OMZ::plugins/vi-mode/vi-mode.plugin.zsh
 zinit snippet OMZ::plugins/bundler/bundler.plugin.zsh
+
+# BurntSushi/ripgrep
+zinit ice as"command" from"gh-r" mv"ripgrep* -> rg" pick"rg/rg"
+zinit light BurntSushi/ripgrep
+export RIPGREP_CONFIG_PATH=~/.ripgreprc
+
 zinit cdclear -q
 
 autoload -Uz compinit
@@ -473,18 +480,18 @@ alias sa='ssh-add'
 alias salock='ssh-add -x'
 alias saunlock='ssh-add -X'
 
-alias agi='ag -i'
-alias agiw='ag -i -w'
-alias agr='ag --ruby'
-alias agri='ag --ruby -i'
-alias aga="ag_in_app $1"
-alias agan="ag_in_app_nv $1"
-alias agdef="ag_method_def $1"
+# ripgrep
+alias rgdef="rg_method_def $1"
+alias rgp='rg_pcre2 $1'
 
-alias -g G='| ag'
-alias -g P='| $PAGER'
-alias -g WC='| wc -l'
-alias -g RE='RESCUE=1'
+alias ag='rg'
+alias agdef="rg_method_def $1"
+alias agp='rg_pcre2 $1'
+
+# alias -g G='| ag'
+# alias -g P='| $PAGER'
+# alias -g WC='| wc -l'
+# alias -g RE='RESCUE=1'
 
 alias -g HED='HANAMI_ENV=development'
 alias -g HEP='HANAMI_ENV=production'
@@ -607,17 +614,13 @@ git_branch_current() {
 }
 # }}}
 
-# ag functions {{{
-ag_in_app() {
-  ag $1 app/ --ignore app/assets
+# rg functions {{{
+rg_method_def() {
+  rg "def $1"
 }
 
-ag_in_app_nv() {
-  ag $1 app/ --ignore app/views --ignore app/assets
-}
-
-ag_method_def() {
-  ag "def $1"
+rg_pcre2() {
+  rg -P $1  # support look-around
 }
 #}}}
 
