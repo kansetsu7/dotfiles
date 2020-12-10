@@ -519,6 +519,7 @@ alias gbd='git branch -D'
 alias grh='git reset --hard'
 alias gfco="gfo $1 && gco $1"
 alias grb="rebase_func $1"
+alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
 
 alias ha=hanami
