@@ -490,7 +490,7 @@ alias rgp='rg_pcre2 $1'
 
 alias ag='rg'
 alias agdef="rg_method_def $1"
-alias agp='rg_pcre2 $1'
+alias agr='rg_pcre2 $1'
 
 # alias -g G='| ag'
 # alias -g P='| $PAGER'
