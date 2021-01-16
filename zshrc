@@ -238,18 +238,19 @@ ys() {
 }
 
 kond() {
+  # Exit code of clj-kond:
+  #   https://github.com/borkdude/clj-kondo#exit-codes
   local app=$PWD
+  local kond_res
 
-  if [[ $app =~ 'nerv' || $app =~ 'perv' ]]; then
+  if [[ $app =~ 'nerv' || $app =~ 'perv' || $app =~ 'amoeba' ]]; then
     if [[ `basename $PWD` == "asuka" || `basename $PWD` == "adam" ]]; then
       clj-kondo --lint src
     else
       echo 'asuka:'
       clj-kondo --lint eva/asuka/src
-      # echo ''
-      # echo 'adam:'
-      # clj-kondo --lint clojure/adam/src
     fi
+    kond_res=$?
   fi
 
   if [[ $app =~ 'magi' ]]; then
@@ -258,7 +259,10 @@ kond() {
     else
       clj-kondo --lint clojure/melchior/src
     fi
+    kond_res=$?
   fi
+
+  return $kond_res
 }
 nrw() {
   local app=$PWD
@@ -520,7 +524,7 @@ alias gba='gb -a'
 alias gcm='git checkout master'
 alias ggpull='git pull origin $(git_branch_current)'
 alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
-alias gpcc='cop master... && kond && gpc'
+alias gpcc='kond && cop master... && gpc'
 alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
