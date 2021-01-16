@@ -511,6 +511,7 @@ alias vsf='va ssh -- \
   -L 3000:localhost:3000 \
   -L 3310:localhost:3310 \
   -L 6666:localhost:6666 \
+  -L 9527:localhost:9527 \
   -L 9630:localhost:9630'
 alias vup='va up'
 alias vsup='va suspend'
