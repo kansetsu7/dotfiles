@@ -21,11 +21,11 @@ case "$NAME" in
       [[ -z $(dpkg -l | grep $tool) ]] && sudo apt-get install -y $tool
     done
     ;;
-  Darwin)
-    for tool (git-extras htop neovim); do
-      [[ -z $(brew list | grep $tool) ]] && brew install $tool
-    done
-    ;;
+  # Darwin)
+  #   for tool (git-extras htop neovim); do
+  #     [[ -z $(brew list | grep $tool) ]] && brew install $tool
+  #   done
+  #   ;;
 esac
 
 if [[ ! -d ~/.dotfiles ]]; then
