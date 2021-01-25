@@ -292,6 +292,13 @@ nrw() {
   fi
 }
 
+amoeba_test_reset() {
+  RAILS_ENV=test be rake db:drop
+  RAILS_ENV=test be rake db:create
+  RAILS_ENV=test be rake db:schema:load
+  RAILS_ENV=test be rake db:seed
+}
+
 # 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
 rpy() {
   if bundle show pry-remote > /dev/null 2>&1; then
