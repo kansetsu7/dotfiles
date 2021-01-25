@@ -243,12 +243,22 @@ kond() {
   local app=$PWD
   local kond_res
 
-  if [[ $app =~ 'nerv' || $app =~ 'perv' || $app =~ 'amoeba' ]]; then
-    if [[ `basename $PWD` == "asuka" || `basename $PWD` == "adam" ]]; then
+  if [[ $app =~ 'nerv' || $app =~ 'perv' ]]; then
+    if [[ `basename $PWD` == "asuka" ]]; then
       clj-kondo --lint src
     else
       echo 'asuka:'
       clj-kondo --lint eva/asuka/src
+    fi
+    kond_res=$?
+  fi
+
+  if [[ $app =~ 'amoeba' ]]; then
+    if [[ `basename $PWD` == "adam" ]]; then
+      clj-kondo --lint src test
+    else
+      echo 'asuka:'
+      clj-kondo --lint clojure/adam/src
     fi
     kond_res=$?
   fi
