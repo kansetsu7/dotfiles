@@ -240,39 +240,24 @@ ys() {
 kond() {
   # Exit code of clj-kond:
   #   https://github.com/borkdude/clj-kondo#exit-codes
-  local app=$PWD
-  local kond_res
+  local project_path
+  local lint_paths
 
-  if [[ $app =~ 'nerv' || $app =~ 'perv' ]]; then
-    if [[ `basename $PWD` == "asuka" ]]; then
-      clj-kondo --lint src
-    else
-      echo 'asuka:'
-      clj-kondo --lint eva/asuka/src
-    fi
-    kond_res=$?
+  [[ $PWD =~ '(.*perv|.*nerv|.*amoeba|.*magi)' ]] && project_path=$match[1]
+  [[ $PWD =~ '(.*perv|.*nerv|.*amoeba)' ]] && project_path=$match[1]
+
+  if [[ $PWD =~ '(perv|nerv)' ]]; then
+    lint_paths="$project_path/eva/asuka/src"
+  elif [[ $PWD =~ 'amoeba' ]]; then
+    lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test"
+  elif [[ $PWD =~ 'magi' ]]; then
+    lint_paths="$project_path/clojure/melchior/src"
   fi
 
-  if [[ $app =~ 'amoeba' ]]; then
-    if [[ `basename $PWD` == "adam" ]]; then
-      clj-kondo --lint src test
-    else
-      echo 'asuka:'
-      clj-kondo --lint clojure/adam/src
-    fi
-    kond_res=$?
+  if [[ $project_path ]]; then
+    clj-kondo --lint ${=lint_paths}
+    # return $?
   fi
-
-  if [[ $app =~ 'magi' ]]; then
-    if [[ `basename $PWD` == "melchior" ]]; then
-      clj-kondo --lint src
-    else
-      clj-kondo --lint clojure/melchior/src
-    fi
-    kond_res=$?
-  fi
-
-  return $kond_res
 }
 nrw() {
   local app=$PWD
