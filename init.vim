@@ -15,7 +15,6 @@ Plug 'scrooloose/nerdtree'
 Plug 'Shougo/denite.nvim'
 Plug 'ctrlpvim/ctrlp.vim'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'kassio/neoterm'
 Plug 'tpope/vim-projectionist'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'guns/vim-sexp'
@@ -67,10 +66,11 @@ Plug 'tpope/vim-abolish'
 " ===========================
 " Clojure
 " ===========================
-Plug 'tpope/vim-salve'
+" Plug 'tpope/vim-salve' " Heard it cause vim slow. https://abagile.slack.com/archives/CJSF2HZU3/p1612580324337400
 Plug 'tpope/vim-fireplace'
-Plug 'Olical/conjure', {'tag': 'v2.1.2', 'do': 'bin/compile'}
+Plug 'Olical/conjure', {'tag': 'v4.12.0'}
 Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
+Plug 'clojure-vim/vim-jack-in'
 call plug#end()
 
 " General {{{
@@ -107,6 +107,9 @@ hi CursorLine ctermbg=234
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#tabline#enabled=1
 let g:airline#extensions#tabline#buffer_nr_show=1
+
+" https://github.com/Olical/conjure/wiki/Frequently-asked-questions#the-hud-window-background-colour-makes-the-text-unreadable-how-can-i-change-it
+hi NormalFloat ctermbg=143 guibg=143
 "}}}
 
 " Plugin {{{
@@ -140,6 +143,7 @@ let g:sexp_enable_insert_mode_mappings = 0
 
 " Remap {{{
 let mapleader=","
+let maplocalleader=" "
 nnoremap ' `
 nnoremap ` '
 nmap 0 ^
