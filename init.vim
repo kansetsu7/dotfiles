@@ -13,7 +13,9 @@ Plug 'tpope/vim-unimpaired'
 Plug 'junegunn/vim-easy-align'
 Plug 'scrooloose/nerdtree'
 Plug 'Shougo/denite.nvim'
-Plug 'ctrlpvim/ctrlp.vim'
+" Plug 'ctrlpvim/ctrlp.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 Plug 'christoomey/vim-tmux-navigator'
 Plug 'tpope/vim-projectionist'
 Plug 'junegunn/rainbow_parentheses.vim'
@@ -180,7 +182,6 @@ nnoremap <leader>s :%s/
 vnoremap <leader>s "hy:%s/<C-r>h
 vnoremap <leader>/ "hy/<C-r>h<CR>
 nnoremap <leader>/ "hye/<C-r>h<CR>
-nnoremap <leader>b :CtrlPBuffer<CR>
 noremap <silent><leader>V :so $MYVIMRC<CR>:echo 'reloaded!'<CR>
 
 nnoremap <leader>g  :GitGutterToggle<CR>
@@ -215,6 +216,12 @@ autocmd FileType clojure set iskeyword-=/
 "   tmap <C-o> <C-\><C-n>
 " endif
 "}}}
+
+" fzf search
+nnoremap <C-p> :Files<CR>
+nnoremap <leader>b :Buffers<CR>
+let g:fzf_preview_window = []
+let g:fzf_layout = {'up':'~90%', 'window': { 'width': 1, 'height': 0.8,'yoffset': 0.0,'xoffset': 0.0, 'border': 'sharp' } }
 
 "Tmux {{{
 function! TmuxNewWindow(...)
