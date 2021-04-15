@@ -488,11 +488,10 @@ alias saunlock='ssh-add -X'
 
 # ripgrep
 alias rgdef="rg_method_def $1"
-alias rgp='rg_pcre2 $1'
 
-alias ag='rg'
+alias ag='rg -i'
 alias agdef="rg_method_def $1"
-alias agr='rg_pcre2 $1'
+alias agr='rg_pcre2 $1 $2'
 
 # alias -g G='| ag'
 # alias -g P='| $PAGER'
@@ -627,7 +626,12 @@ rg_method_def() {
 }
 
 rg_pcre2() {
-  rg -P $1  # support look-around
+  # rg -P => support look-around
+  if [ -n "$2" ]; then
+    rg -P $1 $2
+  else
+    rg -P $1
+  fi
 }
 #}}}
 
