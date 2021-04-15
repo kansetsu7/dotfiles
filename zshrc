@@ -268,7 +268,7 @@ nrw() {
 
   if [[ $app =~ 'perv' ]]; then
     echo 'run npm for ck...'
-    cd ~/perv/eva/asuka && API_BASE=http://localhost:8088/perv npm run watch
+    cd ~/perv/eva/asuka && NERV_BASE=/perv npm run watch
   fi
 
   if [[ $app =~ 'magi' ]]; then
