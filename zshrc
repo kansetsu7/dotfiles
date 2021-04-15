@@ -584,9 +584,11 @@ alias szsh="reload_zshrc"
 alias krpu='rpu kill'
 
 # clojure
-alias cjp='clj -A:dev:nrepl'
-alias cljp='cjp'
-alias clj-st='clj -A:dev -m abagile.adam.core'
+alias cjn='clj -M:dev:nrepl'
+alias cjt='clj -M:test:nrepl'
+
+alias cjp='clj -M:dev:prepl'
+alias clj-st='clj -M:dev -m abagile.adam.core'
 # }}}
 
 # environment variables {{{
