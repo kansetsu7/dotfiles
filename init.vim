@@ -442,3 +442,5 @@ endif
 let g:conjure_map_prefix=","
 let g:conjure_log_direction="horizontal"
 let g:conjure_log_size_small=15
+
+autocmd FileType sql setlocal commentstring=--\ %s
