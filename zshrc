@@ -40,6 +40,7 @@ if [[ ! -d ~/.dotfiles ]]; then
   ln -sf ~/.dotfiles/gitconfig           ~/.gitconfig
   ln -sf ~/.dotfiles/.pryrc              ~/.pryrc
   ln -sf ~/.dotfiles/ripgreprc           ~/ripgreprc
+  ln -sf ~/.dotfiles/rgignore            ~/.rgignore
   ln -sf ~/.dotfiles/p10k.zsh            ~/.p10k.zsh
 
   mkdir -p ~/.config/nvim
