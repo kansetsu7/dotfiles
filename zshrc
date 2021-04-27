@@ -247,7 +247,7 @@ kond() {
   [[ $PWD =~ '(.*perv|.*nerv|.*amoeba)' ]] && project_path=$match[1]
 
   if [[ $PWD =~ '(perv|nerv)' ]]; then
-    lint_paths="$project_path/eva/asuka/src"
+    lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test $project_path/eva/asuka/src"
   elif [[ $PWD =~ 'amoeba' ]]; then
     lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test"
   elif [[ $PWD =~ 'magi' ]]; then
