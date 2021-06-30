@@ -593,6 +593,8 @@ alias krpu='rpu kill'
 # clojure
 alias cjn='clj -M:dev:nrepl'
 alias cjt='clj -M:test:nrepl'
+alias ctr='clj -M:test:runner --watch'
+alias ctrf='clj -M:test:runner --watch --focus $1'
 
 alias cjp='clj -M:dev:prepl'
 alias clj-st='clj -M:dev -m abagile.adam.core'

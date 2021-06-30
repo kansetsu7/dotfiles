@@ -111,7 +111,7 @@ let g:airline#extensions#tabline#enabled=1
 let g:airline#extensions#tabline#buffer_nr_show=1
 
 " https://github.com/Olical/conjure/wiki/Frequently-asked-questions#the-hud-window-background-colour-makes-the-text-unreadable-how-can-i-change-it
-hi NormalFloat ctermbg=143 guibg=143
+hi NormalFloat ctermbg=232
 "}}}
 
 " Plugin {{{
