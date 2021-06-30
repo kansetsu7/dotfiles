@@ -30,6 +30,10 @@ if defined?(Nerv)
   MP  = MasterPlan
   PO  = PlanOwner
   FI  = FinalizedInfo
+  ET  = EmailTemplate
+  POI = PayoutItem
+  TB  = TransferBatch
+  ITB = ItemTransferBatch
 
   module Nerv::Pry
     RESOURCE_TYPES = {
