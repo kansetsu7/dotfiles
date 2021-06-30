@@ -244,10 +244,9 @@ kond() {
   local project_path
   local lint_paths
 
-  [[ $PWD =~ '(.*perv|.*nerv|.*amoeba|.*magi)' ]] && project_path=$match[1]
-  [[ $PWD =~ '(.*perv|.*nerv|.*amoeba)' ]] && project_path=$match[1]
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*amoeba|.*magi)' ]] && project_path=$match[1]
 
-  if [[ $PWD =~ '(perv|nerv)' ]]; then
+  if [[ $PWD =~ '(perv|nerv|sg)' ]]; then
     lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test $project_path/eva/asuka/src"
   elif [[ $PWD =~ 'amoeba' ]]; then
     lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test"
@@ -270,6 +269,11 @@ nrw() {
   if [[ $app =~ 'perv' ]]; then
     echo 'run npm for ck...'
     cd ~/perv/eva/asuka && NERV_BASE=/perv npm run watch
+  fi
+
+  if [[ $app =~ 'sg' ]]; then
+    echo 'run npm for sg...'
+    cd ~/sg/eva/asuka && NERV_BASE=/sg npm run watch
   fi
 
   if [[ $app =~ 'magi' ]]; then
@@ -297,7 +301,7 @@ rpy() {
 # 這是 rpu 會用到的 helper function
 rserver_restart() {
   local app=${$(pwd):t}
-  [[ ! $app =~ '^(amoeba|cam|perv|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+  [[ ! $app =~ '^(amoeba|cam|perv|sg|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
 
   case "$1" in
     puma)
@@ -565,6 +569,7 @@ alias df='dotfiles'
 alias nerv='cd ~/nerv'
 alias nface='cd ~/nerv/face'
 alias perv='cd ~/perv'
+alias sg='cd ~/sg'
 alias angel='cd ~/angel'
 alias adam='cd clojure/adam'
 alias asuka='cd eva/asuka'
