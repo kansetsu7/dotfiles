@@ -512,6 +512,7 @@ alias vsh='va ssh'
 alias vsf='va ssh -- \
   -L 8088:localhost:88 \
   -L 8080:localhost:80 \
+  -L 8065:localhost:65 \
   -L 1080:localhost:1080 \
   -L 22222:localhost:22 \
   -L 3000:localhost:3000 \
