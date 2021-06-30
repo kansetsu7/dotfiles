@@ -439,6 +439,47 @@ if executable('psql')
 endif
 "}}}
 
+
+" Bulk change SQL keywords to upper case {{{
+nnoremap <silent> <leader>sql :call BulkUpperCaseSqlKeywords()<CR>
+fun! BulkUpperCaseSqlKeywords()
+    " Don't strip on these filetypes
+    if &ft =~ 'sql'
+      %s/select /SELECT /g
+      %s/ as / AS /g
+      %s/from /FROM /g
+      %s/ on / ON /g
+      %s/left join /LEFT JOIN /g
+      %s/right join / RIGHT JOIN /g
+      %s/union all /UNION ALL /g
+      %s/union /UNION /g
+      %s/join /JOIN /g
+      %s/where /WHERE /g
+      %s/and /AND /g
+      %s/ in / IN /g
+      %s/group by /GROUP BY /g
+      %s/order by /ORDER BY /g
+      %s/is null/IS NULL/g
+      %s/is not null/IS NOT NULL/g
+      %s/ not / NOT /g
+      %s/case /CASE /g
+      %s/when /WHEN /g
+      %s/then /THEN /g
+      %s/else /ELSE /g
+      %s/end as /END AS /g
+      %s/coalesce(/COALESCE(/g
+      %s/ asc/ ASC/g
+      %s/ desc/ DESC/g
+      %s/ distinct on / DISTINCT ON /g
+      %s/ distinct( / DISTINCT( /g
+      %s/distinct /DISTINCT /g
+      %s/with /WITH /g
+      %s/max( /MAX( /g
+      %s/count( /COUNT( /g
+    endif
+endfun
+"}}}
+
 let g:conjure_map_prefix=","
 let g:conjure_log_direction="horizontal"
 let g:conjure_log_size_small=15
