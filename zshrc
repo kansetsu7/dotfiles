@@ -260,19 +260,17 @@ kond() {
   fi
 }
 nrw() {
-  local project_path
-  local project_name
+  local folder_path
+  local folder_name
   local asuka_path
-  local env
 
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*magi)' ]] && project_path=$match[1]
-  [[ $project_path =~ '.*(perv|sg|nerv|magi)$' ]] && project_name=$match[1]
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*magi)' ]] && folder_path=$match[1]
+  [[ $folder_path =~ '.*(perv|sg|nerv|magi)$' ]] && folder_name=$match[1]
 
-  asuka_path="$project_path/eva/asuka"
-  env="NERV_BASE=/$project_name"
+  asuka_path="$folder_path/eva/asuka"
 
-  echo "run npm for $asuka_path, proj: $project_name"
-  cd $asuka_path && npm run watch $env
+  echo "run npm for $asuka_path"
+  cd $asuka_path && NERV_BASE=/${=folder_name} npm run watch
 }
 
 amoeba_test_reset() {
