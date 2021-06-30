@@ -260,26 +260,19 @@ kond() {
   fi
 }
 nrw() {
-  local app=$PWD
-  if [[ $app =~ 'nerv' ]]; then
-    echo 'run npm for hk...'
-    cd ~/nerv/eva/asuka && npm run watch
-  fi
+  local project_path
+  local project_name
+  local asuka_path
+  local env
 
-  if [[ $app =~ 'perv' ]]; then
-    echo 'run npm for ck...'
-    cd ~/perv/eva/asuka && NERV_BASE=/perv npm run watch
-  fi
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*magi)' ]] && project_path=$match[1]
+  [[ $project_path =~ '.*(perv|sg|nerv|magi)$' ]] && project_name=$match[1]
 
-  if [[ $app =~ 'sg' ]]; then
-    echo 'run npm for sg...'
-    cd ~/sg/eva/asuka && NERV_BASE=/sg npm run watch
-  fi
+  asuka_path="$project_path/eva/asuka"
+  env="NERV_BASE=/$project_name"
 
-  if [[ $app =~ 'magi' ]]; then
-    echo 'run npm for magi...'
-    cd ~/magi/eva/asuka && npm run watch
-  fi
+  echo "run npm for $asuka_path, proj: $project_name"
+  cd $asuka_path && npm run watch $env
 }
 
 amoeba_test_reset() {
