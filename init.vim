@@ -178,6 +178,9 @@ noremap <leader>n :noh<CR>
 nnoremap <leader>f :NERDTreeFind<CR>
 nnoremap <leader>d :bd<CR>
 nnoremap :bd! :bdelete!<CR>
+nnoremap :cl :close<CR>
+nnoremap :et :e tmp/tools/tester.rb<CR>
+nnoremap :ets :e tmp/tools/sql/test.sql<CR>
 
 nnoremap <leader>s :%s/
 vnoremap <leader>s "hy:%s/<C-r>h
@@ -219,7 +222,7 @@ autocmd FileType clojure set iskeyword-=/
 "}}}
 
 " fzf search
-nnoremap <C-p> :Files<CR>
+nnoremap <C-p> :GFiles<CR>
 nnoremap <leader>b :Buffers<CR>
 let g:fzf_preview_window = []
 let g:fzf_layout = {'up':'~90%', 'window': { 'width': 1, 'height': 0.8,'yoffset': 0.0,'xoffset': 0.0, 'border': 'sharp' } }
