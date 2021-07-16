@@ -231,32 +231,11 @@ rdrv() { rake db:migrate:redo VERSION="$1" }
 # skip patching migrate
 alias mg="rake db:migrate SKIP_PATCHING_MIGRATION='skip_any_patching_related_migrations'"
 
-ys() {
-  if [[ `basename $PWD` != "face" ]]; then
-    cd face
-  fi
-  yarn start
-}
-
-kond() {
-  # Exit code of clj-kond:
-  #   https://github.com/borkdude/clj-kondo#exit-codes
-  local project_path
-  local lint_paths
-
+lint() {
   [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*amoeba|.*magi)' ]] && project_path=$match[1]
 
-  if [[ $PWD =~ '(perv|nerv|sg)' ]]; then
-    lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test $project_path/eva/asuka/src"
-  elif [[ $PWD =~ 'amoeba' ]]; then
-    lint_paths="$project_path/clojure/adam/src $project_path/clojure/adam/test"
-  elif [[ $PWD =~ 'magi' ]]; then
-    lint_paths="$project_path/clojure/melchior/src"
-  fi
-
   if [[ $project_path ]]; then
-    clj-kondo --lint ${=lint_paths}
-    # return $?
+    "$project_path/clojure/adam/bin/lint" && "$project_path/eva/asuka/bin/lint"
   fi
 }
 nrw() {
@@ -524,7 +503,7 @@ alias gba='gb -a'
 alias gcm='git checkout master'
 alias ggpull='git pull origin $(git_branch_current)'
 alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
-alias gpcc='kond && cop master... && gpc'
+alias gpcc='lint && cop master... && gpc'
 alias gfo='git fetch origin'
 alias gbd='git branch -D'
 alias grh='git reset --hard'
@@ -559,7 +538,6 @@ alias dotfiles='cd ~/.dotfiles'
 alias dotfile='dotfiles'
 alias df='dotfiles'
 alias nerv='cd ~/nerv'
-alias nface='cd ~/nerv/face'
 alias perv='cd ~/perv'
 alias sg='cd ~/sg'
 alias angel='cd ~/angel'
