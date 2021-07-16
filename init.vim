@@ -21,6 +21,7 @@ Plug 'tpope/vim-projectionist'
 Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'guns/vim-sexp'
 Plug 'tpope/vim-sexp-mappings-for-regular-people'
+Plug 'ssh://git@gitlab.abagile.com:7788/chiao.chuang/vim-abagile.git'
 " temp disable because it's for nvim 0.3+
 " Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
 
