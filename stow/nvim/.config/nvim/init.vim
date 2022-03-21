@@ -1,75 +1,79 @@
-let mapleader=","
-let maplocalleader=" "
+" INFO: vimscript cheatsheet
+" https://devhints.io/vimscript
 
-" let g:python_host_prog='/usr/bin/python'
-" let g:python3_host_prog='/usr/local/bin/python3'
-
-let g:nord_underline=1
-let g:nord_bold=1
-let g:nord_italic=1
-
-" Plugin
 call plug#begin()
+" ===========================
+" Vim Enhancement
+" ===========================
 Plug 'tpope/vim-sensible'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-commentary'
-Plug 'tpope/vim-rails' ", {'for': ['ruby', 'haml', 'eruby', 'coffee']}
-Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-unimpaired'
 Plug 'junegunn/vim-easy-align'
 Plug 'scrooloose/nerdtree'
-" Plug 'dracula/vim', {'as': 'dracula'}
-Plug 'arcticicestudio/nord-vim'
 Plug 'Shougo/denite.nvim'
-Plug '~/.fzf'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
-Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
-Plug 'dense-analysis/ale'
-Plug 'Yggdroot/indentLine'
-Plug 'michaeljsmith/vim-indent-object'
-Plug 'airblade/vim-gitgutter'
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'slim-template/vim-slim' ", {'for': ['slim']}
-Plug 'vim-ruby/vim-ruby' ", {'for': ['ruby', 'haml', 'eruby']}
-Plug 'AndrewRadev/splitjoin.vim'
 Plug 'tpope/vim-projectionist'
-Plug 'tpope/vim-dispatch'
-Plug 'tpope/vim-fireplace'
-Plug 'Olical/conjure', {'tag': 'v4.23.0'}
-" Plug 'junegunn/rainbow_parentheses.vim'
-" Plug 'eraserhd/parinfer-rust', {'commit': '5def45e1cbbc4f690fe70e44c786ad6bf9437476', 'do': 'cargo build --release'}
-Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release'}
+Plug 'junegunn/rainbow_parentheses.vim'
 Plug 'guns/vim-sexp'
 Plug 'tpope/vim-sexp-mappings-for-regular-people'
-" Plug 'clojure-vim/clojure.vim'
-Plug 'snoe/clj-refactor.nvim'
-Plug 'pearofducks/ansible-vim'
+Plug 'ssh://git@gitlab.abagile.com:7788/abagile/vim-abagile.git'
 Plug 'ap/vim-css-color'
+" Plug 'Shougo/deoplete.nvim', {'do': ':UpdateRemotePlugins'}
+Plug 'jiangmiao/auto-pairs'
 
-" abagile specific
-Plug 'tyru/vim-altercmd'
-Plug '~/proj/vim-abagile'
+" ===========================
+" Dev tools
+" ===========================
+Plug 'w0rp/ale'
+Plug 'Yggdroot/indentLine'
+Plug 'michaeljsmith/vim-indent-object'
+Plug 'thinca/vim-quickrun'
+Plug 'bootleq/vim-qrpsqlpq' ", { 'for': 'sql' }
+Plug 'tpope/vim-dispatch'
+Plug 'AndrewRadev/splitjoin.vim'
+Plug 'tpope/vim-abolish'
+Plug 'jgdavey/tslime.vim'
+
+" ===========================
+" Git
+" ===========================
+Plug 'tpope/vim-fugitive'
+Plug 'airblade/vim-gitgutter'
+
+" ===========================
+" Theme
+" ===========================
+Plug 'dracula/vim'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+" ===========================
+" Ruby and Rails
+" ===========================
+Plug 'tpope/vim-rails' ", {'for': ['ruby', 'haml', 'eruby', 'coffee']}
+Plug 'slim-template/vim-slim' ", {'for': ['slim']}
+Plug 'vim-ruby/vim-ruby' ", {'for': ['ruby', 'haml', 'eruby']}
+
+" ===========================
+" Clojure
+" ===========================
+Plug 'tpope/vim-fireplace'
+Plug 'Olical/conjure', { 'for': 'clojure' }
+Plug 'eraserhd/parinfer-rust', {'do': 'cargo build --release', 'for': 'clojure' }
+Plug 'clojure-vim/vim-jack-in', { 'for': 'clojure' }
 call plug#end()
 
-" silent! color dracula
-
-augroup nord-theme-overrides
-  autocmd!
-  autocmd ColorScheme nord highlight Comment ctermfg=14 guifg=#8FBCBB
-augroup END
-silent! color nord
-
-" silent! color base16-eva
-
+" General {{{
 set hidden
 set hlsearch
 set nowrap
 set cursorline
+set cursorcolumn
 set nostartofline
-set noswapfile
 set tabstop=2
 set softtabstop=2
 set shiftwidth=2
@@ -78,83 +82,79 @@ set ignorecase
 set smartcase
 set relativenumber
 set regexpengine=1
-
+set noswapfile
+set undofile
 set scrolloff=1
 set sidescrolloff=5
-
-set winfixwidth
-
-set undofile
-set undolevels=5000
-
-set matchpairs+=<:>
-
-set grepprg=rg\ --vimgrep\ --smart-case\ --follow
-
-" return to last edit position when opening files
-autocmd BufReadPost *
-  \ if line("'\"") > 0 && line("'\"") <= line("$") |
-  \   exe "normal! g`\"" |
-  \ endif
-
-autocmd BufRead,BufNewFile *.yml setlocal spell
-autocmd BufRead,BufNewFile */playbooks/*.yml set filetype=yaml.ansible
+set encoding=utf8
 
 autocmd BufRead,BufNewFile *.thor set filetype=ruby
-
 autocmd FileType markdown setlocal wrap
 autocmd FileType eruby.yaml setlocal commentstring=#\ %s
+autocmd BufWritePre * call StripTrailingWhitespace() " trim trailing space on save
+" }}}
 
+" Theme {{{
+color dracula
+
+hi clear Search
+hi Search  cterm=underline
+hi CursorLine ctermbg=234
+let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled=1
+let g:airline#extensions#tabline#buffer_nr_show=1
+
+"}}}
+
+" Plugin {{{
 let g:gitgutter_enabled=1
 let g:indentLine_enabled=1
 let g:NERDTreeQuitOnOpen=1
+let g:NERDTreeShowHidden=1
 set wildignore+=*/.git/*,*/node_modules/*
-let g:deoplete#enable_at_startup=1
-let g:airline#extensions#tabline#enabled=1
-let g:airline#extensions#tabline#buffer_nr_show=1
-let g:airline_theme='nord'
-let g:airline_powerline_fonts=1
-let test#strategy='dispatch'
-let g:dispatch_quickfix_height=20
+" let g:deoplete#enable_at_startup = 1
+set completeopt-=preview " Disable documentation window
+let g:rainbow#blacklist = [117]
 
-let g:ale_linters = {
-  \ 'clojure': ['clj-kondo']
-  \}
-let g:ale_warn_about_trailing_whitespace = 1
+let g:ale_linters = {'clojure': ['clj-kondo']}
 
-" Clojure development settings
-autocmd CompleteDone * pclose
-
-" augroup rainbow_lisp
-"   autocmd!
-"   autocmd FileType lisp,clojure,scheme RainbowParentheses
-" augroup END
-
-autocmd FileType clojure set iskeyword-=.
-autocmd FileType clojure set iskeyword-=/
+augroup rainbow_lisp
+  autocmd!
+  autocmd FileType lisp,clojure,scheme RainbowParentheses
+augroup END
 autocmd FileType clojure setlocal commentstring=;;%s
 autocmd FileType clojure setlocal formatoptions+=r
-
 let g:sexp_enable_insert_mode_mappings = 0
 
-let g:clojure_fuzzy_indent_patterns = ['.']
-let g:clojure_fuzzy_indent_blacklist = ['->$', '->>$']
+" conjure settings
+hi NormalFloat ctermbg=232 " https://github.com/Olical/conjure/wiki/Frequently-asked-questions#the-hud-window-background-colour-makes-the-text-unreadable-how-can-i-change-it
+let g:conjure#log#hud#width=1.0
+let g:conjure_map_prefix=","
+let g:conjure_log_direction="horizontal"
+let g:conjure_log_size_small=15
 
-let g:conjure#log#hud#height=0.2
-autocmd User ConjureEval if expand("%:t") =~ "^conjure-log-" | exec "normal G" | endif
+" tslime
+let g:tslime_always_current_window = 1
+vmap <C-c><C-c> <Plug>SendSelectionToTmux
+nmap <C-c><C-c> <Plug>NormalModeSendToTmux
+nmap <C-c>r <Plug>SetTmuxVars
+"}}}
 
-let abagile_cljs_wc_dirs = ['spa', 'b2b', 'b2c', 'inquiry', 'asuka']   " only 'core.cljs' directly under those directories are considered valid
-command! -nargs=? WriteCore call abagile#cljs#write_core(<f-args>)
-cnoreabbrev wc WriteCore
-
-nnoremap <localleader>cs :call abagile#cljs#setup_cljs_plugin_connection()<CR>
-
-" Key mappings
+" Remap {{{
+let mapleader=","
+let maplocalleader=" "
 nnoremap ' `
 nnoremap ` '
-inoremap jj <esc>
-inoremap jk <esc>
+nnoremap 0 ^
+nnoremap ^ 0
+" Don't copy the contents of an overwritten selection.
+vnoremap p "_dP
+"}}}
+
+" Shortcut {{{
 inoremap ,, <esc>
+vnoremap ,, <esc>
+inoremap ,jj ,<esc>
 nnoremap <Tab> :bnext!<CR>
 nnoremap <S-Tab> :bprev!<CR>
 nnoremap <leader>w <c-w>
@@ -162,36 +162,145 @@ noremap <c-h> <c-w>h
 noremap <c-j> <c-w>j
 noremap <c-k> <c-w>k
 noremap <c-l> <c-w>l
-
-noremap  <up>    <nop>
-noremap  <down>  <nop>
-noremap  <left>  <nop>
-noremap  <right> <nop>
-inoremap <up>    <nop>
-inoremap <down>  <nop>
-inoremap <left>  <nop>
-inoremap <right> <nop>
+inoremap <C-h> <Left>
+inoremap <C-j> <Down>
+inoremap <C-k> <Up>
+inoremap <C-l> <Right>
+cnoremap <C-h> <Left>
+cnoremap <C-j> <Down>
+cnoremap <C-k> <Up>
+cnoremap <C-l> <Right>
+noremap <leader>n :noh<CR>
 
 nnoremap <leader>f :NERDTreeFind<CR>
-nnoremap <leader>d :NERDTreeToggle<CR>
+nnoremap <leader>d :bd<CR>
+nnoremap :bd! :bdelete!<CR>
+nnoremap :cl :close<CR>
+nnoremap :et :e tmp/tools/tester.rb<CR>
+nnoremap :ets :e tmp/tools/sql/test.sql<CR>
 
-nnoremap <leader>bp obinding.pry<esc>
+nnoremap <leader>s :%s/
+vnoremap <leader>s "hy:%s/<C-r>h
+vnoremap <leader>/ "hy/<C-r>h<CR>
+nnoremap <leader>/ "hye/<C-r>h<CR>
+noremap <silent><leader>V :so $MYVIMRC<CR>:echo 'reloaded!'<CR>
 
-" nnoremap <leader>b :CtrlPBuffer<CR>
-nnoremap <leader>sa :Ag<CR>
-nnoremap <leader>sb :Buffers<CR>
-nnoremap <leader>sc :Commits<CR>
-nnoremap <leader>sf :Files<CR>
-nnoremap <leader>sl :Lines<CR>
+" use system clipboard
+vnoremap <Leader>y "+y
+nnoremap <Leader>P "+p
+nnoremap <Leader>y "+y
+
+" Ref: https://vim.fandom.com/wiki/Making_a_list_of_numbers
+" Add argument (can be negative, default 1) to global variable i.
+" Return value of i before the change.
+function Inc(...)
+  let result = g:i
+  let g:i += a:0 > 0 ? a:1 : 1
+  return result
+endfunction
+
+vnoremap <leader>ic "hy :let i = 1 \| %s/<C-r>h/\='<C-r>h' . Inc()/g<CR>
 
 nnoremap <leader>g  :GitGutterToggle<CR>
-nnoremap <leader>ew :e <C-R>=expand('%:h').'/'<CR>
-nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<CR>
-nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<CR>
-nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<CR>
+nnoremap <leader>ew :e <C-R>=expand('%:h').'/'<cr>
+nnoremap <leader>es :sp <C-R>=expand('%:h').'/'<cr>
+nnoremap <leader>ev :vsp <C-R>=expand('%:h').'/'<cr>
+nnoremap <leader>et :tabe <C-R>=expand('%:h').'/'<cr>
+autocmd FileType ruby nnoremap <leader>p obinding.pry<Esc>
+autocmd FileType clojure nnoremap <leader>p o(prn<Esc>
+autocmd BufEnter,BufNew,BufRead *.cljs nnoremap <leader>p o(js/console.log <Esc>
+nnoremap <localleader>cs :call abagile#cljs#setup_cljs_plugin_connection()<CR>
+nnoremap <localleader>wc :call abagile#cljs#write_core()<CR>
+
+nmap <leader>gb :Git blame<cr>
+
+map <Down> gj
+map <Up>   gk
 
 vmap <Enter> <Plug>(EasyAlign)
 
-" start insert at indentation of above line
-nnoremap ,> cc<C-R>=repeat(' ', indent(line('.') - 1) - col('.') + 1)<CR>
-inoremap ,> <C-R>=repeat(' ', indent(line('.') - 1) - col('.') + 1)<CR>
+autocmd FileType clojure set iskeyword-=.
+autocmd FileType clojure set iskeyword-=/
+autocmd Filetype clojure let b:AutoPairs = {'"':'"'}
+"}}}
+
+" fzf search
+nnoremap <C-p> :GFiles<CR>
+nnoremap <leader>b :Buffers<CR>
+let g:fzf_preview_window = []
+let g:fzf_layout = {'up':'~90%', 'window': { 'width': 1, 'height': 0.8,'yoffset': 0.0,'xoffset': 0.0, 'border': 'sharp' } }
+
+" Trim whitespace {{{
+fun! StripTrailingWhitespace()
+    " Don't strip on these filetypes
+    if &ft =~ 'markdown\|text'
+        return
+    endif
+    %s/\s\+$//e
+endfun
+"}}}
+
+" SQL helpers {{{
+function! s:init_qrpsqlpq()
+  nmap <buffer> <Leader>r [qrpsqlpq]
+  nnoremap <silent> <buffer> [qrpsqlpq]j :call qrpsqlpq#run('split')<CR>
+  nnoremap <silent> <buffer> [qrpsqlpq]l :call qrpsqlpq#run('vsplit')<CR>
+  nnoremap <silent> <buffer> [qrpsqlpq]r :call qrpsqlpq#run()<CR>
+
+  if !exists('b:rails_root')
+    call RailsDetect()
+  endif
+  if !exists('b:rails_root')
+    let b:qrpsqlpq_db_name = 'postgres'
+  endif
+endfunction
+
+if executable('psql')
+  let g:qrpsqlpq_expanded_format_max_lines = -1
+  autocmd FileType sql call s:init_qrpsqlpq()
+endif
+"}}}
+
+
+" Bulk change SQL keywords to upper case {{{
+nnoremap <silent> <leader>sql :call BulkUpperCaseSqlKeywords()<CR>
+fun! BulkUpperCaseSqlKeywords()
+    " Don't strip on these filetypes
+    if &ft =~ 'sql'
+      %s/select /SELECT /g
+      %s/ as / AS /g
+      %s/from /FROM /g
+      %s/ on / ON /g
+      %s/left join /LEFT JOIN /g
+      %s/right join / RIGHT JOIN /g
+      %s/union all /UNION ALL /g
+      %s/union /UNION /g
+      %s/join /JOIN /g
+      %s/where /WHERE /g
+      %s/and /AND /g
+      %s/ in / IN /g
+      %s/group by /GROUP BY /g
+      %s/order by /ORDER BY /g
+      %s/is null/IS NULL/g
+      %s/is not null/IS NOT NULL/g
+      %s/ not / NOT /g
+      %s/case /CASE /g
+      %s/when /WHEN /g
+      %s/then /THEN /g
+      %s/else /ELSE /g
+      %s/end as /END AS /g
+      %s/coalesce(/COALESCE(/g
+      %s/ asc/ ASC/g
+      %s/ desc/ DESC/g
+      %s/ distinct on / DISTINCT ON /g
+      %s/ distinct( / DISTINCT( /g
+      %s/distinct /DISTINCT /g
+      %s/with /WITH /g
+      %s/max( /MAX( /g
+      %s/sum( /SUM( /g
+      %s/count( /COUNT( /g
+    endif
+endfun
+"}}}
+
+autocmd FileType sql setlocal commentstring=--\ %s

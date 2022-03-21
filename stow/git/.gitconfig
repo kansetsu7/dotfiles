@@ -1,181 +1,48 @@
-[core]
-  pager = "less -FRSX"
-
-[user]
-  useConfigOnly = true
-
-[pull]
-  rebase = false
-
 [alias]
-  # Branch (b)
-  b   = "branch"
-  ba  = "branch --all"
-  bc  = "checkout -b"
-  bl  = "branch -vv"
-  bla = "branch --all -vv"
-  bm  = "branch --move"
-  bmm = "branch --move --force"
-  bs  = "show-branch"
-  bsa = "show-branch --all"
-  bx  = "!f() { git-branch-delete-interactive; }; f"
-  bxx = "!f() { git-branch-delete-interactive --force; }; f"
+  cl = clone
+  st = status
+  ci = commit
+  cia = commit -a
+  co = checkout
+  br = branch
+  bra = branch -a
+  df = diff
+  sh = show
+  re = reset
+  me = merge
+  cf = config
+  sa = stash
+  lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)%Creset' --abbrev-commit
+  lgp = log -p --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)%Creset' --abbrev-commit
 
-  # Commit (c)
-  c   = "commit --verbose"
-  ca  = "commit --verbose --all"
-  cm  = "commit --message"
-  co  = "checkout"
-  cop = "checkout --patch"
-  cf  = "commit --verbose --amend"
-  cff = "commit --amend --reuse-message HEAD"
-  cpf = "cherry-pick --ff"
-  cpn = "cherry-pick --no-commit"
-  cr  = "revert"
-  crl = "reset 'HEAD^'"
-  cs  = "!f() { git show --pretty=format:'${_git_log_fuller_format}'; }; f"
-  css = "commit -S"
-  cv  = "verify-commit"
+[gui]
+  fontdiff = -family Courier -size 12 -weight normal -slant roman -underline 0 -overstrike 0
 
-  # Conflict (C)
-  cxl  = "--no-pager diff --diff-filter=U --name-only"
-  cxa  = "add --no-pager diff --diff-filter=U --name-only"
-  cxe  = "mergetool --no-pager diff --diff-filter=U --name-only"
-  cxo  = "checkout --ours --"
-  cxoo = "checkout --ours -- --no-pager diff --diff-filter=U --name-only"
-  cxt  = "checkout --theirs --"
-  cxtt = "checkout --theirs -- --no-pager diff --diff-filter=U --name-only"
+[color]
+  diff = auto
+  status = auto
+  branch = auto
+  interactive = auto
 
-  # Data (d)
-  d  = "ls-files"
-  dc = "ls-files --cached"
-  dx = "ls-files --deleted"
-  dm = "ls-files --modified"
-  du = "ls-files --other --exclude-standard"
-  dk = "ls-files --killed"
-  di = "status --porcelain --short --ignored | sed -n 's/^!! //p'"
+[tig]
+  show-rev-graph = yes
+  line-graphics = no
 
-  # Edit (e)
-  ed  = !$EDITOR $(git status --porcelain --short | awk '{print $2}')
-  edm = !$EDITOR -- $(git diff --no-ext-diff --name-only master...)
+[branch]
+  autosetuprebase = always
 
-  # Fetch (f)
-  f  = "fetch"
-  fc = "clone"
-  fm = "pull"
-  fr = "pull --rebase"
-  fu = "fetch --all --prune && git merge --ff-only @{u}"
+[push]
+  default = simple
 
-  # Grep (g)
-  g  = "grep"
-  gi = "grep --ignore-case"
-  gm = "grep --files-with-matches"
-  gx = "grep --files-without-match"
-  gv = "grep --invert-match"
-  gw = "grep --word-regexp"
+[pager]
+  diff = diff-highlight | less
+  log = diff-highlight | less
+  show = diff-highlight | less
 
-  # Index (i)
-  ia  = "add"
-  iap = "add --patch"
-  iu  = "add --update"
-  id  = "diff --no-ext-diff --cached"
-  idd = "diff --no-ext-diff --cached --word-diff"
-  ir  = "reset"
-  irp = "reset --patch"
-  ix  = "rm --cached -r"
-  ixx = "rm --cached -rf"
-
-  # Log (l)
-  l  = "!f() { git log --topo-order --pretty=format:'${_git_log_fuller_format}'; }; f"
-  ls = "!f() { git log --topo-order --stat --pretty=format:'${_git_log_fuller_format}'; }; f"
-  ld = "!f() { git log --topo-order --stat --patch --full-diff --pretty=format:'${_git_log_fuller_format}'; }; f"
-  lo = "!f() { git log --topo-order --pretty=format:'${_git_log_oneline_format}'; }; f"
-  lO = "!f() { git log --topo-order --pretty=format:'${_git_log_oneline_medium_format}'; }; f"
-  lg = "!f() { git log --graph --pretty=format:'${_git_log_oneline_format}'; }; f"
-  lG = "!f() { git log --graph --pretty=format:'${_git_log_oneline_medium_format}'; }; f"
-  lv = "!f() { git log --topo-order --show-signature --pretty=format:'${_git_log_fuller_format}'; }; f"
-  lc = "shortlog --summary --numbered"
-  lr = "reflog"
-
-  # Merge (m)
-  m  = "merge"
-  ma = "merge --abort"
-  mc = "merge --no-commit"
-  mf = "merge --no-ff"
-  ms = "merge -S"
-  mv = "merge --verify-signatures"
-  mt = "mergetool"
-
-  # Push (p)
-  p   = "push"
-  pf  = "push --force"
-  pff = "push --force-with-lease"
-  pa  = "push --all"
-  paa = "push --all && git push --tags"
-  pt  = "push --tags"
-  pc  = "!f() { git push --set-upstream origin $(git symbolic-ref -q --short HEAD); }; f"
-  pp  = "!f() { git pull origin $(git symbolic-ref -q --short HEAD) && git push origin $(git symbolic-ref -q --short HEAD); }; f"
-
-  # Rebase (rb)
-  rb  = "rebase"
-  rba = "rebase --abort"
-  rbc = "rebase --continue"
-  rbi = "rebase --interactive"
-  rbs = "rebase --skip"
-  rbS = "rebase --exec 'git commit --amend --no-edit --no-verify -S'"
-
-  # Remote (rm)
-  rm  = "remote"
-  rml = "remote --verbose"
-  rma = "remote add"
-  rmx = "remote rm"
-  rmm = "remote rename"
-  rmu = "remote update"
-  rmp = "remote prune"
-  rms = "remote show"
-
-  # Stash (s)
-  s   = "stash"
-  sa  = "stash apply"
-  sx  = "stash drop"
-  ; sxx = "!f() { git-stash-clear-interactive }; f"
-  sl  = "stash list"
-  sd  = "stash show --patch --stat"
-  sp  = "stash pop"
-  ; sr  = "!f() { git-stash-recover }; f"
-  ss  = "stash save --include-untracked"
-  ssp = "stash save --patch --no-keep-index"
-  sw  = "stash save --include-untracked --keep-index"
-  su  = "stash show --patch | git apply --reverse"
-
-  # Submodule (sm)
-  sm   = "submodule"
-  sma  = "submodule add"
-  smf  = "submodule foreach"
-  smi  = "submodule init"
-  smu  = "submodule update --init --recursive"
-  sml  = "submodule status"
-  ; smm  = "!f() { git-submodule-move }; f"
-  sms  = "submodule sync"
-  smfm = "submodule foreach git pull origin master"
-  ; smx  = "!f() { git-submodule-remove }; f"
-
-  # Tag (t)
-  t  = "tag"
-  ts = "tag --sign"
-  tv = "verify-tag"
-  tx = "tag --delete"
-
-  # Working tree (w)
-  ws   = "status"
-  wss  = "status --short"
-  wd   = "diff --no-ext-diff"
-  wdw  = "diff --no-ext-diff --word-diff"
-  wdm  = "diff --no-ext-diff master..."
-  wdml = "diff --no-ext-diff --name-only master..."
-  wrs  = "reset --soft"
-  wrh  = "reset --hard"
-  wc   = "clean --dry-run"
-  wcc  = "clean -d --force"
-  wx   = "rm -r"
-  wxx  = "rm -rf"
+[interactive]
+	diffFilter = diff-highlight
+[user]
+	name = Andre Kuo
+	email = andre.kuo@abagile.com
+[core]
+	editor = nvim

@@ -18,6 +18,14 @@ set input-meta on
 set output-meta on
 set convert-meta off
 
+# mappings for Ctrl-left-arrow and Ctrl-right-arrow for word moving
+"\e[1;5C": forward-word
+"\e[1;5D": backward-word
+"\e[5C": forward-word
+"\e[5D": backward-word
+"\e\e[C": forward-word
+"\e\e[D": backward-word
+
 $if mode=vi
   set keymap vi-command
   "gg": beginning-of-history
@@ -29,22 +37,24 @@ $if mode=vi
   "\e[4~": end-of-line           # end
   "\e[8~": end-of-line           # end
   "\e[3~": delete-char           # delete
-  Control-a: beginning-of-line
-  Control-b: backward-char
+
+  # mappings for Ctrl-left-arrow and Ctrl-right-arrow for word moving
+  "\e[1;5C": forward-word
+  "\e[1;5D": backward-word
+  "\e[5C": forward-word
+  "\e[5D": backward-word
+  "\e\e[C": forward-word
+  "\e\e[D": backward-word
 
   set keymap vi-insert
   Control-a: beginning-of-line
-  Control-f: forward-char
   Control-b: backward-char
-  "^[f": forward-word
-  "^[b": backward-word
   # Control-d: delete-char
   Control-e: end-of-line
+  Control-f: forward-char
   Control-k: kill-line
   Control-w: backward-kill-word
-  "^[d": forward-kill-word
-  # Control-n: history-substring-search-down
-  # Control-p: history-substring-search-up
-  # Control-o: autosuggest-accept
-
+  Control-n: history-search-forward
+  Control-p: history-search-backward
 $endif
+

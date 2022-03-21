@@ -16,8 +16,8 @@ if ! zgen saved; then
   zgen oh-my-zsh
   zgen oh-my-zsh "plugins/vi-mode"
   # zgen oh-my-zsh "plugins/asdf"
-  # zgen oh-my-zsh "plugins/bundler"
   # zgen oh-my-zsh "plugins/rails"
+  zgen oh-my-zsh "plugins/bundler"
   # zgen oh-my-zsh "plugins/ansible"
   zgen oh-my-zsh "plugins/docker"
 
@@ -29,22 +29,23 @@ if ! zgen saved; then
   zgen load "romkatv/powerlevel10k" powerlevel10k
 
   zgen load "zimfw/environment"
-  # zgen load "zimfw/directory"
+  zgen load "zimfw/directory"
   zgen load "zimfw/input"
   zgen load "zimfw/utility"
-  # zgen load "zimfw/git"
+  zgen load "zimfw/git"
   zgen load "zimfw/ssh"
 
   zgen load "zsh-users/zsh-history-substring-search"
   zgen load "zsh-users/zsh-syntax-highlighting"
   zgen load "zsh-users/zsh-autosuggestions"
+  zgen load "zdharma-continuum/fast-syntax-highlighting"
 
   if [ `whence fzf` > /dev/null ]; then
     zgen load "junegunn/fzf" "shell/completion.zsh"
     zgen load "junegunn/fzf" "shell/key-bindings.zsh"
   fi
 
-  zgen load "b4b4r07/enhancd"
+  # zgen load "b4b4r07/enhancd"
 
   zgen save
 fi

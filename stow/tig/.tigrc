@@ -3,12 +3,10 @@ bind status C !git commit -v
 bind main + !git commit -v --amend
 bind main C !git checkout -B tig %(commit)
 
-# set line-graphics  = false
 set line-graphics  = utf-8
 # set focus-child    = false
 set wrap-search    = true
-# set diff-highlight = true
-
+set diff-highlight = true
 
 set main-view = \
   line-number:no,interval=5 \
@@ -41,7 +39,7 @@ set refs-view = \
   commit-title
 
 color id           red   default
-color author       black default bold
+color author       white default bold
 color graph-commit black default bold
 
 color cursor      white blue  bold
@@ -62,3 +60,4 @@ color graph-commit blue default bold
 
 color "--- "       blue default bold
 color "+++ "       blue default bold
+
