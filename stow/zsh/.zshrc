@@ -29,8 +29,9 @@ alias kpa='[[ -f tmp/pids/puma.state ]] && bundle exec pumactl -S tmp/pids/puma.
 
 alias mc='mailcatcher --http-ip 0.0.0.0'
 alias kmc='pkill -f mailcatcher'
-alias sk='[[ -f config/sidekiq.yml ]] && bundle exec sidekiq -C $PWD/config/sidekiq.yml -d'
-alias ksk='pkill sidekiq'
+alias rsk='rsidekiq'
+# alias sk='[[ -f config/sidekiq.yml ]] && bundle exec sidekiq -C $PWD/config/sidekiq.yml -d'
+# alias ksk='pkill sidekiq'
 
 pairg() { ssh -t $1 ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p $2 -t ${3:-vagrant}@localhost 'tmux attach' }
 pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22 -t $1 'watch -en 10 who' }
@@ -236,8 +237,6 @@ alias apa!='RAILS_RELATIVE_URL_ROOT=/angel bundle exec puma -C config/puma.rb'
 alias apa='RAILS_RELATIVE_URL_ROOT=/angel bundle exec puma -C config/puma.rb -d'
 alias kapa='bundle exec pumactl -P /home/vagrant/p/angel/tmp/pids/puma.pid stop'
 
-alias mc='mailcatcher --http-ip 0.0.0.0'
-alias kmc='pkill -fe mailcatcher'
 alias sk='[[ -f config/sidekiq.yml ]] && bundle exec sidekiq -C $PWD/config/sidekiq.yml -d'
 alias ksk='pkill -fe sidekiq'
 
@@ -260,16 +259,35 @@ alias fix_ssl='sync_time && sudo apt-get update && sudo apt-get install ca-certi
 alias mg="rake db:migrate SKIP_PATCHING_MIGRATION='skip_any_patching_related_migrations'"
 
 lint() {
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*amoeba)' ]] && project_path=$match[1]
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv)' ]] && project_path=$match[1]
+
+  latest_ver=`curl --silent "https://api.github.com/repos/clj-kondo/clj-kondo/releases/latest" | grep '"tag_name":' | gsed -E 's/.*"([^"]+)".*/\1/'`
+  local_ver=`clj-kondo --version | gsed -E 's/clj-kondo //g'`
+  if [[ "$local_ver" != "$latest_ver" ]]; then
+    echo "please install latest version ($latest_ver) of clj-kondo before lint."
+    if [[ "`uname -s`" == "Darwin" ]]; then # macOS
+      echo "Version too old ($local_ver), auto update to $latest_ver..."
+      brew upgrade clj-kondo && echo "Done!"
+    else
+      echo "Version too old ($local_ver), please install latest version ($latest_ver) of clj-kondo before lint."
+      echo "Ref: https://github.com/clj-kondo/clj-kondo/blob/master/doc/install.md#installation-script-macos-and-linux"
+    fi
+  fi
 
   if [[ $project_path ]]; then
-    "$project_path/clojure/adam/bin/lint" && "$project_path/eva/asuka/bin/lint"
+    local exts=('clj,cljs,cljc,edn')
+    local files=$(eval "git diff master... --diff-filter=d --name-only -- \*.{$exts}")
+
+    if [[ -n "$files" ]]; then
+      echo $files
+      cd "$project_path/clojure" && echo $files | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
+    else
+      echo "Nothing to check. Write some *.{$exts} to check."
+    fi
+
+    # cd "$project_path/clojure" && "$project_path/eva/asuka/bin/lint"
+    # git diff master... --name-only -- \*.{clj,cljs,edn} | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
   fi
-  # if [[ $# -gt 0 ]]; then
-  #   local files=$(eval "git diff $@ --diff-filter=d --name-only -- \*.{$exts} '$excludes'")
-  # else
-  #   local files=$(eval "git status --porcelain -- \*.{$exts} '$excludes' | sed -e '/^\s\?[DRC] /d' -e 's/^.\{3\}//g'")
-  # fi
 }
 nrw() {
   local folder_path
@@ -299,6 +317,18 @@ start_all_server() {
   tmux send-keys -t 1 C-z 'nrw' Enter
   tmux send-keys -t 2 C-z 'cjn' Enter
   tmux send-keys -t 3 C-z 'rpu' Enter
+
+  # local folder_path
+  # local folder_name
+  # local asuka_path
+
+  # [[ $PWD =~ '(.*perv|.*sg|.*nerv)' ]] && folder_path=$match[1]
+  # [[ $folder_path =~ '.*(perv|sg|nerv)$' ]] && folder_name=$match[1]
+
+  # clojure_path="$folder_path/clojure"
+
+  # echo "run npm for $clojure_path, set NERV_BASE=$folder_name"
+  # cd $clojure_path && DEV_DARK_MODE=true NERV_BASE=/${=folder_name} npm run watch
 }
 
 amoeba_test_reset() {
@@ -321,6 +351,7 @@ rpy() {
 rserver_restart() {
   local app=${$(pwd):t}
   [[ ! $app =~ '^(amoeba|cam|perv|sg|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+  echo "RAILS_RELATIVE_URL_ROOT=$app"
 
   case "$1" in
     puma)
@@ -409,19 +440,23 @@ rpu() {
 # 啟動／停止 sidekiq
 rsidekiq() {
  emulate -L zsh
-   if [[ -d tmp ]]; then
-     if [[ -r tmp/pids/sidekiq.pid && -n $(ps h -p `cat tmp/pids/sidekiq.pid` | tr -d ' ') ]]; then
-       case "$1" in
-         restart)
-           bundle exec sidekiqctl restart tmp/pids/sidekiq.pid
-           ;;
-         *)
-           bundle exec sidekiqctl stop tmp/pids/sidekiq.pid
-       esac
+  if [[ -d tmp ]]; then
+    if [[ -r tmp/pids/sidekiq.pid && -n $(ps h -p `cat tmp/pids/sidekiq.pid` | tr -d ' ') ]]; then
+      case "$1" in
+        restart)
+          bundle exec sidekiqctl restart tmp/pids/sidekiq.pid
+          ;;
+        *)
+          bundle exec sidekiqctl stop tmp/pids/sidekiq.pid
+      esac
     else
-      echo "Start sidekiq process..."
-      nohup bundle exec sidekiq  > ~/.nohup/sidekiq.out 2>&1&
-      disown %nohup
+      local app=${$(pwd):t}
+      [[ ! $app =~ '^(perv|sg)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+      echo $app
+      echo "Start sidekiq process for '$app'..."
+      RAILS_RELATIVE_URL_ROOT=/$app bundle exec sidekiq  > ~/.nohup/sidekiq.out 2>&1&
+      # nohup bundle exec sidekiq  > ~/.nohup/sidekiq.out 2>&1&
+      # disown %nohup
     fi
   else
     echo 'ERROR: "tmp" directory not found.'
@@ -576,6 +611,7 @@ alias rgm='be rails g migration'
 alias lsl='ls -al'
 
 alias dumpdb='~/vm/scripts/dump_db.zsh'
+alias ndb='~/tmp/dumpdb/nerv_development'
 alias dumpsg='scp dev.abagile.com:~/masked_db/nerv_staging_sg.custom ~/tmp/dumpdb/nerv_sg_development'
 # alias dumpdb="DEV_PASSWORD='666' ~/vm/scripts/db_dump.rb"
 alias upload_ndb="scp ~/tmp/dumpdb/nerv_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
