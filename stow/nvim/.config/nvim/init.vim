@@ -87,6 +87,7 @@ set undofile
 set scrolloff=1
 set sidescrolloff=5
 set encoding=utf8
+set splitright
 
 autocmd BufRead,BufNewFile *.thor set filetype=ruby
 autocmd FileType markdown setlocal wrap
@@ -117,6 +118,7 @@ set completeopt-=preview " Disable documentation window
 let g:rainbow#blacklist = [117]
 
 let g:ale_linters = {'clojure': ['clj-kondo']}
+let g:ale_clojure_clj_kondo_options = ''
 
 augroup rainbow_lisp
   autocmd!
