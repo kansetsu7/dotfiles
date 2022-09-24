@@ -7,6 +7,13 @@ if [[ "`uname -s`" == "Darwin" ]]; then
   # export LANG=C
   # export LC_ALL=en_US.UTF-8
   export LANG=en_US.UTF-8
+
+  # for ruby
+  export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+  export LDFLAGS="-L/opt/homebrew/opt/readline/lib"
+  export CPPFLAGS="-I/opt/homebrew/opt/readline/include"
+  export PKG_CONFIG_PATH="/opt/homebrew/opt/readline/lib/pkgconfig"
+  export optflags="-Wno-error=implicit-function-declaration"
 fi
 export RIPGREP_CONFIG_PATH=~/.ripgreprc
 
@@ -226,7 +233,7 @@ alias rcsb='rc --sandbox'
 alias rct='rc test'
 alias rdrst='rake db:reset RAILS_ENV=test'
 
-alias nginx_test_and_reload='sudo nginx -t && sudo service nginx reload'
+alias nginx_test_and_reload='sudo nginx -t && brew services restart nginx'
 alias sync_time='sudo systemctl restart systemd-timesyncd.service'
 
 alias sprs='spring stop && spring binstub'
