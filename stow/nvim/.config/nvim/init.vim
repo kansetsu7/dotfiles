@@ -276,6 +276,8 @@ fun! BulkUpperCaseSqlKeywords()
       %s/union all /UNION ALL /g
       %s/union /UNION /g
       %s/join /JOIN /g
+      %s/full /FULL /g
+      %s/outer /OUTER /g
       %s/where /WHERE /g
       %s/and /AND /g
       %s/ in / IN /g
@@ -285,20 +287,26 @@ fun! BulkUpperCaseSqlKeywords()
       %s/is not null/IS NOT NULL/g
       %s/ not / NOT /g
       %s/case /CASE /g
+      %s/case(/CASE(/g
       %s/when /WHEN /g
       %s/then /THEN /g
       %s/else /ELSE /g
       %s/end as /END AS /g
+      %s/end)/END) /g
       %s/coalesce(/COALESCE(/g
       %s/ asc/ ASC/g
       %s/ desc/ DESC/g
       %s/ distinct on / DISTINCT ON /g
-      %s/ distinct( / DISTINCT( /g
+      %s/ distinct(/ DISTINCT(/g
       %s/distinct /DISTINCT /g
       %s/with /WITH /g
-      %s/max( /MAX( /g
-      %s/sum( /SUM( /g
-      %s/count( /COUNT( /g
+      %s/max(/MAX(/g
+      %s/sum(/SUM(/g
+      %s/count(/COUNT(/g
+      %s/having /HAVING /g
+      %s/returning /RETURNING /g
+      %s/update /UPDATE /g
+      %s/set /SET /g
     endif
 endfun
 "}}}
