@@ -381,7 +381,7 @@ rserver_restart() {
 # - rpu xxx   → xxx 參數會被丟給 pumactl（不支援 unicorn）
 rpu() {
   local folder_path
-  [[ $PWD =~ '(.*amoeba|.*cam|.*perv|.*sg|.*nerv)' ]] && folder_path=$match[1]
+  [[ $PWD =~ '(.*amoeba|.*cam|.*perv|.*sg|.*nerv|.*angel)' ]] && folder_path=$match[1]
   cd $folder_path
 
   emulate -L zsh
