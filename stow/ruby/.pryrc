@@ -1,5 +1,22 @@
+# require 'amazing_print'
+# AmazingPrint.pry!
+
+Pry.commands.alias_command 'ep', 'exit-program'
+
+if defined?(PryByebug)
+  Pry.commands.alias_command 'c',   'continue'
+  Pry.commands.alias_command 's',   'step'
+  Pry.commands.alias_command 'n',   'next'
+  Pry.commands.alias_command 'f',   'finish'
+  Pry.commands.alias_command 'clr', '.clear'
+
+  # Hit Enter to repeat last command
+  Pry::Commands.command(/^$/, "repeat last command") do
+    pry_instance.run_command Pry.history.to_a.last
+  end
+end
+
 Pry.commands.alias_command 'd-p', 'disable-pry'
-Pry.config.history.file = "~/.pry_history"
 
 Pry::Commands.create_command 'load_tools' do
   group 'All'
@@ -20,7 +37,26 @@ Pry::Commands.create_command 'load_tools' do
   end
 end
 Pry.commands.alias_command('loadt', 'load_tools')
-Pry.commands.alias_command('load_t', 'load_tools')
+
+
+Pry::Commands.create_command 'lt!' do
+  group 'All'
+  description 'load ./tmp/tools and run it'
+  def process
+    load "./tmp/tools/tester.rb"
+    Tester.go
+  end
+end
+
+Pry::Commands.create_command 'reconnect_db' do
+  group 'All'
+  description 'Reconnect db'
+  def process
+    ActiveRecord::Base.connection.reconnect!
+    puts 'DB reconnected!'
+  end
+end
+Pry.commands.alias_command('rcdb', 'reconnect_db')
 
 # Nerv {{{
 if defined?(Nerv)
@@ -35,6 +71,8 @@ if defined?(Nerv)
   POI = PayoutItem
   TB  = TransferBatch
   ITB = ItemTransferBatch
+  CSR = ClientServiceRecord
+  PS  = PlanService
 
   module Nerv::Pry
     RESOURCE_TYPES = {
@@ -62,6 +100,8 @@ if defined?(Nerv)
       com_b: 'CommissionBatch',
       con_b: 'ContributionBatch',
       pa:    'PaymentArrangement',
+      producer: 'Producer',
+      iq:    'Inquiry',
     }
 
     DEV_PASSWORD = '666'
