@@ -114,7 +114,7 @@ alias -g P='| $PAGER'
 alias -g WC='| wc -l'
 alias -g RE='RESCUE=1'
 
-alias rc='bin/rails console'
+alias rc='rails_console'
 alias rr='bin/rake routes'
 alias rdm='bin/rake db:migrate'
 alias rdr='bin/rake db:rollback'
@@ -247,13 +247,37 @@ alias fix_ssl='sync_time && sudo apt-get update && sudo apt-get install ca-certi
 # skip patching migrate
 alias mg="rake db:migrate SKIP_PATCHING_MIGRATION='skip_any_patching_related_migrations'"
 
-lint() {
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv)' ]] && project_path=$match[1]
+dumplog() {
+  local folder
+  local file_pattern
 
+  if [[ $# -ge 1 ]]; then
+    case $1 in
+      hk)
+        folder="nerv_production_log"
+        ;;
+      ck)
+        folder="nerv_production_log_ck"
+        ;;
+      sg)
+        folder="nerv_production_log_sg"
+        ;;
+    esac
+  fi
+  if [[ $# -eq 1 ]]; then
+    file_pattern="/production.log*"
+  fi
+  if [[ $# -eq 2 ]]; then
+    file_pattern="/$2*"
+  fi
+
+  scp -r dev.abagile.com:~/$folder$file_pattern ~/tmp/$folder
+}
+
+check_and_upgrade_clj_kondo() {
   latest_ver=`curl --silent "https://api.github.com/repos/clj-kondo/clj-kondo/releases/latest" | grep '"tag_name":' | gsed -E 's/.*"([^"]+)".*/\1/'`
   local_ver=`clj-kondo --version | gsed -E 's/clj-kondo //g'`
   if [[ "$local_ver" != "$latest_ver" ]]; then
-    echo "please install latest version ($latest_ver) of clj-kondo before lint."
     if [[ "`uname -s`" == "Darwin" ]]; then # macOS
       echo "Version too old ($local_ver), auto update to $latest_ver..."
       brew upgrade clj-kondo && echo "Done!"
@@ -262,12 +286,17 @@ lint() {
       echo "Ref: https://github.com/clj-kondo/clj-kondo/blob/master/doc/install.md#installation-script-macos-and-linux"
     fi
   fi
+}
+
+lint() {
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*awesome_name)' ]] && project_path=$match[1]
 
   if [[ $project_path ]]; then
     local exts=('clj,cljs,cljc,edn')
     local files=$(eval "git diff master... --diff-filter=d --name-only -- \*.{$exts}")
 
     if [[ -n "$files" ]]; then
+      check_and_upgrade_clj_kondo
       echo $files
       cd "$project_path/clojure" && echo $files | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
     else
@@ -278,6 +307,7 @@ lint() {
     # git diff master... --name-only -- \*.{clj,cljs,edn} | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
   fi
 }
+
 nrw() {
   local folder_path
   local folder_name
@@ -306,18 +336,6 @@ start_all_server() {
   tmux send-keys -t 1 C-z 'nrw' Enter
   tmux send-keys -t 2 C-z 'cjn' Enter
   tmux send-keys -t 3 C-z 'rpu' Enter
-
-  # local folder_path
-  # local folder_name
-  # local asuka_path
-
-  # [[ $PWD =~ '(.*perv|.*sg|.*nerv)' ]] && folder_path=$match[1]
-  # [[ $folder_path =~ '.*(perv|sg|nerv)$' ]] && folder_name=$match[1]
-
-  # clojure_path="$folder_path/clojure"
-
-  # echo "run npm for $clojure_path, set NERV_BASE=$folder_name"
-  # cd $clojure_path && DEV_DARK_MODE=true NERV_BASE=/${=folder_name} npm run watch
 }
 
 amoeba_test_reset() {
@@ -452,6 +470,14 @@ rsidekiq() {
   fi
 }
 
+rails_console() {
+  if [[ $PWD =~ '.*amoeba' ]]; then
+    be rails c
+  else
+    bin/rails console
+  fi
+}
+
 
 # # 啟動／停止 mailcatcher
 # rmailcatcher() {
@@ -470,7 +496,7 @@ cop() {
   local exts=('rb,thor,jbuilder')
   local excludes=':(top,exclude)db/schema.rb'
   local app=${$(pwd):t}
-  local extra_options='--display-cop-names --rails'
+  local extra_options='--display-cop-names'
 
   if [[ $# -gt 0 ]]; then
     local files=$(eval "git diff $@ --diff-filter=d --name-only -- \*.{$exts} '$excludes'")
@@ -604,9 +630,6 @@ alias upload_ndb="scp ~/tmp/dumpdb/nerv_development/$1 dev.abagile.com:~/tmp/sna
 alias upload_pdb="scp ~/tmp/dumpdb/nerv_ck_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
 alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_development/$2"
 alias download_pdb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_ck_development/$2"
-alias download_log="scp -r dev.abagile.com:~/nerv_production_log ~/tmp/nerv_production_log;
-  scp -r dev.abagile.com:~/nerv_production_log_ck ~/tmp/nerv_production_log_ck
-  scp -r dev.abagile.com:/var/log/app-log/ipc/amoeba/log ~/tmp/amoeba_log"
 
 alias dotfiles='cd ~/.dotfiles'
 alias dotfile='dotfiles'
