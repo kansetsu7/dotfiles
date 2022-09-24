@@ -36,24 +36,6 @@ alias rsk='rsidekiq'
 pairg() { ssh -t $1 ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p $2 -t ${3:-vagrant}@localhost 'tmux attach' }
 pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22 -t $1 'watch -en 10 who' }
 
-cop() {
-  local exts=('rb,thor,jbuilder')
-  local excludes=':(top,exclude)db/schema.rb'
-  local extra_options='--display-cop-names --rails'
-
-  if [[ $# -gt 0 ]]; then
-    local files=$(eval "git diff $@ --name-only -- \*.{$exts} '$excludes'")
-  else
-    local files=$(eval "git status --porcelain -- \*.{$exts} '$excludes' | sed -e '/^\s\?[DRC] /d' -e 's/^.\{3\}//g'")
-  fi
-  # local files=$(eval "git diff --name-only -- \*.{$exts} '$excludes'")
-
-  if [[ -n "$files" ]]; then
-    echo $files | xargs bundle exec rubocop `echo $extra_options`
-  else
-    echo "Nothing to check. Write some *.{$exts} to check.\nYou have 20 seconds to comply."
-  fi
-}
 # }}}
 
 # tmux shortcut {{{
@@ -477,9 +459,6 @@ rsidekiq() {
 #   fi
 # }
 
-pairg() { ssh -t $1 ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p $2 -t ${3:-vagrant}@localhost 'tmux attach' }
-pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22222 -t $1 'watch -en 10 who' }
-
 cop() {
   local exts=('rb,thor,jbuilder')
   local excludes=':(top,exclude)db/schema.rb'
@@ -757,8 +736,4 @@ asset_size() {
   rake assets:precompile
   du -sh public/assets
   rake assets:clobber
-}
-
-xxx() {
-  $(echo "        nerv  1) nerv_masked.custom" | sed 's/.\+[0-9]) //g')
 }
