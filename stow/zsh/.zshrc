@@ -653,7 +653,7 @@ alias cam='cd ~/cam'
 # alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
 
 alias viz='vi ~/.dotfiles/stow/zsh/.zshrc'
-alias viv='vi ~/.dotfiles/stow/nvim/.config/nvim/init.vim'
+alias viv='vi ~/.dotfiles/stow/nvim/.config/nvim/init.lua'
 alias szsh="reload_zshrc"
 
 alias krpu='rpu kill'

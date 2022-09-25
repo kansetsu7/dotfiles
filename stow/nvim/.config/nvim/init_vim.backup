@@ -36,7 +36,7 @@ Plug 'bootleq/vim-qrpsqlpq' ", { 'for': 'sql' }
 Plug 'tpope/vim-dispatch'
 Plug 'AndrewRadev/splitjoin.vim'
 Plug 'tpope/vim-abolish'
-Plug 'jgdavey/tslime.vim'
+" Plug 'jgdavey/tslime.vim'
 
 " ===========================
 " Git
@@ -135,12 +135,12 @@ let g:conjure_map_prefix=","
 let g:conjure_log_direction="horizontal"
 let g:conjure_log_size_small=15
 
-" tslime
-let g:tslime_always_current_window = 1
-vmap <C-c><C-c> <Plug>SendSelectionToTmux
-nmap <C-c><C-c> <Plug>NormalModeSendToTmux
-nmap <C-c>r <Plug>SetTmuxVars
-"}}}
+"" tslime
+"let g:tslime_always_current_window = 1
+"vmap <C-c><C-c> <Plug>SendSelectionToTmux
+"nmap <C-c><C-c> <Plug>NormalModeSendToTmux
+"nmap <C-c>r <Plug>SetTmuxVars
+""}}}
 
 " Remap {{{
 let mapleader=","
