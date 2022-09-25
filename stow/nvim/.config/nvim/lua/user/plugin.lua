@@ -60,7 +60,7 @@ return packer.startup(function(use)
   use 'Shougo/denite.nvim'
   use { "junegunn/fzf", run = ":call fzf#install()" }
   use 'junegunn/fzf.vim'
-  use 'christoomey/vim-tmux-navigator'
+  use 'alexghergh/nvim-tmux-navigation'
   use 'tpope/vim-projectionist'
   use 'junegunn/rainbow_parentheses.vim'
   use 'guns/vim-sexp'
