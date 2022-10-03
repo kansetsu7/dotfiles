@@ -105,9 +105,6 @@ return packer.startup(function(use)
   -- Clojure
   -- ===========================
   use 'tpope/vim-fireplace'
-  -- use 'Olical/conjure', { 'for': 'clojure' }
-  -- use 'eraserhd/parinfer-rust', {'do': 'cargo build --release', 'for': 'clojure' }
-  -- use 'clojure-vim/vim-jack-in', { 'for': 'clojure' }
   use {
     "Olical/conjure",
     ft = "clojure",

@@ -37,6 +37,27 @@ vim.cmd "autocmd FileType eruby.yaml setlocal commentstring=#\\ %s"
 vim.cmd "autocmd BufWritePre * call StripTrailingWhitespace()" -- trim trailing space on save
 -- }}}
 
+-- Theme {{{
+vim.cmd "colorscheme dracula"
+vim.cmd "hi clear Search"
+vim.cmd "hi Search  cterm=underline"
+vim.cmd "hi CursorLine ctermbg=234"
+vim.g.airline_powerline_fonts = 1
+vim.g['airline#extensions#tabline#enabled'] = 1
+vim.g['airline#extensions#tabline#buffer_nr_show'] = 1
+
+-- }}}
+
+-- Remap {{{
+vim.g.mapleader=","
+vim.g.maplocalleader=" "
+keymap('n', "'", "`", km_opts)
+keymap('n', "`", "'", km_opts)
+keymap('n', "^", "0", km_opts)
+keymap('n', "0", "^", km_opts)
+keymap("v", "p", "\"_dP", km_opts) -- Don't copy the contents of an overwritten selection.
+-- }}}
+
 -- Plugin {{{
 require("user.plugin")
 vim.g.gitgutter_enabled=1
@@ -84,27 +105,6 @@ vim.g.fzf_layout = {
 	}
 }
 
--- }}}
-
--- Theme {{{
-vim.cmd "colorscheme dracula"
-vim.cmd "hi clear Search"
-vim.cmd "hi Search  cterm=underline"
-vim.cmd "hi CursorLine ctermbg=234"
-vim.g.airline_powerline_fonts = 1
-vim.g['airline#extensions#tabline#enabled'] = 1
-vim.g['airline#extensions#tabline#buffer_nr_show'] = 1
-
--- }}}
-
--- Remap {{{
-vim.g.mapleader=","
-vim.g.maplocalleader=" "
-keymap('n', "'", "`", km_opts)
-keymap('n', "`", "'", km_opts)
-keymap('n', "^", "0", km_opts)
-keymap('n', "0", "^", km_opts)
-keymap("v", "p", "\"_dP", km_opts) -- Don't copy the contents of an overwritten selection.
 -- }}}
 
 -- Shortcut {{{
@@ -166,7 +166,6 @@ keymap('v', "<Enter>", "<Plug>(EasyAlign)", {})
 
 vim.cmd "autocmd FileType clojure set iskeyword-=."
 vim.cmd "autocmd FileType clojure set iskeyword-=/"
-vim.cmd "autocmd Filetype clojure let b:AutoPairs = {'\"' = '\"'}"
 -- }}}
 
 -- Trim whitespace {{{
