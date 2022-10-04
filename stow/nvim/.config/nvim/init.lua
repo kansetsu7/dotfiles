@@ -1,6 +1,9 @@
 local km_opts = { noremap = true, silent = true }
---local keymap = vim.keymap.set
 local keymap = vim.api.nvim_set_keymap
+
+require("user.plugin")
+require("user.cmp")
+require("user.lsp")
 
 -- General {{{
 local options = {
@@ -59,7 +62,6 @@ keymap("v", "p", "\"_dP", km_opts) -- Don't copy the contents of an overwritten 
 -- }}}
 
 -- Plugin {{{
-require("user.plugin")
 vim.g.gitgutter_enabled=1
 vim.g.indentLine_enabled=1
 vim.g.NERDTreeQuitOnOpen=1

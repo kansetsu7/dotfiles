@@ -47,9 +47,7 @@ return packer.startup(function(use)
   use "nvim-lua/popup.nvim" -- An implementation of the Popup API from vim in Neovim
   use "nvim-lua/plenary.nvim" -- Useful lua functions used by lots of plugins
 
-  -- ===========================
   -- Vim Enhancement
-  -- ===========================
   use 'tpope/vim-sensible'
   use 'tpope/vim-surround'
   use 'tpope/vim-repeat'
@@ -69,9 +67,7 @@ return packer.startup(function(use)
   use 'ap/vim-css-color'
   use 'jiangmiao/auto-pairs'
 
-  -- ===========================
   -- Dev tools
-  -- ===========================
   use 'w0rp/ale'
   use 'Yggdroot/indentLine'
   use 'michaeljsmith/vim-indent-object'
@@ -81,34 +77,42 @@ return packer.startup(function(use)
   use 'AndrewRadev/splitjoin.vim'
   use 'tpope/vim-abolish'
 
-  -- ===========================
   -- Git
-  -- ===========================
   use 'tpope/vim-fugitive'
   use 'airblade/vim-gitgutter'
 
-  -- ===========================
   -- Theme
-  -- ===========================
   use 'dracula/vim'
   use 'vim-airline/vim-airline'
   use 'vim-airline/vim-airline-themes'
 
-  -- ===========================
+  -- LSP
+  use "neovim/nvim-lspconfig"
+  use "williamboman/nvim-lsp-installer"
+  use "jose-elias-alvarez/null-ls.nvim"
+  use "folke/trouble.nvim"
+
+  -- Completion plugins
+  use "hrsh7th/nvim-cmp"
+  use "hrsh7th/cmp-buffer" -- buffer completions
+  use "hrsh7th/cmp-path" -- path completions
+  use "hrsh7th/cmp-cmdline" -- cmdline completions
+  use "hrsh7th/cmp-nvim-lsp" -- lsp completions
+  use "PaterJason/cmp-conjure" -- conjure completions
+
+  -- Snippets
+  use "L3MON4D3/LuaSnip" -- snippet engine
+  use "rafamadriz/friendly-snippets" -- a bunch of snippets to use
+  use "saadparwaiz1/cmp_luasnip" -- snippet completions
+
   -- Ruby and Rails
-  -- ===========================
   use 'tpope/vim-rails'
   use 'slim-template/vim-slim'
   use 'vim-ruby/vim-ruby'
 
-  -- ===========================
   -- Clojure
-  -- ===========================
   use 'tpope/vim-fireplace'
-  use {
-    "Olical/conjure",
-    ft = "clojure",
-  }
+  use { "Olical/conjure" }
   use {
     "eraserhd/parinfer-rust",
     ft = "clojure",
