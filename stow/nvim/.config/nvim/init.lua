@@ -26,7 +26,8 @@ local options = {
   regexpengine   = 1,
   scrolloff      = 1,
   sidescrolloff  = 5,
-  encoding       = "utf8"
+  encoding       = "utf8",
+  mouse          = ""
 }
 
 for k, v in pairs(options) do
