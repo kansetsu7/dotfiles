@@ -63,10 +63,32 @@ keymap("v", "p", "\"_dP", km_opts) -- Don't copy the contents of an overwritten 
 -- }}}
 
 -- Plugin {{{
+-- nvim-tree
+vim.g.loaded = 1
+vim.g.loaded_netrwPlugin = 1
+require("nvim-tree").setup{
+  update_focused_file = {
+    enable      = true,
+    update_root = true
+  },
+  actions = {
+    open_file = {
+      quit_on_open = true
+    }
+  },
+  renderer = {
+    icons = {
+      show = {
+        file   = false,
+        folder = false,
+        git    = false,
+      }
+    }
+  }
+}
+
 vim.g.gitgutter_enabled=1
 vim.g.indentLine_enabled=1
-vim.g.NERDTreeQuitOnOpen=1
-vim.g.NERDTreeShowHidden=1
 vim.opt.wildignore = vim.opt.wildignore + "*/.git/*,*/node_modules/*"
 vim.opt.completeopt = vim.opt.completeopt - 'preview' -- Disable documentation window
 vim.g['rainbow#blacklist'] = { 117 }
@@ -132,7 +154,7 @@ keymap('c', "<C-k>", "<Up>",    km_opts)
 keymap('c', "<C-l>", "<Right>", km_opts)
 keymap('', "<leader>n", ":noh<CR>", km_opts)
 
-keymap('n', "<leader>f", ":NERDTreeFind<CR>", km_opts)
+keymap('n', "<leader>f", ":NvimTreeToggle<CR>", km_opts)
 keymap('n', "<leader>d", ":bd<CR>", km_opts)
 keymap('n', ":bd!", ":bdelete!<CR>", km_opts)
 keymap('n', ":cl", ":close<CR>", km_opts)

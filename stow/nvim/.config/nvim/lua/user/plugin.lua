@@ -54,7 +54,10 @@ return packer.startup(function(use)
   use 'tpope/vim-commentary'
   use 'tpope/vim-unimpaired'
   use 'junegunn/vim-easy-align'
-  use 'scrooloose/nerdtree'
+  use {
+    'nvim-tree/nvim-tree.lua',
+    tag = 'nightly' -- optional, updated every week. (see issue #1193)
+  }
   use 'Shougo/denite.nvim'
   use { "junegunn/fzf", run = ":call fzf#install()" }
   use 'junegunn/fzf.vim'
