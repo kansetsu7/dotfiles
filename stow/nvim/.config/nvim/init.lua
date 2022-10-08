@@ -87,23 +87,36 @@ require("nvim-tree").setup{
   }
 }
 
+require("nvim-treesitter.configs").setup {
+	ensure_installed = "all", -- one of "all" or a list of languages
+	ignore_install = { "phpdoc" }, -- Damn phpdoc not able to install and keep raise error
+	highlight = {
+		enable  = true, -- false will disable the whole extension
+		disable = { "ruby", "yaml", "scss" }, -- list of language that will be disabled
+	},
+	autopairs = {
+		enable = true,
+	},
+  indent = {
+    enable = true,
+  },
+  rainbow = {
+    enable         = true,
+    extended_mode  = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+    max_file_lines = nil, -- Do not enable for files with more than n lines, int
+  }
+}
+
 vim.g.gitgutter_enabled=1
 vim.g.indentLine_enabled=1
 vim.opt.wildignore = vim.opt.wildignore + "*/.git/*,*/node_modules/*"
 vim.opt.completeopt = vim.opt.completeopt - 'preview' -- Disable documentation window
-vim.g['rainbow#blacklist'] = { 117 }
 
 vim.g.ale_linters = {
   clojure = { 'clj-kondo' }
 }
 vim.g.ale_clojure_clj_kondo_options = ''
 
-vim.cmd [[
-  augroup rainbow_lisp
-    autocmd!
-    autocmd FileType lisp,clojure,scheme RainbowParentheses
-  augroup END
-]]
 vim.cmd "autocmd FileType clojure setlocal commentstring=;;%s"
 vim.cmd "autocmd FileType clojure setlocal formatoptions+=r"
 vim.g.sexp_enable_insert_mode_mappings = 0
