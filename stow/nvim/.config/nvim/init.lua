@@ -119,7 +119,15 @@ vim.g.ale_clojure_clj_kondo_options = ''
 
 vim.cmd "autocmd FileType clojure setlocal commentstring=;;%s"
 vim.cmd "autocmd FileType clojure setlocal formatoptions+=r"
+
+vim.g.sexp_filetypes                   = "clojure,scheme,lisp,fennel,janet"
 vim.g.sexp_enable_insert_mode_mappings = 0
+vim.g.sexp_mappings = {
+  sexp_round_head_wrap_element = "<localleader>e(",
+  sexp_round_tail_wrap_element = "<localleader>e)",
+  sexp_insert_at_list_head = "<localleader>eh",
+  sexp_insert_at_list_tail = "<localleader>el",
+}
 
 -- conjure settings
 vim.cmd "hi NormalFloat ctermbg=232" -- https://github.com/Olical/conjure/wiki/Frequently-asked-questions#the-hud-window-background-colour-makes-the-text-unreadable-how-can-i-change-it
@@ -127,6 +135,11 @@ vim.g['conjure#log#hud#width']=1.0
 vim.g.conjure_map_prefix=","
 vim.g.conjure_log_direction="horizontal"
 vim.g.conjure_log_size_small=15
+
+vim.g.clojure_align_subforms = 1
+vim.g["conjure#client#clojure#nrepl#connection#auto_repl#enabled"] = false
+vim.g["conjure#mapping#log_reset_soft"] = "lc"
+vim.g["conjure#mapping#log_reset_hard"] = "lC"
 
 -- fzf search
 keymap('n', "<C-p>", ":GFiles<CR>", km_opts)
@@ -174,7 +187,6 @@ keymap('n', ":cl", ":close<CR>", km_opts)
 keymap('n', ":et", ":e tmp/tools/tester.rb<CR>", km_opts)
 keymap('n', ":ets", ":e tmp/tools/sql/test.sql<CR>", km_opts)
 
-keymap('n', "<leader>s", ":%s/", km_opts)
 keymap('v', "<leader>s", "\"hy:%s/<C-r>h", km_opts)
 keymap('v', "<leader>/", "\"hy/<C-r>h<CR>", km_opts)
 keymap('n', "<leader>/", "\"hye/<C-r>h<CR>", km_opts)
@@ -202,8 +214,15 @@ keymap('', "<Up>", "gk", {})
 
 keymap('v', "<Enter>", "<Plug>(EasyAlign)", {})
 
-vim.cmd "autocmd FileType clojure set iskeyword-=."
-vim.cmd "autocmd FileType clojure set iskeyword-=/"
+vim.cmd [[
+  augroup lisp_filetype
+    autocmd!
+    autocmd FileType clojure,fennel setlocal iskeyword-=.
+    autocmd FileType clojure,fennel setlocal iskeyword-=/
+    autocmd FileType clojure,fennel setlocal formatoptions+=or
+    autocmd FileType clojure,fennel setlocal lispwords+=are,comment,cond,do,try
+  augroup end
+]]
 -- }}}
 
 -- Trim whitespace {{{

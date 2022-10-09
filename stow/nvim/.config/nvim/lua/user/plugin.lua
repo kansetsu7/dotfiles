@@ -124,13 +124,9 @@ return packer.startup(function(use)
   use { "Olical/conjure" }
   use {
     "eraserhd/parinfer-rust",
-    ft = "clojure",
     run = "cargo build --release",
   }
-  use {
-    "clojure-vim/vim-jack-in",
-    ft = "clojure",
-  }
+  use "clojure-vim/vim-jack-in"
 
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
