@@ -63,6 +63,7 @@ return packer.startup(function(use)
   use 'junegunn/fzf.vim'
   use 'alexghergh/nvim-tmux-navigation'
   use 'tpope/vim-projectionist'
+  use 'junegunn/rainbow_parentheses.vim'
   use 'guns/vim-sexp'
   use 'tpope/vim-sexp-mappings-for-regular-people'
   use 'ssh://git@gitlab.abagile.com:7788/abagile/vim-abagile.git'
@@ -87,13 +88,6 @@ return packer.startup(function(use)
   use 'dracula/vim'
   use 'vim-airline/vim-airline'
   use 'vim-airline/vim-airline-themes'
-
-  -- Treesitter
-  use {
-    "nvim-treesitter/nvim-treesitter",
-    run = ":TSUpdate",
-  }
-  use "p00f/nvim-ts-rainbow"
 
   -- LSP
   use "neovim/nvim-lspconfig"
