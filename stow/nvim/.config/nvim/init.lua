@@ -208,6 +208,7 @@ vim.cmd [[
     autocmd FileType clojure,fennel setlocal iskeyword-=/
     autocmd FileType clojure,fennel setlocal formatoptions+=or
     autocmd FileType clojure,fennel setlocal lispwords+=are,comment,cond,do,try
+    autocmd Filetype clojure let b:AutoPairs = {'"':'"'}
   augroup end
 ]]
 -- }}}
