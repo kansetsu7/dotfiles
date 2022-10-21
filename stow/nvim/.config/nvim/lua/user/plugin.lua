@@ -114,7 +114,6 @@ return packer.startup(function(use)
   use 'vim-ruby/vim-ruby'
 
   -- Clojure
-  use 'tpope/vim-fireplace'
   use { "Olical/conjure" }
   use {
     "eraserhd/parinfer-rust",
