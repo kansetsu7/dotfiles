@@ -27,7 +27,8 @@ local options = {
   scrolloff      = 1,
   sidescrolloff  = 5,
   encoding       = "utf8",
-  mouse          = ""
+  mouse          = "",
+  updatetime     = 750,
 }
 
 for k, v in pairs(options) do
@@ -93,10 +94,10 @@ vim.opt.wildignore = vim.opt.wildignore + "*/.git/*,*/node_modules/*"
 vim.opt.completeopt = vim.opt.completeopt - 'preview' -- Disable documentation window
 vim.g['rainbow#blacklist'] = { 117 }
 
-vim.g.ale_linters = {
-  clojure = { 'clj-kondo' }
-}
-vim.g.ale_clojure_clj_kondo_options = ''
+-- vim.g.ale_linters = {
+--   clojure = { 'clj-kondo' }
+-- }
+-- vim.g.ale_clojure_clj_kondo_options = ''
 
 vim.cmd [[
   augroup rainbow_lisp
@@ -115,6 +116,9 @@ vim.g.sexp_mappings = {
   sexp_insert_at_list_head = "<localleader>eh",
   sexp_insert_at_list_tail = "<localleader>el",
 }
+
+-- lsp
+vim.cmd "autocmd CursorHold * lua require('echo-diagnostics').echo_line_diagnostic()"
 
 -- conjure settings
 vim.cmd "hi NormalFloat ctermbg=232" -- https://github.com/Olical/conjure/wiki/Frequently-asked-questions#the-hud-window-background-colour-makes-the-text-unreadable-how-can-i-change-it

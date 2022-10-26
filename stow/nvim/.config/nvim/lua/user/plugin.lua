@@ -71,7 +71,7 @@ return packer.startup(function(use)
   use 'jiangmiao/auto-pairs'
 
   -- Dev tools
-  use 'w0rp/ale'
+  -- use 'w0rp/ale'
   use 'Yggdroot/indentLine'
   use 'michaeljsmith/vim-indent-object'
   use 'thinca/vim-quickrun'
@@ -94,6 +94,15 @@ return packer.startup(function(use)
   use "williamboman/nvim-lsp-installer"
   use "jose-elias-alvarez/null-ls.nvim"
   use "folke/trouble.nvim"
+  use {
+    'seblj/nvim-echo-diagnostics',
+    config = function()
+      require("echo-diagnostics").setup{
+        show_diagnostic_number = true,
+        show_diagnostic_source = false,
+      }
+    end
+  }
 
   -- Completion plugins
   use "hrsh7th/nvim-cmp"
