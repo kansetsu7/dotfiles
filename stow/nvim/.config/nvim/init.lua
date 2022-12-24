@@ -190,6 +190,7 @@ keymap('n', "<Leader>y", "\"+y", km_opts)
 
 keymap('n', "<localleader>cs", ":call abagile#cljs#setup_cljs_plugin_connection()<CR>", km_opts)
 keymap('n', "<localleader>wc", ":call abagile#cljs#write_core()<CR>", km_opts)
+keymap('n', "<localleader>sn", ":call abagile#clj#sort_require_ns()<CR>", km_opts)
 -- <leader>g  :GitGutterToggle<CR>
 -- <leader>ew :e <C-R>=expand('%:h').'/'<cr>
 -- <leader>es :sp <C-R>=expand('%:h').'/'<cr>
