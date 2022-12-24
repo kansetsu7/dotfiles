@@ -1,2 +1,4 @@
 backup/
 stow/nvim/.config/nvim/plugin/packer_compiled.lua
+.clj-kondo/
+.lsp
