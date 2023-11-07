@@ -20,12 +20,10 @@ export RIPGREP_CONFIG_PATH=~/.ripgreprc
 # directory shortcut {{{
 p()  { cd ~/proj/$1;}
 h()  { cd ~/$1;}
-vm() { cd ~/vagrant/$1;}
 cdpath=(~ ~/proj)
 
 compctl -W ~/proj -/ p
 compctl -W ~ -/ h
-compctl -W ~/vagrant -/ vm
 # }}}
 
 # development shortcut {{{
@@ -134,7 +132,10 @@ alias vimrc='vi ~/.config/nvim/init.vim'
 
 alias cat=bat
 
+alias nz='cd ~/nerv_nz'
+alias av='cd ~/ave_ck'
 alias apb=ansible-playbook
+alias moc=master_of_coin
 # }}}
 
 # environment variables {{{
@@ -226,14 +227,15 @@ alias apa!='RAILS_RELATIVE_URL_ROOT=/angel bundle exec puma -C config/puma.rb'
 alias apa='RAILS_RELATIVE_URL_ROOT=/angel bundle exec puma -C config/puma.rb -d'
 alias kapa='bundle exec pumactl -P /home/vagrant/p/angel/tmp/pids/puma.pid stop'
 
-alias sk='[[ -f config/sidekiq.yml ]] && bundle exec sidekiq -C $PWD/config/sidekiq.yml -d'
-alias ksk='pkill -fe sidekiq'
+# alias sk='[[ -f config/sidekiq.yml ]] && bundle exec sidekiq -C $PWD/config/sidekiq.yml -d'
+# alias ksk='pkill -fe sidekiq'
 
-alias rcsb='rc --sandbox'
-alias rct='rc test'
+alias rcsb='bin/rails console --sandbox'
+alias rct='bin/rails console -e test'
 alias rdrst='rake db:reset RAILS_ENV=test'
 
-alias nginx_test_and_reload='sudo nginx -t && brew services restart nginx'
+# /opt/homebrew/etc/nginx/servers/
+alias nginx_test_and_reload='nginx -t && brew services restart nginx && sudo chown -R andre /opt/homebrew/var/run/nginx/client_body_temp/'
 alias sync_time='sudo systemctl restart systemd-timesyncd.service'
 
 alias sprs='spring stop && spring binstub'
@@ -271,7 +273,9 @@ dumplog() {
     file_pattern="/$2*"
   fi
 
-  scp -r dev.abagile.com:~/$folder$file_pattern ~/tmp/$folder
+  scp -r xfiles.abagile.aws.kr:~/$folder$file_pattern ~/tmp/$folder
+
+  echo "log downloaded to ~/tmp/$folder"
 }
 
 check_and_upgrade_clj_kondo() {
@@ -289,7 +293,7 @@ check_and_upgrade_clj_kondo() {
 }
 
 lint() {
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv|.*awesome_name)' ]] && project_path=$match[1]
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv|.*awesome_name|.*master_of_coin)' ]] && project_path=$match[1]
 
   if [[ $project_path ]]; then
     local exts=('clj,cljs,cljc,edn')
@@ -297,8 +301,13 @@ lint() {
 
     if [[ -n "$files" ]]; then
       check_and_upgrade_clj_kondo
-      echo $files
-      cd "$project_path/clojure" && echo $files | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
+      # echo $files
+      if [[ $project_path =~  '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv)' ]]; then
+        cd "$project_path/clojure" && echo $files | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
+      elif [[ $project_path =~ '(.*awesome_name|.*master_of_coin)' ]]; then
+        clj-kondo --lint
+      else
+      fi
     else
       echo "Nothing to check. Write some *.{$exts} to check."
     fi
@@ -308,13 +317,16 @@ lint() {
   fi
 }
 
+bulk_search_and_replace() {
+  rg $1 -l | xargs gsed -i "s/$1/$2/g"
+}
 nrw() {
   local folder_path
   local folder_name
   local asuka_path
 
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv)' ]] && folder_path=$match[1]
-  [[ $folder_path =~ '.*(perv|sg|nerv)$' ]] && folder_name=$match[1]
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv)' ]] && folder_path=$match[1]
+  [[ $folder_path =~ '.*(perv|sg|nerv_nz|ave_ck|nerv)$' ]] && folder_name=$match[1]
 
   asuka_path="$folder_path/clojure/projects/asuka"
 
@@ -326,16 +338,17 @@ cd_adam() {
   local folder_path
   local adam_path
 
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv)' ]] && folder_path=$match[1]
+  [[ $PWD =~ '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv)' ]] && folder_path=$match[1]
 
   cd "$folder_path/clojure/projects/adam"
 }
 
 start_all_server() {
-  tmux splitw -v -p 80 \; selectp -U \; splitw -h -p 66 \;
+  tmux splitw -v -p 80 \; selectp -U \; splitw -h -p 66 \; splitw -h -p 50 \;
   tmux send-keys -t 1 C-z 'nrw' Enter
   tmux send-keys -t 2 C-z 'cjn' Enter
-  tmux send-keys -t 3 C-z 'rpu' Enter
+  tmux send-keys -t 3 C-z 'bundle exec rake sneakers:run' Enter
+  tmux send-keys -t 4 C-z 'rpu' Enter
 }
 
 amoeba_test_reset() {
@@ -357,7 +370,8 @@ rpy() {
 # 這是 rpu 會用到的 helper function
 rserver_restart() {
   local app=${$(pwd):t}
-  [[ ! $app =~ '^(amoeba|cam|perv|sg|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+  # 記得改 rpu
+  [[ ! $app =~ '^(amoeba|cam|perv|sg|nerv_nz|ave_ck|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
   echo "RAILS_RELATIVE_URL_ROOT=$app"
 
   case "$1" in
@@ -381,8 +395,11 @@ rserver_restart() {
 # - rpu xxx   → xxx 參數會被丟給 pumactl（不支援 unicorn）
 rpu() {
   local folder_path
-  [[ $PWD =~ '(.*amoeba|.*cam|.*perv|.*sg|.*nerv|.*angel)' ]] && folder_path=$match[1]
+  # 記得改 rpy
+  [[ $PWD =~ '(.*amoeba|.*cam|.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv|.*angel)' ]] && folder_path=$match[1]
   cd $folder_path
+
+  echo "path: $folder_path"
 
   emulate -L zsh
   if [[ -d tmp ]]; then
@@ -454,11 +471,15 @@ rsidekiq() {
           bundle exec sidekiqctl restart tmp/pids/sidekiq.pid
           ;;
         *)
-          bundle exec sidekiqctl stop tmp/pids/sidekiq.pid
+          local code=$(eval "bundle exec sidekiqctl stop tmp/pids/sidekiq.pid")
+          if [[ $code = "Process doesn't exist" ]]; then
+            rm tmp/pids/sidekiq.pid
+            echo "tmp/pids/sidekiq.pid removed due to obsolete pid exists, plz try again"
+          fi
       esac
     else
       local app=${$(pwd):t}
-      [[ ! $app =~ '^(perv|sg)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+      [[ ! $app =~ '^(perv|sg|ave_ck)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
       echo $app
       echo "Start sidekiq process for '$app'..."
       RAILS_RELATIVE_URL_ROOT=/$app bundle exec sidekiq  > ~/.nohup/sidekiq.out 2>&1&
@@ -573,25 +594,6 @@ alias -g HED='HANAMI_ENV=development'
 alias -g HEP='HANAMI_ENV=production'
 alias -g HET='HANAMI_ENV=test'
 
-alias va='cd ~/vm;vagrant'
-alias vsh='va ssh'
-alias vsf='va ssh -- \
-  -L 8088:localhost:88 \
-  -L 8080:localhost:80 \
-  -L 8065:localhost:65 \
-  -L 1080:localhost:1080 \
-  -L 22222:localhost:22 \
-  -L 3000:localhost:3000 \
-  -L 3310:localhost:3310 \
-  -L 6666:localhost:6666 \
-  -L 9527:localhost:9527 \
-  -L 15672:localhost:15672 \
-  -L 9630:localhost:9630'
-alias vup='va up'
-alias vsup='va suspend'
-alias vhalt='va halt'
-alias vus="vup;vsf"
-
 # alias gws=gwS
 alias ws=gws
 alias gsh='git show'
@@ -609,6 +611,9 @@ alias grb="rebase_func $1"
 alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
 alias gcaa='git commit --amend'
+alias gff='gbc $(git_branch_current)-fork'
+alias gbf="git_branch_current | gsed -E 's/\-fork$//' | xargs gco"
+# alias gbf='$(git_branch_current) | gsed -E "s/\-fork$//"'
 
 alias ha=hanami
 alias hac='ha console'
@@ -657,6 +662,8 @@ alias viv='vi ~/.dotfiles/stow/nvim/.config/nvim/init.lua'
 alias szsh="reload_zshrc"
 
 alias krpu='rpu kill'
+
+alias sp='swich_to_tmp_branch'
 
 # clojure
 alias cjn='cd_adam && clj -M:dev:nrepl'
@@ -766,4 +773,27 @@ asset_size() {
   rake assets:precompile
   du -sh public/assets
   rake assets:clobber
+}
+
+swich_to_tmp_branch() {
+  [[ $PWD =~ '(perv|sg|nerv_nz|ave_ck|nerv)' ]] && project_name=$match[1]
+  case $project_name in
+    nerv_nz)
+      branch_name="nz"
+      ;;
+    nerv)
+      branch_name="n"
+      ;;
+    perv)
+      branch_name="p"
+      ;;
+    sg)
+      branch_name="sg"
+      ;;
+    ave_ck)
+      branch_name="ave_ck"
+      ;;
+  esac
+
+  gco "andre/$branch_name"
 }

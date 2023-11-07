@@ -67,6 +67,7 @@ return packer.startup(function(use)
   use 'guns/vim-sexp'
   use 'tpope/vim-sexp-mappings-for-regular-people'
   use 'ssh://git@gitlab.abagile.com:7788/abagile/vim-abagile.git'
+  -- use '~/vim-abagile'
   use 'ap/vim-css-color'
   use 'jiangmiao/auto-pairs'
 

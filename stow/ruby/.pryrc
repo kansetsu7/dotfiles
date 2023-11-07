@@ -62,17 +62,24 @@ Pry.commands.alias_command('rcdb', 'reconnect_db')
 if defined?(Nerv)
   CMB = CommissionBatch
   PA  = PaymentArrangement
+  PC  = ProductConfig
   SRT = ServiceRecordType
   TU  = TopUp
   MP  = MasterPlan
   PO  = PlanOwner
   FI  = FinalizedInfo
+  FII = FinalizedInfoItem
   ET  = EmailTemplate
   POI = PayoutItem
   TB  = TransferBatch
   ITB = ItemTransferBatch
   CSR = ClientServiceRecord
   PS  = PlanService
+  CV  = CrsValuation
+  IQ  = Inquiry
+  WCC = WorldCheckCase
+  CDD = ClientDueDiligenceEvent
+  PI  = PlanItem
 
   module Nerv::Pry
     RESOURCE_TYPES = {
@@ -91,6 +98,7 @@ if defined?(Nerv)
       hd:    'Holding',
       ii:    'InitialInstallment',
       pc:    'Producer',
+      producer: 'Producer',
       cl:    'Client',
       tb:    'TransferBatch',
       itb:   'ItemTransferBatch',
@@ -100,7 +108,7 @@ if defined?(Nerv)
       com_b: 'CommissionBatch',
       con_b: 'ContributionBatch',
       pa:    'PaymentArrangement',
-      producer: 'Producer',
+      po:    'PlanOwner',
       iq:    'Inquiry',
     }
 
@@ -222,12 +230,14 @@ if defined?(Nerv)
       if login.blank?
         play_snippet
       else
+        puts '-----------'
+        fail "args: #{args}, login: #{login}"
         login.downcase!
         cmd = <<-END.gsub(/^\s{4}/, '')
           User.find_by!(login_id: '#{login}').tap do |u|
             u.skip_confirmation! unless u.confirmed?
             u.skip_password_checking = true
-            u.update!(password: '#{Nerv::Pry::DEV_PASSWORD}')
+            u.update!(password: '#{Nerv::Pry::DEV_PASSWORD}', otp_required_for_login: false)
           end
         END
         eval_string << cmd

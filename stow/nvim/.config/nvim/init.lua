@@ -29,6 +29,7 @@ local options = {
   encoding       = "utf8",
   mouse          = "",
   updatetime     = 750,
+  clipboard      = 'unnamed',
 }
 
 for k, v in pairs(options) do
@@ -85,6 +86,9 @@ require("nvim-tree").setup{
         git    = false,
       }
     }
+  },
+  git = {
+    ignore = false,
   }
 }
 
@@ -190,7 +194,7 @@ keymap('n', "<Leader>y", "\"+y", km_opts)
 
 keymap('n', "<localleader>cs", ":call abagile#cljs#setup_cljs_plugin_connection()<CR>", km_opts)
 keymap('n', "<localleader>wc", ":call abagile#cljs#write_core()<CR>", km_opts)
-keymap('n', "<localleader>sn", ":call abagile#clj#sort_require_ns()<CR>", km_opts)
+keymap('n', "<localleader>ns", ":call abagile#clj#sort_require_ns()<CR>", km_opts)
 -- <leader>g  :GitGutterToggle<CR>
 -- <leader>ew :e <C-R>=expand('%:h').'/'<cr>
 -- <leader>es :sp <C-R>=expand('%:h').'/'<cr>
@@ -306,4 +310,20 @@ vim.cmd [[
 ]]
 -- }}}
 
+-- add test file for ruby {{{
+keymap('n', "<silent><leader>sql", ":call BulkUpperCaseSqlKeywords()<CR>", km_opts)
+keymap('n', ":ctf!", ":CreateTestFile", km_opts)
+function create_test_file()
+  local file_path = vim.fn.expand('%:p')
+  local app_folder = vim.fn.getcwd() .. '/app/'
+  local test_folder = vim.fn.getcwd() .. '/test/'
+  local relative_path = file_path:gsub(app_folder, '')
+  local test_file_path = test_folder .. relative_path:gsub('%.rb$', '_test.rb')
+
+  vim.fn.writefile({}, test_file_path)
+  vim.cmd('e ' .. test_file_path)
+end
+
+vim.cmd('command! -nargs=0 CreateTestFile lua create_test_file()')
+-- }}}
 vim.cmd "autocmd FileType sql setlocal commentstring=--\\ %s"
