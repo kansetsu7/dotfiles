@@ -78,14 +78,14 @@ end
 local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 
 local servers = {
-  "sumneko_lua",
+  'lua_ls',
   "clojure_lsp",  -- should install LSP server in local, see https://clojure-lsp.io/installation/
   -- "solargraph",  -- ruby
   "tsserver",    -- typescript
 }
 
 require("nvim-lsp-installer").setup {
-  ensure_installed = { "sumneko_lua", "tsserver" }
+  ensure_installed = { "tsserver" }
 }
 
 for _, server in pairs(servers) do
@@ -94,19 +94,15 @@ for _, server in pairs(servers) do
     capabilities = capabilities,
   }
 
-  if server == "sumneko_lua" then
+  if server == "lua_ls" then
     local custom_opts = {
       settings = {
         Lua = {
           diagnostics = {
             globals = { "vim" },
           },
-          workspace = {
-            library = {
-              [vim.fn.expand("$VIMRUNTIME/lua")] = true,
-              [vim.fn.stdpath("config") .. "/lua"] = true,
-            },
-          },
+          workspace = { checkThirdParty = false },
+          telemetry = { enable = false },
         },
       },
     }
