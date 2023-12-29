@@ -3,6 +3,10 @@ zstyle ':zim:git' aliases-prefix 'g'
 
 # customization {{{
 
+# use localhost / nerv for postgres service running in docker
+export PGHOST=localhost
+export PGUSER=nerv
+
 if [[ "`uname -s`" == "Darwin" ]]; then
   # export LANG=C
   # export LC_ALL=en_US.UTF-8
