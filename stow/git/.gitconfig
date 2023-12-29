@@ -24,6 +24,32 @@
   branch = auto
   interactive = auto
 
+[core]
+  editor = nvim
+  pager = diff-so-fancy | less --tabs=4 -RFX
+  excludesfile = ./.gitignore_global
+
+[color]
+  ui = true
+
+[color "diff-highlight"]
+  oldNormal = red bold
+  oldHighlight = red bold 52
+  newNormal = green bold
+  newHighlight = green bold 22
+
+[color "diff"]
+    meta = 11
+    frag = magenta bold
+    func = 146 bold
+    commit = yellow bold
+    old = red bold
+    new = green bold
+    whitespace = red reverse
+
+[diff-so-fancy]
+    markEmptyLines = false
+
 [tig]
   show-rev-graph = yes
   line-graphics = no
@@ -34,13 +60,13 @@
 [push]
   default = simple
 
-[pager]
-  diff = diff-highlight | less
-  log = diff-highlight | less
-  show = diff-highlight | less
+; [pager]
+;   diff = diff-highlight | less
+;   log = diff-highlight | less
+;   show = diff-highlight | less
 
 [interactive]
-	diffFilter = diff-highlight
+  diffFilter = diff-so-fancy --patch
 [user]
 	name = Andre Kuo
 	email = andre.kuo@abagile.com
