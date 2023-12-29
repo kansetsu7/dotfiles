@@ -10,7 +10,7 @@
 \set HISTSIZE 2000
 
 \pset pager off
-\timing
+\timing off
 
 -- \set PROMPT1 '%[%033[32;1m%]%n@%m:%>/%/%[%033[0m%]%# '
 
