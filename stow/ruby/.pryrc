@@ -65,6 +65,7 @@ if defined?(Nerv)
   CSR = ClientServiceRecord
   CV  = CrsValuation
   ET  = EmailTemplate
+  FDO = FundDealingOrder
   FI  = FinalizedInfo
   FII = FinalizedInfoItem
   IQ  = Inquiry
@@ -263,6 +264,35 @@ if defined?(Nerv)
   end
   Pry.commands.alias_command('chpw', 'change-password')
   # }}}
+
+  # change-password-all {{{
+  Pry::Commands.create_command 'change-password-all' do
+    group 'Nerv'
+    description 'Change users password for development convenience'
+
+    banner <<-BANNER
+      Usage: change-password-all R01834367        Change all users under specific plan
+    BANNER
+
+    def process
+      plan_no   = args.join(' ').upcase
+      login_ids = BasicPlan.find_by(plan_no: plan_no).plan_owners.map(&:client).pluck(:code)
+      results   = []
+
+      login_ids.each do |login_id|
+        output = StringIO.new
+        Pry.config.output = output
+
+        Pry.run_command("change-password #{login_id}")
+
+        results << output.string
+      end
+
+      puts results.join("\n")
+    end
+  end
+  # }}}
+  Pry.commands.alias_command('chpwa', 'change-password-all')
 end
 # }}}
 
