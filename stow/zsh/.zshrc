@@ -118,7 +118,7 @@ alias -g RE='RESCUE=1'
 
 alias rc='rails_console'
 alias rr='bin/rake routes'
-alias rdm='bin/rake db:migrate'
+alias rdm='rake db:migrate'
 alias rdr='bin/rake db:rollback'
 alias rdms='bin/rake db:migrate:status'
 
@@ -136,8 +136,6 @@ alias vimrc='vi ~/.config/nvim/init.vim'
 
 alias cat=bat
 
-alias nz='cd ~/nerv_nz'
-alias av='cd ~/ave_ck'
 alias apb=ansible-playbook
 alias moc=master_of_coin
 # }}}
@@ -375,7 +373,7 @@ rpy() {
 rserver_restart() {
   local app=${$(pwd):t}
   # 記得改 rpu
-  [[ ! $app =~ '^(amoeba|cam|perv|sg|nerv_nz|ave_ck|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+  [[ ! $app =~ '^(amoeba|cam|perv|sg|ave_ck|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
   echo "RAILS_RELATIVE_URL_ROOT=$app"
 
   case "$1" in
@@ -631,7 +629,7 @@ alias rgm='be rails g migration'
 
 alias lsl='ls -al'
 
-alias dumpdb='~/vm/scripts/dump_db.zsh'
+alias dumpdb=dump_db
 alias ndb='~/tmp/dumpdb/nerv_development'
 alias dumpsg='scp dev.abagile.com:~/masked_db/nerv_staging_sg.custom ~/tmp/dumpdb/nerv_sg_development'
 # alias dumpdb="DEV_PASSWORD='666' ~/vm/scripts/db_dump.rb"
@@ -643,21 +641,21 @@ alias download_pdb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/ner
 alias dotfiles='cd ~/.dotfiles'
 alias dotfile='dotfiles'
 alias df='dotfiles'
-alias nerv='cd ~/nerv'
-alias perv='cd ~/perv'
-alias sg='cd ~/sg'
+alias pj='cd ~/proj'
+alias nerv='cd ~/proj/nerv'
+alias perv='cd ~/proj/perv'
+alias sg='cd ~/proj/sg'
+alias av='cd ~/proj/ave_ck'
+alias aba='cd ~/proj/amoeba'
+alias cam='cd ~/proj/cam'
 alias aoc='cd ~/advant-of-code'
 alias cms-sg 'cd ~/cms-sg'
-alias angel='cd ~/angel'
+alias angel='cd ~/proj/angel'
 alias adam='cd clojure/projects/adam'
 alias asuka='cd clojure/projects/asuka'
 alias lcl='cd clojure/components/lcl'
 alias magi='cd clojure/components/magi'
 alias asu=asuka
-alias qt='cd clojure/projects/questionnaire'
-alias kaworu='cd eva/kaworu'
-alias aba='cd ~/amoeba'
-alias cam='cd ~/cam'
 # alias ndb='cd ~/tmp/dumpdb/nerv_development'
 # alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
 
@@ -725,6 +723,15 @@ rg_pcre2() {
   fi
 }
 #}}}
+
+dump_db() {
+  dir=${$(pwd):t}
+  if [[ "$dir" == 'amoeba' || "$dir" == 'cam' ]]; then
+    PGPORT=15432 ~/vm/scripts/dump_db.zsh
+  else
+    ~/vm/scripts/dump_db.zsh
+  fi
+}
 
 clean_tmp() {
   ls -d ./tmp/* | grep -P "tmp/statement_.*.pdf$" | xargs -d"\n" rm
@@ -800,4 +807,5 @@ swich_to_tmp_branch() {
   esac
 
   gco "andre/$branch_name"
+  git rebase master
 }
