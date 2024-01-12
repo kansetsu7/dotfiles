@@ -7,6 +7,9 @@ zstyle ':zim:git' aliases-prefix 'g'
 export PGHOST=localhost
 export PGUSER=nerv
 
+# fix rpu error
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
 if [[ "`uname -s`" == "Darwin" ]]; then
   # export LANG=C
   # export LC_ALL=en_US.UTF-8
