@@ -81,6 +81,7 @@ if defined?(Nerv)
   TB  = TransferBatch
   TU  = TopUp
   WCC = WorldCheckCase
+  CV  = CrsValuation
 
   module Nerv::Pry
     RESOURCE_TYPES = {
