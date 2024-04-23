@@ -14,6 +14,7 @@
   sa = stash
   lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)%Creset' --abbrev-commit
   lgp = log -p --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)%Creset' --abbrev-commit
+	conflicts = diff --name-only --diff-filter=U
 
 [gui]
   fontdiff = -family Courier -size 12 -weight normal -slant roman -underline 0 -overstrike 0
