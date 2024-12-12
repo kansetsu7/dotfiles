@@ -10,6 +10,9 @@ export PGUSER=nerv
 # fix rpu error
 export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
+# Homebrew will not auto-update before running `brew install`, `brew upgrade` or `brew tap`
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 if [[ "`uname -s`" == "Darwin" ]]; then
   # export LANG=C
   # export LC_ALL=en_US.UTF-8
@@ -139,8 +142,6 @@ alias vimrc='vi ~/.config/nvim/init.vim'
 
 alias cat=bat
 
-alias apb=ansible-playbook
-alias moc=master_of_coin
 # }}}
 
 # environment variables {{{
@@ -217,7 +218,7 @@ bindkey -s "\C-r" "\C-a hstr -- \C-j"     # bind hstr to Ctrl-r (for Vi mode che
 # export FZF_DEFAULT_COMMAND='rg --files --no-ignore-vcs --hidden'
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
 export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
-export PATH="/opt/homebrew/opt/postgresql@10/bin:$PATH"
+# export PATH="/opt/homebrew/opt/postgresql@10/bin:$PATH"
 
 # ===== Andre =====
 
@@ -242,6 +243,7 @@ alias rdrst='rake db:reset RAILS_ENV=test'
 # /opt/homebrew/etc/nginx/servers/
 alias nginx_test_and_reload='nginx -t && brew services restart nginx && sudo chown -R andre /opt/homebrew/var/run/nginx/client_body_temp/'
 alias sync_time='sudo systemctl restart systemd-timesyncd.service'
+alias vnginx='vi /opt/homebrew/etc/nginx/servers/'
 
 alias sprs='spring stop && spring binstub'
 alias rdr1="rake db:migrate:redo STEP=1"
@@ -268,6 +270,9 @@ dumplog() {
         ;;
       sg)
         folder="nerv_production_log_sg"
+        ;;
+      ave_ck)
+        folder="nerv_production_log_ave_ck"
         ;;
     esac
   fi
@@ -298,7 +303,7 @@ check_and_upgrade_clj_kondo() {
 }
 
 lint() {
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv|.*awesome_name|.*master_of_coin)' ]] && project_path=$match[1]
+  [[ $PWD =~ '(.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk|.*awesome_name|.*master_of_coin)' ]] && project_path=$match[1]
 
   if [[ $project_path ]]; then
     local exts=('clj,cljs,cljc,edn')
@@ -307,7 +312,7 @@ lint() {
     if [[ -n "$files" ]]; then
       check_and_upgrade_clj_kondo
       # echo $files
-      if [[ $project_path =~  '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv)' ]]; then
+      if [[ $project_path =~  '(.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk)' ]]; then
         cd "$project_path/clojure" && echo $files | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
       elif [[ $project_path =~ '(.*awesome_name|.*master_of_coin)' ]]; then
         clj-kondo --lint
@@ -330,8 +335,12 @@ nrw() {
   local folder_name
   local asuka_path
 
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv)' ]] && folder_path=$match[1]
-  [[ $folder_path =~ '.*(perv|sg|nerv_nz|ave_ck|nerv)$' ]] && folder_name=$match[1]
+  [[ $PWD =~ '(.*ave_ck|.*sg|.*nerv_nz|.*ck|.*hk)' ]] && folder_path=$match[1]
+  if [[ $folder_path =~ '.*(ave_ck)$' ]]; then
+    folder_name='ave_ck'
+  elif [[ $folder_path =~ '.*(sg|nerv_nz|ck|hk)$' ]]; then
+    folder_name=$match[1]
+  fi
 
   asuka_path="$folder_path/clojure/projects/asuka"
 
@@ -343,7 +352,7 @@ cd_adam() {
   local folder_path
   local adam_path
 
-  [[ $PWD =~ '(.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv)' ]] && folder_path=$match[1]
+  [[ $PWD =~ '(.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk)' ]] && folder_path=$match[1]
 
   cd "$folder_path/clojure/projects/adam"
 }
@@ -376,7 +385,7 @@ rpy() {
 rserver_restart() {
   local app=${$(pwd):t}
   # 記得改 rpu
-  [[ ! $app =~ '^(amoeba|cam|perv|sg|ave_ck|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
+  [[ ! $app =~ '^(amoeba|cam|hk|ck|sg|ave_ck|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
   echo "RAILS_RELATIVE_URL_ROOT=$app"
 
   case "$1" in
@@ -401,7 +410,7 @@ rserver_restart() {
 rpu() {
   local folder_path
   # 記得改 rpy
-  [[ $PWD =~ '(.*amoeba|.*cam|.*perv|.*sg|.*nerv_nz|.*ave_ck|.*nerv|.*angel)' ]] && folder_path=$match[1]
+  [[ $PWD =~ '(.*amoeba|.*cam|.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk|.*angel)' ]] && folder_path=$match[1]
   cd $folder_path
 
   echo "path: $folder_path"
@@ -460,36 +469,6 @@ rpu() {
       else
         rserver_restart $animal $([[ "$animal" == 'puma' ]] && echo '-d' || echo '-D')
       fi
-    fi
-  else
-    echo 'ERROR: "tmp" directory not found.'
-  fi
-}
-
-# 啟動／停止 sidekiq
-rsidekiq() {
- emulate -L zsh
-  if [[ -d tmp ]]; then
-    if [[ -r tmp/pids/sidekiq.pid && -n $(ps h -p `cat tmp/pids/sidekiq.pid` | tr -d ' ') ]]; then
-      case "$1" in
-        restart)
-          bundle exec sidekiqctl restart tmp/pids/sidekiq.pid
-          ;;
-        *)
-          local code=$(eval "bundle exec sidekiqctl stop tmp/pids/sidekiq.pid")
-          if [[ $code = "Process doesn't exist" ]]; then
-            rm tmp/pids/sidekiq.pid
-            echo "tmp/pids/sidekiq.pid removed due to obsolete pid exists, plz try again"
-          fi
-      esac
-    else
-      local app=${$(pwd):t}
-      [[ ! $app =~ '^(perv|sg|ave_ck)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
-      echo $app
-      echo "Start sidekiq process for '$app'..."
-      RAILS_RELATIVE_URL_ROOT=/$app bundle exec sidekiq  > ~/.nohup/sidekiq.out 2>&1&
-      # nohup bundle exec sidekiq  > ~/.nohup/sidekiq.out 2>&1&
-      # disown %nohup
     fi
   else
     echo 'ERROR: "tmp" directory not found.'
@@ -585,6 +564,7 @@ alias saunlock='ssh-add -X'
 
 # ripgrep
 alias rgdef="rg_method_def $1"
+# alias rgk="echo $1 | sed 's/_/-/g' | xargs rg"
 
 alias ag='rg -i'
 alias agdef="rg_method_def $1"
@@ -605,6 +585,7 @@ alias gsh='git show'
 alias gba='gb -a'
 alias gcm='git checkout master'
 alias grm='git rebase master'
+alias lg='lazygit'
 alias ggpull='git pull origin $(git_branch_current)'
 alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
 alias gpcc='lint && cop master... && gpc'
@@ -617,7 +598,8 @@ alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
 alias gcaa='git commit --amend'
 alias gff='gbc $(git_branch_current)-fork'
-alias gbf="git_branch_current | gsed -E 's/\-fork$//' | xargs gco"
+alias gbf="git_branch_current | gsed -E 's/\-fork$//' | xargs git checkout"
+alias vgc='git conflicts | xargs nvim'
 # alias gbf='$(git_branch_current) | gsed -E "s/\-fork$//"'
 
 alias ha=hanami
@@ -633,20 +615,18 @@ alias rgm='be rails g migration'
 alias lsl='ls -al'
 
 alias dumpdb=dump_db
-alias ndb='~/tmp/dumpdb/nerv_development'
+alias ndb='~/tmp/dumpdb/nerv_hk'
 alias dumpsg='scp dev.abagile.com:~/masked_db/nerv_staging_sg.custom ~/tmp/dumpdb/nerv_sg_development'
 # alias dumpdb="DEV_PASSWORD='666' ~/vm/scripts/db_dump.rb"
-alias upload_ndb="scp ~/tmp/dumpdb/nerv_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
+alias upload_ndb="scp ~/tmp/dumpdb/nerv_hk/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
 alias upload_pdb="scp ~/tmp/dumpdb/nerv_ck_development/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
-alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_development/$2"
+alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_hk/$2"
 alias download_pdb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_ck_development/$2"
 
 alias dotfiles='cd ~/.dotfiles'
 alias dotfile='dotfiles'
 alias df='dotfiles'
 alias pj='cd ~/proj'
-alias nerv='cd ~/proj/nerv'
-alias perv='cd ~/proj/perv'
 alias sg='cd ~/proj/sg'
 alias av='cd ~/proj/ave_ck'
 alias aba='cd ~/proj/amoeba'
@@ -659,6 +639,9 @@ alias asuka='cd clojure/projects/asuka'
 alias lcl='cd clojure/components/lcl'
 alias magi='cd clojure/components/magi'
 alias asu=asuka
+alias ds='cd ~/proj/docker_setting'
+alias pb='cd ~/proj/playbooks'
+alias pb2='cd ~/proj/playbooks2'
 # alias ndb='cd ~/tmp/dumpdb/nerv_development'
 # alias pdb='cd ~/tmp/dumpdb/nerv_ck_development'
 
@@ -668,7 +651,8 @@ alias szsh="reload_zshrc"
 
 alias krpu='rpu kill'
 
-alias sp='swich_to_tmp_branch'
+alias sp='switch_to_tmp_branch'
+alias gcmbdc='gcm_and_gbd_current_branch'
 
 # clojure
 alias cjn='cd_adam && clj -M:dev:nrepl'
@@ -730,9 +714,10 @@ rg_pcre2() {
 dump_db() {
   dir=${$(pwd):t}
   if [[ "$dir" == 'amoeba' || "$dir" == 'cam' ]]; then
-    PGPORT=15432 ~/vm/scripts/dump_db.zsh
+    echo 'in amoeba / cam'
+    PGPORT=15432 ~/proj/vm/scripts/dump_db.zsh "$@"
   else
-    ~/vm/scripts/dump_db.zsh
+    ~/proj/vm/scripts/dump_db.zsh "$@"
   fi
 }
 
@@ -789,17 +774,14 @@ asset_size() {
   rake assets:clobber
 }
 
-swich_to_tmp_branch() {
-  [[ $PWD =~ '(perv|sg|nerv_nz|ave_ck|nerv)' ]] && project_name=$match[1]
+switch_to_tmp_branch() {
+  [[ $PWD =~ '(ck|sg|hk|nerv_nz|ave_ck|nerv)' ]] && project_name=$match[1]
   case $project_name in
-    nerv_nz)
-      branch_name="nz"
+    hk)
+      branch_name="hk"
       ;;
-    nerv)
-      branch_name="n"
-      ;;
-    perv)
-      branch_name="p"
+    ck)
+      branch_name="ck"
       ;;
     sg)
       branch_name="sg"
@@ -812,3 +794,12 @@ swich_to_tmp_branch() {
   gco "andre/$branch_name"
   git rebase master
 }
+
+gcm_and_gbd_current_branch() {
+  branch_name=`git rev-parse --abbrev-ref HEAD`
+  gcm
+  gbd $branch_name
+  sp
+}
+
+alias baup='cp ~/proj/playbooks/docker/staging/bastion/ave-ck/* ~/proj/bastion-docker-compose/ && cd ~/proj/bastion-docker-compose && docker compose up -d'

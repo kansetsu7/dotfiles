@@ -320,6 +320,17 @@ function create_test_file()
   local relative_path = file_path:gsub(app_folder, '')
   local test_file_path = test_folder .. relative_path:gsub('%.rb$', '_test.rb')
 
+  -- Function to create directories recursively
+  local function ensure_dirs_exist(path)
+    local dir = vim.fn.fnamemodify(path, ':h')  -- Get the directory part of the path
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, 'p')  -- Create the directory and parent directories
+    end
+  end
+
+  -- Ensure that all directories exist
+  ensure_dirs_exist(test_file_path)
+
   vim.fn.writefile({}, test_file_path)
   vim.cmd('e ' .. test_file_path)
 end

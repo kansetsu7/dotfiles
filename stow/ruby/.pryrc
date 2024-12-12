@@ -39,12 +39,30 @@ end
 Pry.commands.alias_command('loadt', 'load_tools')
 
 
+Pry::Commands.create_command 'rlt!' do
+  group 'All'
+  description 'reload! && load ./tmp/tools and run it'
+  def process
+    reload!
+    load "./tmp/tools/tester.rb"
+    Tester.go
+  end
+end
+
 Pry::Commands.create_command 'lt!' do
   group 'All'
   description 'load ./tmp/tools and run it'
   def process
     load "./tmp/tools/tester.rb"
     Tester.go
+  end
+end
+
+Pry::Commands.create_command 'nerv_caller' do
+  group 'All'
+  description 'grab callers from nerv'
+  def process
+    caller.select{|c| c =~ /proj/}
   end
 end
 
@@ -81,7 +99,7 @@ if defined?(Nerv)
   TB  = TransferBatch
   TU  = TopUp
   WCC = WorldCheckCase
-  CV  = CrsValuation
+  II  = InitialInstallment
 
   module Nerv::Pry
     RESOURCE_TYPES = {
