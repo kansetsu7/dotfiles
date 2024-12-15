@@ -41,7 +41,7 @@ return {
     end
   },
 
-  "austintaylor/vim-indentobject",
+  'michaeljsmith/vim-indent-object',
 
   -- Commenting
   -- 'tomtom/tcomment_vim'
@@ -56,48 +56,31 @@ return {
   -- search and replace
   "nvim-pack/nvim-spectre",
 
-  "vim-test/vim-test",
-
   "christoomey/vim-tmux-runner",
   {
-    "christoomey/vim-tmux-navigator",
-    cmd = {
-      "TmuxNavigateLeft",
-      "TmuxNavigateDown",
-      "TmuxNavigateUp",
-      "TmuxNavigateRight",
-      "TmuxNavigatePrevious",
-    },
-    keys = {
-      { "<c-h>",  "<cmd><C-U>TmuxNavigateLeft<cr>" },
-      { "<c-j>",  "<cmd><C-U>TmuxNavigateDown<cr>" },
-      { "<c-k>",  "<cmd><C-U>TmuxNavigateUp<cr>" },
-      { "<c-l>",  "<cmd><C-U>TmuxNavigateRight<cr>" },
-      { "<c-\\>", "<cmd><C-U>TmuxNavigatePrevious<cr>" },
-    },
+    'alexghergh/nvim-tmux-navigation', config = function()
+      local nvim_tmux_nav = require('nvim-tmux-navigation')
+      nvim_tmux_nav.setup {
+        disable_when_zoomed = true -- defaults to false
+      }
+      vim.keymap.set('n', "<C-h>", nvim_tmux_nav.NvimTmuxNavigateLeft)
+      vim.keymap.set('n', "<C-j>", nvim_tmux_nav.NvimTmuxNavigateDown)
+      vim.keymap.set('n', "<C-k>", nvim_tmux_nav.NvimTmuxNavigateUp)
+      vim.keymap.set('n', "<C-l>", nvim_tmux_nav.NvimTmuxNavigateRight)
+      vim.keymap.set('n', "<C-\\>", nvim_tmux_nav.NvimTmuxNavigateLastActive)
+      vim.keymap.set('n', "<C-Space>", nvim_tmux_nav.NvimTmuxNavigateNext)
+    end
   },
 
   -- Git
   "tpope/vim-fugitive",
   {
-    "NeogitOrg/neogit",
-    dependencies = {
-      "nvim-lua/plenary.nvim",  -- required
-      "sindrets/diffview.nvim", -- optional - Diff integration
-    },
-    config = function()
-      require("neogit").setup({
-        kind = "vsplit",
-      })
-    end,
-  },
-  -- "f-person/git-blame.nvim",
-  {
+    -- TODO: is it better than 'airblade/vim-gitgutter'? or I just use vim-gitgutter's style
     "lewis6991/gitsigns.nvim",
     config = function()
       require("gitsigns").setup({
         signs = {
-          add = { text = "│" },
+          add = { text = "+" },
           change = { text = "│" },
           delete = { text = "_" },
           topdelete = { text = "‾" },
@@ -155,8 +138,12 @@ return {
     },
   },
 
+  -- text transformation
+  'tpope/vim-abolish',
+
   -- Ruby
   "tpope/vim-rails", -- only load when opening Ruby file
+  'vim-ruby/vim-ruby',
   "tpope/vim-bundler",
   "kchmck/vim-coffee-script",
   "slim-template/vim-slim",
@@ -165,15 +152,24 @@ return {
   "gpanders/nvim-parinfer",
   "tpope/vim-sexp-mappings-for-regular-people",
   "clojure-vim/vim-jack-in",
+  'tpope/vim-projectionist',
 
   {
     "Olical/conjure",
     config = function()
-      vim.g["conjure#log#hud#width"] = 0.7
-      vim.g["conjure#log#hud#height"] = 0.7
-      vim.g["conjure#log#hud#anchor"] = "SE"
-      vim.g["conjure#highlight#enable"] = "true"
-      vim.g["conjure#log#botright"] = "true"
+      vim.cmd "hi NormalFloat ctermbg=232" -- https://github.com/Olical/conjure/wiki/Frequently-asked-questions#the-hud-window-background-colour-makes-the-text-unreadable-how-can-i-change-it
+      vim.g["conjure#log#hud#width"] = 1.0
+      vim.g.conjure_map_prefix=","
+      vim.g.conjure_log_direction="horizontal"
+      vim.g.conjure_log_size_small=15
+      vim.g.clojure_align_subforms = 1
+      vim.g["conjure#client#clojure#nrepl#connection#auto_repl#enabled"] = false
+      vim.g["conjure#mapping#log_reset_soft"] = "lc"
+      vim.g["conjure#mapping#log_reset_hard"] = "lC"
+      -- vim.g["conjure#log#hud#height"] = 0.7
+      -- vim.g["conjure#log#hud#anchor"] = "SE"
+      -- vim.g["conjure#highlight#enable"] = "true"
+      -- vim.g["conjure#log#botright"] = "true"
     end
   },
   {
@@ -182,4 +178,12 @@ return {
       vim.g.sexp_enable_insert_mode_mappings = 0
     end
   },
+
+  -- sql
+  {
+    'thinca/vim-quickrun',  -- used by vim-qrpsqlpq
+    dependencies = {
+      'bootleq/vim-qrpsqlpq'
+    }
+  }
 }
