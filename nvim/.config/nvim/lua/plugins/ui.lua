@@ -78,15 +78,15 @@ return {
 
   -- Tagbar alternative
   -- Vista, not working, not sure why...
-  {
-    "liuchengxu/vista.vim",
-    config = function()
-      vim.g.vista_executive_for = {
-        clj = "nvim_lsp",
-        cljs = "nvim_lsp",
-      }
-    end
-  },
+  -- {
+  --   "liuchengxu/vista.vim",
+  --   config = function()
+  --     vim.g.vista_executive_for = {
+  --       clj = "nvim_lsp",
+  --       cljs = "nvim_lsp",
+  --     }
+  --   end
+  -- },
   {
     "folke/which-key.nvim",
     event = "VeryLazy",
