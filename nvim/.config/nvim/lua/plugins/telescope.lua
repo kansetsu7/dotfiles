@@ -46,8 +46,8 @@ return {
 
           mappings = {
             i = {
-              ["<C-j>"] = actions.cycle_history_next,
-              ["<C-k>"] = actions.cycle_history_prev,
+              ["<C-j>"] = actions.move_selection_worse,
+              ["<C-k>"] = actions.move_selection_better,
 
               ["<C-n>"] = actions.move_selection_next,
               ["<C-p>"] = actions.move_selection_previous,
@@ -74,6 +74,8 @@ return {
               ["<M-q>"] = actions.send_selected_to_qflist + actions.open_qflist,
               ["<C-l>"] = actions.complete_tag,
               ["<C-_>"] = actions.which_key, -- keys from pressing <C-/>
+              [",,"] = actions.close,
+              ["<esc>"] = actions.close,
             },
 
             n = {
@@ -112,6 +114,8 @@ return {
         pickers = {
           buffers = {
             theme = "ivy",
+            sort_lastused = true,
+            ignore_current_buffer = true,
             previewer = false,
           },
           git_files = {
