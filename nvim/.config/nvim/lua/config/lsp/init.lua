@@ -1,5 +1,36 @@
 local lspconfig = require("lspconfig")
 
+local signs = {
+  { name = "DiagnosticSignError", text = "" },
+  { name = "DiagnosticSignWarn", text = "" },
+  { name = "DiagnosticSignHint", text = "" },
+  { name = "DiagnosticSignInfo", text = "" },
+}
+
+for _, sign in ipairs(signs) do
+  vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
+end
+
+vim.diagnostic.config {
+  -- disable virtual text
+  virtual_text = false,
+  -- show signs
+  signs = {
+    active = signs,
+  },
+  update_in_insert = true,
+  underline = true,
+  severity_sort = true,
+  float = {
+    focusable = false,
+    style = "minimal",
+    border = "rounded",
+    source = "always",
+    header = "",
+    prefix = "",
+  },
+}
+
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
   border = "rounded",
 })
@@ -49,7 +80,8 @@ end
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "ruby_lsp" }
+-- local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "ruby_lsp" }
+local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint" }
 
 require("mason").setup()
 require("mason-lspconfig").setup {
