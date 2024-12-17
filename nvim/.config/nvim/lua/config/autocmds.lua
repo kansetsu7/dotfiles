@@ -27,7 +27,7 @@ vim.cmd([[
     autocmd!
     autocmd FileType eruby.yaml set filetype=yaml
     autocmd BufRead,BufNewFile *.fdoc set filetype=yaml
-    autocmd BufRead,BufNewFile *.yml setlocal spell
+    " autocmd BufRead,BufNewFile *.yml setlocal spell
   augroup end
   augroup _auto_resize
     " automatically rebalance windows on vim resize
