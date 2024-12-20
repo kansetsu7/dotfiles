@@ -12,7 +12,6 @@ vim.cmd([[
     autocmd BufNewFile,BufRead *.slim setlocal filetype=slim
     autocmd BufNewFile,BufRead *.thor,.pryrc,pryrc setlocal filetype=ruby
     autocmd BufNewFile,BufRead ssh_config,*/.ssh/config.d/*  setf sshconfig
-    " https://github.com/neovim/neovim/issues/7994#issuecomment-388296360
     autocmd InsertLeave * set nopaste
     autocmd User Rails silent! Rnavcommand job app/jobs -glob=**/* -suffix=_job.rb
     autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false, scope="cursor"})
