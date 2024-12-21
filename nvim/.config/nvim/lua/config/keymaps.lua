@@ -19,8 +19,8 @@ keymap("v", "p", "\"_dP", opts) -- Don't copy the contents of an overwritten sel
 -- keymap("", "\\", ",", opts)
 
 -- " Helps when I want to delete something without clobbering my unnamed register.
-keymap("n", "s", '"_d', opts)
-keymap("n", "ss", '"_dd', opts)
+-- keymap("n", "s", '"_d', opts)
+-- keymap("n", "ss", '"_dd', opts)
 
 -- " navigating
 keymap("n", "<C-h>", ":lua require('nvim-tmux-navigation').NvimTmuxNavigateLeft()<CR>", opts)
