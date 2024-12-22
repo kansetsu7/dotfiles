@@ -221,7 +221,6 @@ keymap('v', "<leader>s", "\"hy:%s/<C-r>h", opts)
 keymap('v', "<leader>/", "\"hy/<C-r>h<CR>", opts)
 keymap('n', "<leader>/", "\"hye/<C-r>h<CR>", opts)
 
--- TODO: add below things
--- keymap('n', "<silent><leader>sql", ":call BulkUpperCaseSqlKeywords()<CR>", opts)
--- keymap('n', "<silent><leader>sql", ":call BulkUpperCaseSqlKeywords()<CR>", opts)
+keymap('n', "<leader>sql", ":UppercaseSQL<CR>", opts)
+
 -- keymap('n', ":ctf!", ":CreateTestFile", opts)
