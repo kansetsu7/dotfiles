@@ -86,7 +86,7 @@ vim.keymap.set("v", "<Enter>", "<Plug>(EasyAlign)")
 vim.keymap.set("n", "<leader>V", ":luafile ~/.config/nvim/init.lua<CR>:echo 'vimrc reloaded!'<CR>")
 
 -- Telescope
-keymap("n", "<C-p>", "<cmd>lua require('telescope.builtin').git_files()<cr>", opts)
+keymap("n", "<C-p>", ":ProjectFiles<cr>", opts)
 keymap("n", "<leader>b", "<cmd>lua require('telescope.builtin').buffers()<cr>", opts)
 keymap("n", "<leader>fl", "<cmd>lua require('telescope.builtin').find_files()<cr>", opts)
 keymap("n", "<leader>fh", "<cmd>lua require('telescope.builtin').help_tags()<cr>", opts)
