@@ -1,0 +1,13 @@
+gui:
+  sidePanelWidth: 0.25
+  mouseEvents: false
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+  commit:
+    verbose: always
+keybinding:
+  universal:
+    quit: 'Q'
+    return: 'q'
