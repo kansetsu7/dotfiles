@@ -337,12 +337,6 @@ reload_zshrc() {
   esac
 }
 
-fix_zhistory() {
-  mv /home/vagrant/.zhistory /home/vagrant/.zhistory_bad
-  strings /home/vagrant/.zhistory_bad > /home/vagrant/.zhistory
-  fc -R /home/vagrant/.zhistory
-}
-
 asset_size() {
   rake assets:precompile
   du -sh public/assets

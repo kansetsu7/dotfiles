@@ -14,7 +14,7 @@ zstyle ':zim:git' aliases-prefix 'g'
 
 # Customize the style that the suggestions are shown with.
 # See https://github.com/zsh-users/zsh-autosuggestions/blob/master/README.md#suggestion-highlight-style
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'  # 240?
 
 # Set what highlighters will be used.
 # See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
@@ -48,13 +48,8 @@ source ${ZIM_HOME}/init.zsh
 
 source ~/.zshrc_helper
 
-[ -f ~/.ssh/abagile-dev.pem ] && ssh-add ~/.ssh/abagile-dev.pem 2&> /dev/null
+# [ -f ~/.ssh/abagile-dev.pem ] && ssh-add ~/.ssh/abagile-dev.pem 2&> /dev/null
 [ -f ~/.ssh/id_pair ] && ssh-add ~/.ssh/id_pair 2&> /dev/null
-
-# Disable flow control then we can use ctrl-s to save in vim
-# Disable flow control commands (keeps C-s from freezing everything)
-stty start undef
-stty stop undef
 
 # this setting is also affect language in Vim
 export LC_ALL=en_US.UTF-8
@@ -70,6 +65,7 @@ pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22 -t $1 'w
 # Use nvim
 alias e='nvim'
 alias vdiff='nvim -d'
+alias v.='vi .'
 
 alias cat='bat'
 
@@ -78,8 +74,8 @@ if type nvim > /dev/null 2>&1; then
 fi
 
 alias sshc='e ~/.ssh/config'
-alias sshc_p='e ~/.ssh/config.d/prod'
-alias setup_tags='ctags -R'
+# alias sshc_p='e ~/.ssh/config.d/prod'
+# alias setup_tags='ctags -R'
 
 alias grep='grep --color=auto'
 alias rm='rm -i'
@@ -93,7 +89,7 @@ alias ag=rg
 alias rh='fc -R'
 
 export RIPGREP_CONFIG_PATH=~/.ripgreprc
-export XDG_CONFIG_HOME="$HOME/.config"
+# export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
 
@@ -107,7 +103,7 @@ alias gbda='git branch --merged | egrep -v "(^\*|master|nerv_ck|nerv_sg)" | xarg
 alias gbdda='git branch | egrep -v "(^\*|master|nerv_ck|nerv_sg)" | xargs git branch -D'
 alias glg='git log --stat --max-count=10 --pretty=format:"${_git_log_medium_format}"'
 alias gdd='gwd origin/master...'
-alias goc='gco'
+# alias goc='gco'
 alias gddd='gwd origin/master...'
 alias gdde='e `gddd --name-only --relative`'
 alias gddm='tig origin/master..'
@@ -118,16 +114,51 @@ alias gle='e `gcs --pretty=format: --name-only`'
 alias gddn='gddd --name-only --relative | cat'
 alias gwe='e `git diff --name-only --relative`'
 alias gie='e `git diff --cached --name-only --relative`'
-alias gbs='git branch | grep -v spring'
-alias gbt='git checkout nerv_ck'
+alias gbs='git branch | grep -v andre'
+# alias gbt='git checkout nerv_ck'
 alias gff='git checkout -b $(git branch --show-current)-fork'
 alias glcs='git rev-parse --short=12 HEAD'
+alias gsh='git show'
+alias gcm='git checkout master'
+alias grm='git rebase master'
+alias ggpull='git pull origin $(git_branch_current)'
+alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
+alias gpcc='lint && cop master... && gpc'
+alias gfo='git fetch origin'
+alias gbd='git branch -D'
+alias grh='git reset --hard'
+alias gfco="gfo $1 && gco $1"
+alias grb="rebase_func $1"
+alias grbi="git rebase -i $1"
+alias gdf="git diff $1"
+alias gcaa='git commit --amend'
+alias gbf="git_branch_current | gsed -E 's/\-fork$//' | xargs git checkout"
+
+alias sp='switch_to_tmp_branch'
+alias gcmbdc='gcm_and_gbd_current_branch'
+alias vgc='git conflicts | xargs nvim'
+
+# TODO: not sure the effect of below 3 configs, maybe I don't need it?
+export _git_log_fuller_format='%C(bold yellow)commit %H%C(auto)%d%n%C(bold)Author: %C(blue)%an <%ae> %C(reset)%C(cyan)%ai (%ar)%n%C(bold)Commit: %C(blue)%cn <%ce> %C(reset)%C(cyan)%ci (%cr)%C(reset)%n%+B'
+export _git_log_oneline_format='%C(bold yellow)%h%C(reset) %s%C(auto)%d%C(reset)'
+export _git_log_oneline_medium_format='%C(bold yellow)%h%C(reset) %<(50,trunc)%s %C(bold blue)<%an> %C(reset)%C(cyan)(%ar)%C(auto)%ad%C(reset)'
 
 alias lg='lazygit'
 alias ld='lazydocker'
 
 # JavaScript
 alias nodejs=node
+
+# ripgrep
+alias rgdef="rg_method_def $1"
+
+# HSTR configuration - add this to ~/.zshrc
+export HSTR_CONFIG=hicolor       # get more colors
+bindkey -s "\C-r" "\C-a hstr -- \C-j"     # bind hstr to Ctrl-r (for Vi mode check doc)
+
+# nginx
+alias nginx_test_and_reload='nginx -t && brew services restart nginx && sudo chown -R andre /opt/homebrew/var/run/nginx/client_body_temp/'
+alias vnginx='vi /opt/homebrew/etc/nginx/servers/'
 
 ########################
 # Project Related
@@ -142,14 +173,20 @@ alias rss='RAILS_RELATIVE_URL_ROOT=/`basename $PWD` rails server'
 alias aoc='j ~/proj/advent-of-code'
 
 # Nerv Projects
-alias ck='j ~/proj/nerv_ck'
-alias hk='j ~/proj/nerv_hk'
-alias sg='j ~/proj/nerv_sg'
-alias amoeba='j ~/proj/amoeba'
+alias ck='j ~/proj/ck'
+alias hk='j ~/proj/hk'
+alias sg='j ~/proj/sg'
+alias av='j ~/proj/ave_ck'
+alias aba='j ~/proj/amoeba'
 alias angel='j ~/proj/angel'
 alias adam='j clojure/projects/adam'
 alias asuka='j clojure/projects/asuka'
-alias obsi='j /Users/$(whoami)/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Main'
+alias asu=asuka
+alias lcl='j clojure/components/lcl'
+alias magi='j clojure/components/magi'
+alias pb='j ~/proj/playbooks'
+alias pb2='j ~/proj/playbooks2'
+# alias obsi='j /Users/$(whoami)/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Main'
 
 # Gems
 alias be='bundle exec'
@@ -167,6 +204,7 @@ if [[ -d ~/proj/vm ]]; then
   alias db_dump='~/proj/vm/scripts/db_dump.rb && ch_pw'
   alias adb_dump='PGPORT=15432 ~/proj/vm/scripts/db_dump.rb && ch_pw'
   alias dump_db='~/proj/vm/scripts/dump_db.zsh'
+  alias dumpdb=dump_db
   alias ch_pw='be rails runner ~/proj/vm/scripts/nerv/change_passwords.rb'
   alias e_pw='vim ~/proj/vm/scripts/nerv/change_passwords.rb'
 else
@@ -180,18 +218,24 @@ if [[ -d ~/proj/wscripts ]]; then
 fi
 
 # Rails
-alias rc='RAILS_RELATIVE_URL_ROOT=/`basename $PWD` be rails console'
-alias rct='be rails console test'
+alias rc='rails_console'
+alias rct='be rails console -e test'
+alias rcsb='be rails console --sandbox'
 alias rch="tail -f ~/.pry_history | grep -v 'exit'"
 
 alias skip_env="SKIP_PATCHING_MIGRATION='skip_any_patching_related_migrations'"
-alias mig='rails db:migrate'
-alias migs='rails db:migrate:status'
+alias rdm='rails db:migrate'
+alias rdms='rails db:migrate:status'
 alias roll='rails db:rollback'
 alias rock!='rails db:migrate:redo STEP=1'
 alias test_db_seed='rails db:seed RAILS_ENV=test'
-alias smig='skip_env mig'
+alias mg='skip_env mig'
 alias rgm='rails generate migration'
+
+alias rdrst='rake db:reset RAILS_ENV=test'
+alias rdr1="rake db:migrate:redo STEP=1"
+rdrd() { rake db:migrate:redo STEP="$1" }
+rdrv() { rake db:migrate:redo VERSION="$1" }
 
 alias unlog='gunzip `rg -g production.log -w`'
 alias olog='e log/development.log'
@@ -211,8 +255,9 @@ alias ccop='clj-kondo --lint src --config .clj-kondo/config.edn --cache false'
 alias ccup='brew reinstall clj-kondo'
 
 # Adam
-alias ran='clj -M:dev:nrepl'
-alias rat='clj -M:test:runner --watch'
+alias cjn='cd_adam && clj -M:dev:nrepl'
+alias ctr='cd_adam && clj -M:test:runner --watch'
+alias ctrf='cd_adam && clj -M:test:runner --watch --focus $1'
 
 # Asuka
 alias rw='npm run watch'
@@ -229,16 +274,21 @@ alias deploy='t s deploy'
 alias dk='docker'
 alias dco='docker compose'
 alias dcn='docker container'
+
+# DB
+alias ndb='~/tmp/dumpdb/nerv_hk'
+alias upload_ndb="scp ~/tmp/dumpdb/nerv_hk/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
+alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_hk/$2"
+
 ########################
 # Jump Into Config File
 ########################
-alias dot='j ~/dotfiles'
-alias zshrc='e ~/dotfiles/zsh/.zshrc'
-alias sozsh='source ~/.zshrc'
-alias vimrc='e ~/dotfiles/nvim/.config/nvim/init.lua'
-alias en='e .env'
-# alias mc='mailcatcher --http-ip 0.0.0.0; rse'
-# alias kmc='pkill -f mailcatcher'
+alias df='cd ~/.dotfiles'  # TODO: need to check if works in docker env
+alias viz='vi ~/.dotfiles/stow/zsh/.zshrc'
+alias szsh='source ~/.zshrc'
+alias viv='cd ~/.dotfiles && vi nvim/.config/nvim/init.lua'
+# alias en='e .env'
+
 
 ########################
 # eza
@@ -263,10 +313,14 @@ bindkey -v
 bindkey '^a' beginning-of-line
 bindkey '^e' end-of-line
 
+bindkey '^f' vi-forward-word
+bindkey '^b' vi-backward-word
+
 export FZF_TMUX=1
 # https://github.com/sharkdp/fd#integration-with-other-programs
 export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git --color=always'
 export FZF_DEFAULT_OPTS="--ansi"
+export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
 
 # module widget remap
 export FZF_COMPLETION_TRIGGER=';'
