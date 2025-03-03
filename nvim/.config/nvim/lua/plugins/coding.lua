@@ -2,7 +2,7 @@ return {
   -- Navigation
   "tpope/vim-unimpaired",
 
-  { url = "ssh://git@gitlab.abagile.com:7788/abagile/vim-abagile.git" },
+  -- { url = "ssh://git@gitlab.abagile.com:7788/abagile/vim-abagile.git" },
 
   {
     "Wansmer/treesj",
@@ -55,6 +55,8 @@ return {
 
   -- search and replace
   "nvim-pack/nvim-spectre",
+
+  "vim-test/vim-test",
 
   "christoomey/vim-tmux-runner",
   {

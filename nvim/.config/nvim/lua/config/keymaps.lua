@@ -193,19 +193,19 @@ keymap("n", "<Leader>gB", ":Telescope git_branches<CR>", opts)
 -- vim.g.abagile_rails_test_runner = 0
 -- keymap("n", "<leader><space>", ":call abagile#whitespace#strip_trailing()<cr>", opts)
 
-keymap('n', "<localleader>cs", ":call abagile#cljs#setup_cljs_plugin_connection()<CR>", opts)
-keymap('n', "<localleader>wc", ":call abagile#cljs#write_core()<CR>", opts)
-keymap('n', "<localleader>ns", ":call abagile#clj#sort_require_ns()<CR>", opts)
+-- keymap('n', "<localleader>cs", ":call abagile#cljs#setup_cljs_plugin_connection()<CR>", opts)
+-- keymap('n', "<localleader>wc", ":call abagile#cljs#write_core()<CR>", opts)
+-- keymap('n', "<localleader>ns", ":call abagile#clj#sort_require_ns()<CR>", opts)
 
--- -- Vim Test
--- vim.g["test#strategy"] = "vtr"
+-- Vim Test
+vim.g["test#strategy"] = "vtr"
 
--- keymap("n", "<leader>tn", ":TestNearest<CR>", opts)
--- keymap("n", "<leader>tc", ":TestNearest<CR>", opts)
--- keymap("n", "<leader>tf", ":TestFile<CR>", opts)
--- keymap("n", "<leader>tl", ":TestLast<CR>", opts)
--- keymap("n", "<leader>ta", ":TestSuite<cr>", opts)
--- keymap("n", "<leader>tg", ":TestVisit<cr>", opts)
+keymap("n", "<leader>tn", ":TestNearest<CR>", opts)
+keymap("n", "<leader>tc", ":TestNearest<CR>", opts)
+keymap("n", "<leader>tf", ":TestFile<CR>", opts)
+keymap("n", "<leader>tl", ":TestLast<CR>", opts)
+keymap("n", "<leader>ta", ":TestSuite<cr>", opts)
+keymap("n", "<leader>tg", ":TestVisit<cr>", opts)
 
 -- keymap("n", "<Leader>]", ":Vista<cr>", opts)
 
