@@ -14,7 +14,7 @@ vim.cmd([[
     autocmd BufNewFile,BufRead ssh_config,*/.ssh/config.d/*  setf sshconfig
     autocmd InsertLeave * set nopaste
     autocmd User Rails silent! Rnavcommand job app/jobs -glob=**/* -suffix=_job.rb
-    autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false, scope="cursor"})
+    autocmd! CursorHold,CursorHoldI * lua require('echo-diagnostics').echo_line_diagnostic()
   augroup end
   augroup _git
     autocmd!
