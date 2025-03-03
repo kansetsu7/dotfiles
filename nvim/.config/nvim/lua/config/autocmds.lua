@@ -38,8 +38,8 @@ vim.cmd([[
   " autocmd FileType clojure setlocal iskeyword+=?,*,!,+,/,=,<,>,$
     autocmd FileType clojure setlocal iskeyword-=.
     autocmd FileType clojure setlocal iskeyword-=/
-    autocmd FileType clojure nmap <buffer> <leader>p i(debux.core/dbg<Space>
-    autocmd BufEnter,BufNew,BufRead *.cljs nnoremap <leader>p o(js/console.log <Esc>
+    autocmd BufEnter,BufNew,BufRead *.clj nnoremap <leader>p o(debux.core/dbg<Space>)<Esc>
+    autocmd BufEnter,BufNew,BufRead *.cljs nnoremap <leader>p o(js/console.log) <Esc>
     autocmd FileType clojure setlocal commentstring=;;%s
     autocmd FileType clojure setlocal formatoptions+=r
   augroup end
