@@ -15,7 +15,6 @@ for folder in "${folders[@]}"; do
 done
 
 cd ~/dotfiles
-cp ./git/.config/git/user_config.sample ~/.config/git/user_config
 
 stow --verbose asdf \
   git \
@@ -47,7 +46,5 @@ $(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
 # sudo /usr/bin/tic -x ./tmux-256color.src
 
 source ~/.zshrc
-
-echo "[Important!] Use your own email / username in ~/.config/git/user_config"
 
 echo "Then You are all set!"

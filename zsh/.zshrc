@@ -136,7 +136,7 @@ alias gbf="git_branch_current | gsed -E 's/\-fork$//' | xargs git checkout"
 
 alias sp='switch_to_tmp_branch'
 alias gcmbdc='gcm_and_gbd_current_branch'
-alias vgc='git conflicts | xargs nvim'
+alias vgc='git diff --name-only --diff-filter=U | xargs nvim'  # git conflicts
 
 # TODO: not sure the effect of below 3 configs, maybe I don't need it?
 export _git_log_fuller_format='%C(bold yellow)commit %H%C(auto)%d%n%C(bold)Author: %C(blue)%an <%ae> %C(reset)%C(cyan)%ai (%ar)%n%C(bold)Commit: %C(blue)%cn <%ce> %C(reset)%C(cyan)%ci (%cr)%C(reset)%n%+B'

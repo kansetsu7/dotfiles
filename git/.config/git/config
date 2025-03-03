@@ -13,8 +13,9 @@
   ; pager = diff-so-fancy | less --tabs=4 -RFX
   excludesfile = ./.gitignore_global
 
-[include]
-  path = ./user_config
+[user]
+	name = Andre Kuo
+	email = andre.kuo@abagile.com
 
 [color]
   ui = true
@@ -53,3 +54,13 @@
 
 [diff]
   colorMoved = default
+
+[gui]
+  fontdiff = -family Courier -size 12 -weight normal -slant roman -underline 0 -overstrike 0
+
+[tig]
+  show-rev-graph = yes
+  line-graphics = no
+
+[branch]
+  autosetuprebase = always
