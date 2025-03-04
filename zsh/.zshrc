@@ -66,6 +66,7 @@ pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22 -t $1 'w
 alias e='nvim'
 alias vdiff='nvim -d'
 alias v.='vi .'
+alias vi='nvim'
 
 alias cat='bat'
 
@@ -203,7 +204,7 @@ if [[ -d ~/proj/vm ]]; then
 
   alias db_dump='~/proj/vm/scripts/db_dump.rb && ch_pw'
   alias adb_dump='PGPORT=15432 ~/proj/vm/scripts/db_dump.rb && ch_pw'
-  alias dump_db='~/proj/vm/scripts/dump_db.zsh'
+  # alias dump_db='~/proj/vm/scripts/dump_db.zsh'
   alias dumpdb=dump_db
   alias ch_pw='be rails runner ~/proj/vm/scripts/nerv/change_passwords.rb'
   alias e_pw='vim ~/proj/vm/scripts/nerv/change_passwords.rb'
@@ -284,8 +285,8 @@ alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/ner
 # Jump Into Config File
 ########################
 alias df='cd ~/.dotfiles'  # TODO: need to check if works in docker env
-alias viz='vi ~/.dotfiles/stow/zsh/.zshrc'
-alias szsh='source ~/.zshrc'
+alias viz='cd ~/.dotfiles && vi zsh/.zshrc'
+alias szsh='exec ~/.zshrc'
 alias viv='cd ~/.dotfiles && vi nvim/.config/nvim/init.lua'
 # alias en='e .env'
 
@@ -397,8 +398,8 @@ if type brew &>/dev/null
 then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 
-  autoload -Uz compinit
-  compinit
+  # autoload -Uz compinit
+  # compinit
 fi
 
 # fix issue on puma start in deamon mode
