@@ -19,6 +19,8 @@ cd ~/dotfiles
 stow --verbose asdf \
   git \
   nvim \
+  postgres \
+  readline \
   ruby \
   tmux \
   zsh \
