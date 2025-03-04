@@ -321,6 +321,7 @@ asset_size() {
   rake assets:clobber
 }
 
+# Git related {{{
 switch_to_tmp_branch() {
   [[ $PWD =~ '(ck|sg|hk|nerv_nz|ave_ck|nerv)' ]] && project_name=$match[1]
   case $project_name in
@@ -347,4 +348,21 @@ gcm_and_gbd_current_branch() {
   gcm
   gbd $branch_name
   sp
+}
+# }}}
+
+dhq() {
+  cd ~/proj/vm/docker-dev
+  if [[ $# -ge 1 ]]; then
+    case $1 in
+      up)
+        echo "running: docker compose -f hq/compose.yml up -d"
+        docker compose -f hq/compose.yml up -d
+        ;;
+      down)
+        echo "running: docker compose -f hq/compose.yml down"
+        docker compose -f hq/compose.yml down
+        ;;
+    esac
+  fi
 }
