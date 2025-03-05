@@ -288,7 +288,7 @@ alias df='cd ~/.dotfiles'  # TODO: need to check if works in docker env
 alias viz='cd ~/.dotfiles && vi zsh/.zshrc'
 alias szsh='exec ~/.zshrc'
 alias viv='cd ~/.dotfiles && vi nvim/.config/nvim/init.lua'
-# alias en='e .env'
+alias vie='vi .env'
 
 
 ########################
