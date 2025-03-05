@@ -345,12 +345,13 @@ switch_to_tmp_branch() {
 
 gcm_and_gbd_current_branch() {
   branch_name=`git rev-parse --abbrev-ref HEAD`
-  gcm
+  git checkout master
   gbd $branch_name
-  sp
+  switch_to_tmp_branch
 }
 # }}}
 
+# docker {{{
 dhq() {
   cd ~/proj/vm/docker-dev
   if [[ $# -ge 1 ]]; then
@@ -366,3 +367,4 @@ dhq() {
     esac
   fi
 }
+# }}}
