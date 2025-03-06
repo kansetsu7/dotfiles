@@ -161,6 +161,9 @@ bindkey -s "\C-r" "\C-a hstr -- \C-j"     # bind hstr to Ctrl-r (for Vi mode che
 alias nginx_test_and_reload='nginx -t && brew services restart nginx && sudo chown -R andre /opt/homebrew/var/run/nginx/client_body_temp/'
 alias vnginx='vi /opt/homebrew/etc/nginx/servers/'
 
+# sshuttle
+alias staging_ssh='sshuttle --dns -NHr dev.abagile.com metis-hk.abagile.com metis-ck.abagile.com metis-sg.abagile.com avenueil.abagile.com metis-demo.abagile.com'
+
 ########################
 # Project Related
 ########################
