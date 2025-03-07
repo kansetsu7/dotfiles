@@ -228,7 +228,7 @@ amoeba_test_reset() {
 
 rails_console() {
   if [[ $PWD =~ '.*amoeba' ]]; then
-    be rails c
+    bundle exec rails c
   else
     bin/rails console
   fi
@@ -294,9 +294,9 @@ dump_db() {
   dir=${$(pwd):t}
   if [[ "$dir" == 'amoeba' || "$dir" == 'cam' ]]; then
     echo 'in amoeba / cam'
-    PGPORT=15432 ~/proj/vm/scripts/dump_db.zsh "$@"
+    PGPORT=15432 $project_path/vm/scripts/dump_db.zsh "$@"
   else
-    ~/proj/vm/scripts/dump_db.zsh "$@"
+    $project_path/vm/scripts/dump_db.zsh "$@"
   fi
 }
 
@@ -353,7 +353,7 @@ gcm_and_gbd_current_branch() {
 
 # docker {{{
 dhq() {
-  cd ~/proj/vm/docker-dev
+  cd $project_path/vm/docker-dev
   if [[ $# -ge 1 ]]; then
     case $1 in
       up)

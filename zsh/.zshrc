@@ -45,6 +45,8 @@ source ${ZIM_HOME}/init.zsh
 ########################
 # General
 ########################
+project_path=$HOME/proj/  # must define before .zshrc_helper because it will use $project_path
+dotfile_path=$HOME/.dotfiles
 
 source ~/.zshrc_helper
 
@@ -174,22 +176,22 @@ alias spru='skip_mig_warn=1 rpu'
 
 alias rss='RAILS_RELATIVE_URL_ROOT=/`basename $PWD` rails server'
 
-alias aoc='j ~/proj/advent-of-code'
+alias aoc="j $project_path/advent-of-code"
 
 # Nerv Projects
-alias ck='j ~/proj/ck'
-alias hk='j ~/proj/hk'
-alias sg='j ~/proj/sg'
-alias av='j ~/proj/ave_ck'
-alias aba='j ~/proj/amoeba'
-alias angel='j ~/proj/angel'
-alias adam='j clojure/projects/adam'
-alias asuka='j clojure/projects/asuka'
+alias ck="j $project_path/ck"
+alias hk="j $project_path/hk"
+alias sg="j $project_path/sg"
+alias av="j $project_path/ave_ck"
+alias aba="j $project_path/amoeba"
+alias angel="j $project_path/angel"
+alias adam="j clojure/projects/adam"
+alias asuka="j clojure/projects/asuka"
 alias asu=asuka
 alias lcl='j clojure/components/lcl'
 alias magi='j clojure/components/magi'
-alias pb='j ~/proj/playbooks'
-alias pb2='j ~/proj/playbooks2'
+alias pb="j $project_path/playbooks"
+alias pb2="j $project_path/playbooks2"
 # alias obsi='j /Users/$(whoami)/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Main'
 
 # Gems
@@ -201,25 +203,25 @@ alias copm='cop master...'
 alias rake='be rake'
 
 # be careful with the folder position
-alias db_time='ll /tmp/(^amoeba|nerv)_*.custom'
-if [[ -d ~/proj/vm ]]; then
-  alias e_db='vim ~/proj/vm/user/db_mapping.yml'
-
-  alias db_dump='~/proj/vm/scripts/db_dump.rb && ch_pw'
-  alias adb_dump='PGPORT=15432 ~/proj/vm/scripts/db_dump.rb && ch_pw'
-  # alias dump_db='~/proj/vm/scripts/dump_db.zsh'
-  alias dumpdb=dump_db
-  alias ch_pw='be rails runner ~/proj/vm/scripts/nerv/change_passwords.rb'
-  alias e_pw='vim ~/proj/vm/scripts/nerv/change_passwords.rb'
-else
-  echo "[Reminder] You need to clone vm project from Gitlab to get scripts for alias."
-fi
-
-if [[ -d ~/proj/wscripts ]]; then
-  alias e_db='vim ~/proj/wscripts/db/db_mapping.yml'
-  alias ch_pw='be rails runner ~/proj/wscripts/db/ch_pw.rb'
-  alias e_pw='vim ~/proj/wscripts/db/ch_pw.rb'
-fi
+# alias db_time='ll /tmp/(^amoeba|nerv)_*.custom'
+# if [[ -d ~/proj/vm ]]; then
+#   alias e_db='vim ~/proj/vm/user/db_mapping.yml'
+#
+#   alias db_dump='~/proj/vm/scripts/db_dump.rb && ch_pw'
+#   alias adb_dump='PGPORT=15432 ~/proj/vm/scripts/db_dump.rb && ch_pw'
+#   # alias dump_db='~/proj/vm/scripts/dump_db.zsh'
+#   alias dumpdb=dump_db
+#   alias ch_pw='be rails runner ~/proj/vm/scripts/nerv/change_passwords.rb'
+#   alias e_pw='vim ~/proj/vm/scripts/nerv/change_passwords.rb'
+# else
+#   echo "[Reminder] You need to clone vm project from Gitlab to get scripts for alias."
+# fi
+#
+# if [[ -d ~/proj/wscripts ]]; then
+#   alias e_db='vim ~/proj/wscripts/db/db_mapping.yml'
+#   alias ch_pw='be rails runner ~/proj/wscripts/db/ch_pw.rb'
+#   alias e_pw='vim ~/proj/wscripts/db/ch_pw.rb'
+# fi
 
 # Rails
 alias rc='rails_console'
@@ -287,10 +289,10 @@ alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/ner
 ########################
 # Jump Into Config File
 ########################
-alias df='cd ~/.dotfiles'  # TODO: need to check if works in docker env
-alias viz='cd ~/.dotfiles && vi zsh/.zshrc'
-alias szsh='exec ~/.zshrc'
-alias viv='cd ~/.dotfiles && vi nvim/.config/nvim/init.lua'
+alias df="cd $dotfile_path"
+alias viz="cd $dotfile_path && vi zsh/.zshrc"
+alias szsh="exec $dotfile_path/zsh/.zshrc"
+alias viv="cd $dotfile_path && vi nvim/.config/nvim/init.lua"
 alias vie='vi .env'
 
 
