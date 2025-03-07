@@ -14,7 +14,7 @@ for folder in "${folders[@]}"; do
   mkdir -p $HOME/.config/"$folder"
 done
 
-cd ~/dotfiles
+cd ~/.dotfiles
 
 stow --verbose asdf \
   git \
