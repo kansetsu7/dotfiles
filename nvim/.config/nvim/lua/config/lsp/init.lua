@@ -1,4 +1,5 @@
 local lspconfig = require("lspconfig")
+local is_docker = vim.fn.filereadable("/.dockerenv") == 1
 
 local signs = {
   { name = "DiagnosticSignError", text = "" },
@@ -98,4 +99,8 @@ for _, server in pairs(servers) do
     opts = vim.tbl_deep_extend("force", server_custom_opts, opts)
   end
   lspconfig[server].setup(opts)
+end
+
+if is_docker then
+  require("config.lsp.docker")
 end
