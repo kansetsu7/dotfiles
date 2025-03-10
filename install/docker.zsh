@@ -1,55 +1,42 @@
 #!/usr/bin/env zsh
 
-echo 'You are in Mac OS...'
-echo 'Install developer tools in general'
-brew install stow asdf fzf nvim git tig tmux httpie htop bat zoxide eza ripgrep wget gnu-sed gnu-time fd duf docker coreutils diff-so-fancy git-delta pandoc
-brew install jesseduffield/lazydocker/lazydocker
-brew install jq yq
+if [[ ! -f /.dockerenv ]]; then
+  echo 'Not a Docker env, please double check!'
+  exit 1;
+fi
 
+echo 'You are in Docker...'
+echo 'Install developer tools in general'
 echo 'Setup Development Perferences (Nvim, Zim...)...'
 
-folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "ruby")
+folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "ruby" "lazygit" "lazydocker")
 
 for folder in "${folders[@]}"; do
-  mkdir -p $HOME/.config/"$folder"
+  mkdir -p /root/.config/$folder
 done
 
-cd ~/.dotfiles
+cd /root/.dotfiles  # should match with dotfiles volume in compose.yml
 
-stow --verbose asdf \
+stow --verbose \
   git \
   nvim \
-  postgres \
   readline \
   ruby \
   tmux \
   zsh \
-
-# TODO: softlink lazygit config to $HOME/Library/Application\ Support/lazygit/config.yml
-
-echo "starting asdf plugins installation..."
-cat ~/.tool-versions | cut -d' ' -f1 | grep "^[^\#]" | xargs -I{} asdf plugin add {}
-
-echo "starting asdf installation..."
-asdf install
+  lazygit \
+  lazydocker \
 
 # https://github.com/tmux-plugins/tpm
-if [[ ! -d $HOME/.config/tmux/plugins/tpm ]]; then
+if [[ ! -d /root/.config/tmux/plugins/tpm ]]; then
   echo 'Setup Tmux Plugin Manager(TMP)...'
-  git clone https://github.com/tmux-plugins/tpm $HOME/.config/tmux/plugins/tpm
-  tmux source $HOME/.config/tmux/tmux.conf
-
+  git clone https://github.com/tmux-plugins/tpm /root/.config/tmux/plugins/tpm
+  tmux source /root/.config/tmux/tmux.conf
   echo 'Please Press tmux prefix key + I to install tmux plugins'
 fi
 
-# https://github.com/junegunn/fzf#using-homebrew
-$(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
-
-# tmux-color256
-# https://gpanders.com/blog/the-definitive-guide-to-using-tmux-256color-on-macos/
-# sudo /usr/bin/tic -x ./tmux-256color.src
-
-source ~/.zshrc
+# forced to provide $ZDOTDDIR here or it will have error at first time loading -> "Failed to source /root/.config/zsh/.zimrc"
+ZDOTDIR=/root source /root/.zshrc
 
 echo "Then You are all set!"
 
