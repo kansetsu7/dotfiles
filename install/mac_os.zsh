@@ -8,7 +8,7 @@ brew install jq yq
 
 echo 'Setup Development Perferences (Nvim, Zim...)...'
 
-folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "zim" "clojure" "ruby" "lazygit" "bat")
+folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "ruby")
 
 for folder in "${folders[@]}"; do
   mkdir -p $HOME/.config/"$folder"
@@ -24,6 +24,8 @@ stow --verbose asdf \
   ruby \
   tmux \
   zsh \
+
+# TODO: softlink lazygit config to $HOME/Library/Application\ Support/lazygit/config.yml
 
 echo "starting asdf plugins installation..."
 cat ~/.tool-versions | cut -d' ' -f1 | grep "^[^\#]" | xargs -I{} asdf plugin add {}
