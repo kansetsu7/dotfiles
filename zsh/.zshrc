@@ -43,10 +43,24 @@ source ${ZIM_HOME}/init.zsh
 # }}} End configuration added by Zim install
 
 ########################
+# Detect OS
+########################
+if [[ "$(uname)" == "Darwin" ]]; then
+  export OS_TYPE="mac"
+elif [[ -f /.dockerenv ]]; then
+  export OS_TYPE="docker"
+else
+  export OS_TYPE="unknown"
+fi
+
+# Source OS-specific config
+if [[ -f "$HOME/.zshrc-$OS_TYPE" ]]; then
+  source "$HOME/.zshrc-$OS_TYPE"  # must define before .zshrc_helper because it will use $PROJECT_PATH
+fi
+
+########################
 # General
 ########################
-project_path=$HOME/proj/  # must define before .zshrc_helper because it will use $project_path
-dotfile_path=$HOME/.dotfiles
 
 source ~/.zshrc_helper
 
@@ -147,7 +161,7 @@ export _git_log_oneline_format='%C(bold yellow)%h%C(reset) %s%C(auto)%d%C(reset)
 export _git_log_oneline_medium_format='%C(bold yellow)%h%C(reset) %<(50,trunc)%s %C(bold blue)<%an> %C(reset)%C(cyan)(%ar)%C(auto)%ad%C(reset)'
 
 alias lg='lazygit'
-alias ld='lazydocker'
+alias lzd='lazydocker'
 
 # JavaScript
 alias nodejs=node
@@ -176,22 +190,22 @@ alias spru='skip_mig_warn=1 rpu'
 
 alias rss='RAILS_RELATIVE_URL_ROOT=/`basename $PWD` rails server'
 
-alias aoc="j $project_path/advent-of-code"
+alias aoc="j $PROJECT_PATH/advent-of-code"
 
 # Nerv Projects
-alias ck="j $project_path/ck"
-alias hk="j $project_path/hk"
-alias sg="j $project_path/sg"
-alias av="j $project_path/ave_ck"
-alias aba="j $project_path/amoeba"
-alias angel="j $project_path/angel"
+alias ck="j $PROJECT_PATH/${NERV_PREFIX}ck"
+alias hk="j $PROJECT_PATH/${NERV_PREFIX}hk"
+alias sg="j $PROJECT_PATH/${NERV_PREFIX}sg"
+alias av="j $PROJECT_PATH/${NERV_PREFIX}ave_ck"
+alias aba="j $PROJECT_PATH/amoeba"
+alias angel="j $PROJECT_PATH/angel"
 alias adam="j clojure/projects/adam"
 alias asuka="j clojure/projects/asuka"
 alias asu=asuka
 alias lcl='j clojure/components/lcl'
 alias magi='j clojure/components/magi'
-alias pb="j $project_path/playbooks"
-alias pb2="j $project_path/playbooks2"
+alias pb="j $PROJECT_PATH/playbooks"
+alias pb2="j $PROJECT_PATH/playbooks2"
 # alias obsi='j /Users/$(whoami)/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Main'
 
 # Gems
@@ -289,10 +303,10 @@ alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/ner
 ########################
 # Jump Into Config File
 ########################
-alias df="cd $dotfile_path"
-alias viz="cd $dotfile_path && vi zsh/.zshrc"
-alias szsh="exec $dotfile_path/zsh/.zshrc"
-alias viv="cd $dotfile_path && vi nvim/.config/nvim/init.lua"
+alias df="cd $DOTFILE_PATH"
+alias viz="cd $DOTFILE_PATH && vi zsh/.zshrc"
+alias szsh="exec $DOTFILE_PATH/zsh/.zshrc"
+alias viv="cd $DOTFILE_PATH && vi nvim/.config/nvim/init.lua"
 alias vie='vi .env'
 
 
@@ -340,7 +354,6 @@ eval "$(zoxide init zsh --cmd j)"
 
 # use localhost / nerv for postgres service running in docker
 export PGHOST=localhost
-export PGUSER=nerv
 
 case `uname` in
   Darwin)
