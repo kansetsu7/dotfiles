@@ -3,3 +3,4 @@ stow/nvim/.config/nvim/plugin/packer_compiled.lua
 .clj-kondo/
 .lsp
 nvim/.config/nvim/lazy-lock.json
+tmux/.config/tmux/plugins
