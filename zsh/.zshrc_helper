@@ -367,4 +367,9 @@ dhq() {
     esac
   fi
 }
+
+sync_docker_clipboard(){
+  socat TCP-LISTEN:8377,reuseaddr,fork SYSTEM:"pbcopy" &
+  socat TCP-LISTEN:8378,reuseaddr,fork EXEC:"pbpaste" &
+}
 # }}}
