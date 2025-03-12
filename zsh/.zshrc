@@ -63,6 +63,9 @@ fi
 ########################
 
 source ~/.zshrc_helper
+if [[ -f "$HOME/.zshrc_configs/$OS_TYPE/.zshrc_helper" ]]; then
+  source "$HOME/.zshrc_configs/$OS_TYPE/.zshrc_helper"
+fi
 
 # [ -f ~/.ssh/abagile-dev.pem ] && ssh-add ~/.ssh/abagile-dev.pem 2&> /dev/null
 [ -f ~/.ssh/id_pair ] && ssh-add ~/.ssh/id_pair 2&> /dev/null

@@ -1,0 +1,39 @@
+# shortcut on pointing diff compose file and using lazydocker
+ld() {
+  case "${1:-not_specify}" in
+    not_specify)
+      lazydocker
+      ;;
+    hq)
+      lazydocker -f "/current/hq/compose.yml"
+      ;;
+    hk|ck|sg|ave_ck)
+      lazydocker -f "/current/sites/nerv_by_site_code/$1/compose.yml"
+      ;;
+    aba)
+      lazydocker -f "/current/sites/amoeba/compose.yml"
+      ;;
+    *)
+      if [[ -f "/current/sites/$1/compose.yml" ]]; then
+        lazydocker -f "/current/sites/$1/compose.yml"
+      else
+       echo "docker compose file not exist, please try again!"
+      fi
+      ;;
+  esac
+}
+
+dump_db() {
+  case $1 in
+    hk|ck|sg|ave_ck)
+      /current/edit/scripts/dump_db.sh $1
+      ;;
+    aba)
+      # $2 should be "afs"|"ipc"|"kgi"|"lfwm"|"everon"|"hywm"|"pacs"|"scwm"|"wgcl"
+      /current/edit/scripts/dump_db_amoeba.sh $2
+      ;;
+    *)
+      echo "invalid!"
+      ;;
+  esac
+}

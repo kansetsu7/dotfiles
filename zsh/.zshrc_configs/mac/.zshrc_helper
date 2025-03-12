@@ -1,0 +1,14 @@
+dump_db() {
+  dir=${$(pwd):t}
+  if [[ "$dir" == 'amoeba' || "$dir" == 'cam' ]]; then
+    echo 'in amoeba / cam'
+    PGPORT=15432 $project_path/vm/scripts/dump_db.zsh "$@"
+  else
+    $project_path/vm/scripts/dump_db.zsh "$@"
+  fi
+}
+
+sync_docker_clipboard(){
+  socat TCP-LISTEN:8377,reuseaddr,fork SYSTEM:"pbcopy" &
+  socat TCP-LISTEN:8378,reuseaddr,fork EXEC:"pbpaste" &
+}
