@@ -54,8 +54,8 @@ else
 fi
 
 # Source OS-specific config
-if [[ -f "$HOME/.zshrc-$OS_TYPE" ]]; then
-  source "$HOME/.zshrc-$OS_TYPE"  # must define before .zshrc_helper because it will use $PROJECT_PATH
+if [[ -f "$HOME/.zshrc_configs/$OS_TYPE/.zshrc" ]]; then
+  source "$HOME/.zshrc_configs/$OS_TYPE/.zshrc"  # must define before .zshrc_helper because it will use $PROJECT_PATH
 fi
 
 ########################
