@@ -31,13 +31,14 @@ detect_pwd_project(){
 }
 
 dump_db() {
-  case $1 in
+  project=$(detect_pwd_project)
+  case $project in
     hk|ck|sg|ave_ck)
-      /current/edit/scripts/dump_db.sh $1
+      /current/edit/scripts/dump_db.sh $project
       ;;
-    aba)
-      # $2 should be "afs"|"ipc"|"kgi"|"lfwm"|"everon"|"hywm"|"pacs"|"scwm"|"wgcl"
-      /current/edit/scripts/dump_db_amoeba.sh $2
+    amoeba)
+      # $1 should be "afs"|"ipc"|"kgi"|"lfwm"|"everon"|"hywm"|"pacs"|"scwm"|"wgcl"
+      /current/edit/scripts/dump_db_amoeba.sh $1
       ;;
     *)
       echo "invalid!"
