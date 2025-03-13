@@ -1,14 +1,12 @@
 # shortcut on pointing diff compose file and using lazydocker
 ld() {
-  case "${1:-not_specify}" in
-    not_specify)
-      lazydocker
-      ;;
+  project="${1:-$(detect_pwd_project)}"
+  case "$project" in
     hq)
       lazydocker -f "/current/hq/compose.yml"
       ;;
     hk|ck|sg|ave_ck)
-      lazydocker -f "/current/sites/nerv_by_site_code/$1/compose.yml"
+      lazydocker -f "/current/sites/nerv_by_site_code/$project/compose.yml"
       ;;
     av)
       lazydocker -f "/current/sites/nerv_by_site_code/ave_ck/compose.yml"
@@ -17,13 +15,19 @@ ld() {
       lazydocker -f "/current/sites/amoeba/compose.yml"
       ;;
     *)
-      if [[ -f "/current/sites/$1/compose.yml" ]]; then
-        lazydocker -f "/current/sites/$1/compose.yml"
+      if [[ -f "/current/sites/$project/compose.yml" ]]; then
+        lazydocker -f "/current/sites/$project/compose.yml"
       else
-       echo "docker compose file not exist, please try again!"
+        lazydocker
       fi
       ;;
   esac
+}
+
+# match $PWD with project name, and remove `nerv_` prefix
+detect_pwd_project(){
+  pattern="(nerv_hk|nerv_ck|nerv_sg|nerv_ave_ck|amoeba|angel|cam)"
+  [[ $PWD =~ $pattern ]] && project=$match[1] && echo ${project#nerv_}
 }
 
 dump_db() {
