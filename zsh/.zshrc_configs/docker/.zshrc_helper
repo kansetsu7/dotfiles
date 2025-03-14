@@ -8,12 +8,6 @@ ld() {
     hk|ck|sg|ave_ck)
       lazydocker -f "/current/sites/nerv_by_site_code/$project/compose.yml"
       ;;
-    av)
-      lazydocker -f "/current/sites/nerv_by_site_code/ave_ck/compose.yml"
-      ;;
-    aba)
-      lazydocker -f "/current/sites/amoeba/compose.yml"
-      ;;
     *)
       if [[ -f "/current/sites/$project/compose.yml" ]]; then
         lazydocker -f "/current/sites/$project/compose.yml"
