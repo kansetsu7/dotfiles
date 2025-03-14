@@ -30,9 +30,9 @@ detect_pwd_project(){
   [[ $PWD =~ $pattern ]] && project=$match[1] && echo ${project#nerv_}
 }
 
-# get amoeba site
-get_amoeba_site(){
-  echo $(docker compose -f /current/sites/amoeba/compose.yml run --rm amoeba bundle exec thor setup:site | awk '{print $4}')
+# get or setup amoeba site
+amoeba_site(){
+  docker compose -f /current/sites/amoeba/compose.yml run --rm amoeba bundle exec thor setup:site $1
 }
 
 # detect project and pass it to dump_db script. Handle amoeba site as well.
@@ -43,7 +43,7 @@ dump_db() {
       /current/edit/scripts/dump_db.sh $project $1
       ;;
     amoeba)
-      site=$(get_amoeba_site)
+      site=$(amoeba_site | awk '{print $4}')
       echo "dump db for $site"
       /current/edit/scripts/dump_db_amoeba.sh $site $1
       ;;
