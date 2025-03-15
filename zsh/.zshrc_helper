@@ -1,113 +1,3 @@
-# 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
-rpy() {
-  if bundle show pry-remote > /dev/null 2>&1; then
-    bundle exec pry-remote
-  else
-    rpu pry
-  fi
-}
-
-# 重啟 puma/unicorn
-#
-# - rpu       → 啟動或重啟（如果已有 pid）
-# - rpu kill  → 殺掉 process，不重啟
-# - rpu xxx   → xxx 參數會被丟給 pumactl（不支援 unicorn）
-rpu() {
-  # remember to update rpy if site-codes changed
-  [[ $PWD =~ '(.*amoeba|.*cam|.*ck|.*sg|.*ave_ck|.*hk|.*angel)' ]] && folder_path=$match[1]
-  cd $folder_path
-
-  echo "path: $folder_path"
-
-  emulate -L zsh
-  if [[ -d tmp ]]; then
-    local action=$1
-    local pid
-    local animal
-
-    if [[ -f config/puma.rb ]]; then
-      animal='puma'
-    elif [[ -f config/unicorn.rb ]]; then
-      animal='unicorn'
-    else
-      echo "No puma/unicorn directory, aborted."
-      return 1
-    fi
-
-    if [[ -r tmp/pids/$animal.pid && -n $(ps h -p `cat tmp/pids/$animal.pid` | tr -d ' ') ]]; then
-      pid=`cat tmp/pids/$animal.pid`
-    fi
-
-    if [[ -n $action ]]; then
-      case "$action" in
-        pry)
-          if [[ -n $pid ]]; then
-            kill -9 $pid && echo "Process killed ($pid)."
-          fi
-          rserver_restart $animal
-          ;;
-        kill)
-          if [[ -n $pid ]]; then
-            kill -9 $pid && echo "Process killed ($pid)."
-          else
-            echo "No process found."
-          fi
-          ;;
-        *)
-          if [[ -n $pid ]]; then
-            # TODO: control unicorn
-            pumactl -p $pid $action
-          else
-            echo 'ERROR: "No running PID (tmp/pids/puma.pid).'
-          fi
-      esac
-    else
-      if [[ -n $pid ]]; then
-        # Alternatives:
-        # pumactl -p $pid restart
-        # kill -USR2 $pid && echo "Process killed ($pid)."
-
-        # kill -9 (SIGKILL) for force kill
-        kill -9 $pid && echo "Process killed ($pid)."
-        rserver_restart $animal $([[ "$animal" == 'puma' ]] && echo '-d' || echo '-D')
-      else
-        rserver_restart $animal $([[ "$animal" == 'puma' ]] && echo '-d' || echo '-D')
-      fi
-    fi
-  else
-    echo 'ERROR: "tmp" directory not found.'
-  fi
-}
-
-rserver_restart() {
-  local app=${$(pwd):t}
-  # remember to update rpu if site-codes changed
-  [[ ! $app =~ '^(amoeba|cam|hk|ck|sg|ave_ck|angel)' ]] && app='nerv' # support app not named 'nerv' (e.g., nerv2)
-  echo "RAILS_RELATIVE_URL_ROOT=$app"
-
-  case "$1" in
-    puma)
-      shift
-      RAILS_RELATIVE_URL_ROOT=/$app bundle exec puma -C config/puma.rb config.ru $*
-      ;;
-    unicorn)
-      shift
-      RAILS_RELATIVE_URL_ROOT=/$app bundle exec unicorn -c config/unicorn.rb $* && echo 'unicorn running'
-      ;;
-    *)
-      echo 'invalid argument'
-  esac
-}
-
-# XXX
-cbr() {
-  # git fetch
-  local branches branch
-  branches=$(git branch -a) &&
-  branch=$(echo "$branches" | fzf) &&
-  git switch $(echo "$branch" | sed "s:.* remotes/origin/::" | sed "s:.* ::")
-}
-
 # My functions
 
 dumplog() {
@@ -184,23 +74,6 @@ lint() {
 bulk_search_and_replace() {
   rg $1 -l | xargs gsed -i "s/$1/$2/g"
 }
-nrw() {
-  local folder_path
-  local folder_name
-  local asuka_path
-
-  [[ $PWD =~ '(.*ave_ck|.*sg|.*nerv_nz|.*ck|.*hk)' ]] && folder_path=$match[1]
-  if [[ $folder_path =~ '.*(ave_ck)$' ]]; then
-    folder_name='ave_ck'
-  elif [[ $folder_path =~ '.*(sg|nerv_nz|ck|hk)$' ]]; then
-    folder_name=$match[1]
-  fi
-
-  asuka_path="$folder_path/clojure/projects/asuka"
-
-  echo "run npm for $asuka_path, set NERV_BASE=$folder_name"
-  cd $asuka_path && DEV_DARK_MODE=true NERV_BASE=/${=folder_name} npm run watch
-}
 
 cd_adam() {
   local folder_path
@@ -209,14 +82,6 @@ cd_adam() {
   [[ $PWD =~ '(.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk)' ]] && folder_path=$match[1]
 
   cd "$folder_path/clojure/projects/adam"
-}
-
-start_all_server() {
-  tmux splitw -v -p 80 \; selectp -U \; splitw -h -p 66 \; splitw -h -p 50 \;
-  tmux send-keys -t 1 C-z 'nrw' Enter
-  tmux send-keys -t 2 C-z 'cjn' Enter
-  tmux send-keys -t 3 C-z 'bundle exec rake sneakers:run' Enter
-  tmux send-keys -t 4 C-z 'rpu' Enter
 }
 
 amoeba_test_reset() {
@@ -233,27 +98,6 @@ rails_console() {
     bin/rails console
   fi
 }
-
-# Maybe don't need this
-# cop() {
-#   local exts=('rb,thor,jbuilder')
-#   local excludes=':(top,exclude)db/schema.rb'
-#   local app=${$(pwd):t}
-#   local extra_options='--display-cop-names'
-#
-#   if [[ $# -gt 0 ]]; then
-#     local files=$(eval "git diff $@ --diff-filter=d --name-only -- \*.{$exts} '$excludes'")
-#   else
-#     local files=$(eval "git status --porcelain -- \*.{$exts} '$excludes' | sed -e '/^\s\?[DRC] /d' -e 's/^.\{3\}//g'")
-#   fi
-#   # local files=$(eval "git diff --name-only -- \*.{$exts} '$excludes'")
-#
-#   if [[ -n "$files" ]]; then
-#     echo $files | xargs bundle exec rubocop `echo $extra_options`
-#   else
-#     echo "Nothing to check. Write some *.{$exts} to check.\nYou have 20 seconds to comply."
-#   fi
-# }
 
 tx() {
   if ! tmux has-session -t work 2> /dev/null; then
@@ -293,16 +137,6 @@ rg_pcre2() {
 clean_tmp() {
   ls -d ./tmp/* | grep -P "tmp/statement_.*.pdf$" | xargs -d"\n" rm
   ls -d ./tmp/* | grep -P "tmp/valuation_logo_.*.pdf$" | xargs -d"\n" rm
-}
-
-reload_zshrc() {
-  case "$(uname -s)" in
-    Linux)
-      source ~/.zshrc
-      ;;
-    Darwin)
-      exec $SHELL
-  esac
 }
 
 asset_size() {
