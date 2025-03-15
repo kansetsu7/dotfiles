@@ -1,12 +1,20 @@
 # dotfiles
 
-These are the config files to setup an environment that I can comfortably carrying out my daily work.
+## 🔧Installation
 
-It is mainly targeted for Linux environment (or to be specific
-Ubuntu/Debian & ArchLinux), but should also working for Mac OS/X as well.
+install `zsh` first, and set `zsh` as your default shell
 
-## Installation
+`chsh -s /bin/zsh`
 
-    git clone https://github.com/szetobo/dotfiles ~/.dotfiles
-    ~/.dotfiles/setup.zsh
+then run:
+
+`git clone git@github.com:kansetsu7/dotfiles.git ~/dotfiles`
+
+### Mac OS
+
+`~/dotfiles/install/mac_os.zsh`
+
+### Docker (Alpine Linux)
+
+`~/dotfiles/install/docker.zsh`
 
