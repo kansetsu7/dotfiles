@@ -241,7 +241,7 @@ alias rake='be rake'
 # fi
 
 # Rails
-alias rc='rails_console'
+alias rc='be rails c'
 alias rct='be rails console -e test'
 alias rcsb='be rails console --sandbox'
 alias rch="tail -f ~/.pry_history | grep -v 'exit'"

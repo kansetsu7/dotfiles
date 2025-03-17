@@ -91,14 +91,6 @@ amoeba_test_reset() {
   RAILS_ENV=test be rake db:seed
 }
 
-rails_console() {
-  if [[ $PWD =~ '.*amoeba' ]]; then
-    bundle exec rails c
-  else
-    bin/rails console
-  fi
-}
-
 tx() {
   if ! tmux has-session -t work 2> /dev/null; then
     tmux new -s work -d;
