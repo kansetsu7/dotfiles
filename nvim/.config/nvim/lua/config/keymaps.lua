@@ -66,17 +66,16 @@ keymap('', "<Up>", "gk", {})
 
 -- --  Vim Tmux Navigator
 -- -- vim.g['tmux_navigator_disable_when_zoomed'] = 1
-
--- -- " Vim Tmux Runner
--- vim.keymap.set("n", "<leader>ar", ":!tmux display-panes<CR> :VtrAttachToPane<CR>")
--- vim.keymap.set("n", "<leader>kr", ":VtrKillRunner<CR>")
--- vim.keymap.set("n", "<leader>ur", ":VtrUnsetRunnerPane<CR>")
--- vim.keymap.set("n", "<leader>sl", ":VtrSendLinesToRunner<CR>")
--- vim.keymap.set(
---     "n",
---     "<leader>rc",
---     ":VtrUnsetRunnerPane<CR>:VtrOpenRunner {'orientation': 'v', 'percentage': 15, 'cmd': 'rc'}<CR>"
--- )
+-- " Vim Tmux Runner
+vim.keymap.set("n", "<leader>ar", ":!tmux display-panes<CR> :VtrAttachToPane<CR>")
+vim.keymap.set("n", "<leader>kr", ":VtrKillRunner<CR>")
+vim.keymap.set("n", "<leader>ur", ":VtrUnsetRunnerPane<CR>")
+vim.keymap.set("n", "<leader>sl", ":VtrSendLinesToRunner<CR>")
+vim.keymap.set(
+    "n",
+    "<leader>rc",
+    ":VtrUnsetRunnerPane<CR>:VtrOpenRunner {'orientation': 'v', 'percentage': 15, 'cmd': 'rc'}<CR>"
+)
 
 -- start interactive EasyAlign in visual mode
 vim.keymap.set("v", "<Enter>", "<Plug>(EasyAlign)")
