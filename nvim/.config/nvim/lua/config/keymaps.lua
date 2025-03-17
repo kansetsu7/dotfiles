@@ -157,6 +157,7 @@ keymap("n", "<leader>av", ":AV<CR>", opts)
 keymap("n", "<leader>gr", ":R<CR>", opts)
 -- keymap("n", "<leader>vl", ":sp<cr><C-^><cr>", opts)
 -- keymap("n", "<leader>hl", ":vsp<cr><C-^><cr>", opts)
+keymap("n", "<leader>rm", ":RedoMigration<CR>", { noremap = true, silent = true })
 
 keymap('n', ":et", ":e tmp/tools/tester.rb<CR>", opts)
 keymap('n', ":ets", ":e tmp/tools/sql/test.sql<CR>", opts)
