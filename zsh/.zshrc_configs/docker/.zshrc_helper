@@ -46,3 +46,41 @@ dump_db() {
       ;;
   esac
 }
+
+# shortcut to swap different cache folder for jumping between nerv/amoeba/angel development {{
+sc() {
+  hl='\033[0;32m'
+  nc='\033[0m'
+  # default if /cache is real folder or softlink, if /cache is real folder, should exit now
+  # or it may be accidentally clear
+  if [ -e /cache ] && [ ! -L /cache ]; then
+    echo -e "${err}Error: /cache folder is not a softlink, this script may not working on this condition, now exit!${nc}"
+    # exit 1
+  else
+    [ -L /cache ] && rm /cache;
+    case "${1:-default}" in
+      default)
+        echo -e "${hl}swap to use 'default' cache folder${nc}"
+        ln -s /cache-default /cache
+        [ -n "$TMUX" ] && tmux set-option -g @cache-name 'cache-default'
+        ;;
+      amoeba)
+        echo "${hl}swap to use 'amoeba' cache folder${nc}"
+        ln -s /cache-amoeba /cache
+        [ -n "$TMUX" ] && tmux set-option -g @cache-name 'cache-amoeba'
+        ;;
+      angel)
+        echo "${hl}swap to use 'angel' cache folder${nc}"
+        ln -s /cache-angel /cache
+        [ -n "$TMUX" ] && tmux set-option -g @cache-name 'cache-angel'
+        ;;
+      *)
+        echo "${err}Error: cache '$1' not exists, please try again!${nc}"
+        ;;
+    esac
+  fi
+}
+
+# init softlink if not exists
+[ ! -e /cache ] && sc
+# }}
