@@ -13,6 +13,7 @@ folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "ruby")
 for folder in "${folders[@]}"; do
   mkdir -p $HOME/.config/"$folder"
 done
+mkdir -p $HOME/.docker
 
 cd ~/.dotfiles
 
@@ -24,6 +25,7 @@ stow --verbose asdf \
   ruby \
   tmux \
   zsh \
+  docker \
 
 # TODO: softlink lazygit config to $HOME/Library/Application\ Support/lazygit/config.yml
 
