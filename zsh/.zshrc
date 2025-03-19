@@ -209,7 +209,6 @@ alias lcl='j clojure/components/lcl'
 alias magi='j clojure/components/magi'
 alias pb="j $PROJECT_PATH/playbooks"
 alias pb2="j $PROJECT_PATH/playbooks2"
-# alias obsi='j /Users/$(whoami)/Library/Mobile\ Documents/iCloud~md~obsidian/Documents/Main'
 
 # Gems
 alias be='bundle exec'
