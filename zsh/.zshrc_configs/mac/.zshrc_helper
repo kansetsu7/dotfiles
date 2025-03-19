@@ -8,6 +8,7 @@ dump_db() {
   fi
 }
 
+# sync clipboard between mac and docker {{{
 socat_started(){
   lsof -i :"$1" | grep -q socat
 }
@@ -20,6 +21,7 @@ sync_docker_clipboard(){
     socat TCP-LISTEN:8378,reuseaddr,fork EXEC:"pbpaste" &
   fi
 }
+# }}}
 
 # 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
 rpy() {
