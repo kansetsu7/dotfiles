@@ -15,6 +15,8 @@ vim.cmd([[
     autocmd InsertLeave * set nopaste
     autocmd User Rails silent! Rnavcommand job app/jobs -glob=**/* -suffix=_job.rb
     autocmd! CursorHold,CursorHoldI * lua require('echo-diagnostics').echo_line_diagnostic()
+    " trim trailing space on save
+    autocmd! BufWritePre * lua StripTrailingWhitespace()
   augroup end
   augroup _git
     autocmd!
