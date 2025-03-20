@@ -64,7 +64,7 @@ sc() {
         ln -s /cache-default /cache
         [ -n "$TMUX" ] && tmux set-option -g @cache-name 'cache-default'
         ;;
-      amoeba)
+      amoeba|aba)
         echo "${hl}swap to use 'amoeba' cache folder${nc}"
         ln -s /cache-amoeba /cache
         [ -n "$TMUX" ] && tmux set-option -g @cache-name 'cache-amoeba'
