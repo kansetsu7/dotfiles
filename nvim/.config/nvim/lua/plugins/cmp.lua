@@ -54,6 +54,9 @@ return {
 
   {
     "hrsh7th/nvim-cmp", -- The completion plugin
+    dependencies = {
+      "kristijanhusak/vim-dadbod-completion", -- SQL completion
+    },
     config = function()
       require("luasnip/loaders/from_vscode").lazy_load()
       local luasnip = require("luasnip")
@@ -149,6 +152,19 @@ return {
           ghost_text = false,
           native_menu = false,
         },
+        -- Enable vim-dadbod-completion only for SQL filetypes
+        vim.api.nvim_create_autocmd("FileType", {
+          pattern = { "sql", "mysql", "plsql" },
+          callback = function()
+            cmp.setup.buffer({
+              sources = cmp.config.sources({
+                { name = "vim-dadbod-completion" },
+              }, {
+                { name = "buffer" },
+              }),
+            })
+          end,
+        })
       }
     end,
   }
