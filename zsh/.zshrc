@@ -207,8 +207,9 @@ alias asuka="j clojure/projects/asuka"
 alias asu=asuka
 alias lcl='j clojure/components/lcl'
 alias magi='j clojure/components/magi'
-alias pb="j $PROJECT_PATH/playbooks"
-alias pb2="j $PROJECT_PATH/playbooks2"
+alias pb="j ${MOUNTED_PROJ_PATH-:$PROJECT_PATH}/playbooks"
+alias pb2="j ${MOUNTED_PROJ_PATH-:$PROJECT_PATH}/playbooks2"
+alias vm="j ${MOUNTED_PROJ_PATH-:$PROJECT_PATH}/vm"
 
 # Gems
 alias be='bundle exec'
