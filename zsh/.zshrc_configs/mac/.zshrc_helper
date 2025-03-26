@@ -2,9 +2,9 @@ dump_db() {
   dir=${$(pwd):t}
   if [[ "$dir" == 'amoeba' || "$dir" == 'cam' ]]; then
     echo 'in amoeba / cam'
-    PGPORT=15432 $project_path/vm/scripts/dump_db.zsh "$@"
+    PGPORT=15432 $PROJECT_PATH/vm/scripts/dump_db.zsh "$@"
   else
-    $project_path/vm/scripts/dump_db.zsh "$@"
+    $PROJECT_PATH/vm/scripts/dump_db.zsh "$@"
   fi
 }
 

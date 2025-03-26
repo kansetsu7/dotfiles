@@ -1,5 +1,5 @@
 # Define path
-export PROJECT_PATH=$HOME/proj/
+export PROJECT_PATH=$HOME/proj
 export DOTFILE_PATH=$HOME/.dotfiles
 export NERV_PREFIX=''
 
