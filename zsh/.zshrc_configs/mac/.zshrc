@@ -3,8 +3,6 @@ export PROJECT_PATH=$HOME/proj
 export DOTFILE_PATH=$HOME/.dotfiles
 export NERV_PREFIX=''
 
-export SSH_IDENTITY_AGENT="usekeychain"
-
 # for e3 startup
 export MAC_OS_HOME=$HOME
 export MAC_OS_PROJECT=$HOME/proj
