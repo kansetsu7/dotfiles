@@ -49,6 +49,7 @@ dump_db() {
 
 # shortcut to swap different cache folder for jumping between nerv/amoeba/angel development {{
 sc() {
+  err='\\033[0;31m'
   hl='\033[0;32m'
   nc='\033[0m'
   # default if /cache is real folder or softlink, if /cache is real folder, should exit now
