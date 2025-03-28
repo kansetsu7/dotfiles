@@ -172,10 +172,6 @@ alias nodejs=node
 # ripgrep
 alias rgdef="rg_method_def $1"
 
-# HSTR configuration - add this to ~/.zshrc
-export HSTR_CONFIG=hicolor       # get more colors
-bindkey -s "\C-r" "\C-a hstr -- \C-j"     # bind hstr to Ctrl-r (for Vi mode check doc)
-
 # nginx
 alias nginx_test_and_reload='nginx -t && brew services restart nginx && sudo chown -R andre /opt/homebrew/var/run/nginx/client_body_temp/'
 alias vnginx='vi /opt/homebrew/etc/nginx/servers/'
