@@ -154,7 +154,10 @@ return {
   "gpanders/nvim-parinfer",
   "tpope/vim-sexp-mappings-for-regular-people",
   "clojure-vim/vim-jack-in",
-  'tpope/vim-projectionist',
+  {
+    'tpope/vim-projectionist',
+    ft = "clojure"
+  },
 
   {
     "Olical/conjure",
