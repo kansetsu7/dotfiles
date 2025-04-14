@@ -149,3 +149,14 @@ start_all_server() {
   tmux send-keys -t 3 C-z 'bundle exec rake sneakers:run' Enter
   tmux send-keys -t 4 C-z 'rpu' Enter
 }
+
+docker-attach() {  # pair host must have this
+  # CONTAINER=$(docker ps --format "{{.Names}}" | grep "^edit" | head -n 1)
+  CONTAINER='e3'
+  if [ -n "$CONTAINER" ]; then
+    echo "Connecting to container $CONTAINER..."
+    docker exec -it $CONTAINER tmux attach || echo "No tmux session in container $CONTAINER"
+  else
+    echo "Error: no container start with 'edit-' found running"
+  fi
+}

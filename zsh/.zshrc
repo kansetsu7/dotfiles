@@ -77,9 +77,11 @@ export LC_CTYPE=en_US.UTF-8
 
 export EDITOR='nvim'
 
-# For pair
-pairg() { ssh -t $1 ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p $2 -t ${3:-vagrant}@localhost 'tmux attach' }
+# pair {{{
+# pairg() { ssh -t $1 ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p $2 -t ${3:-vagrant}@localhost 'tmux attach' } # pair in mac env
 pairh() { ssh -S none -o 'ExitOnForwardFailure=yes' -R $2\:localhost:22 -t $1 'watch -en 10 who' }
+pairg() { ssh -t $1 ssh -o 'StrictHostKeyChecking=no' -o 'UserKnownHostsFile=/dev/null' -p $2 -t ${3:-vagrant}@localhost ${4:-'zsh -il -c docker-attach'} } # pair in docker env
+# }}}
 
 # Use nvim
 alias e='nvim'
