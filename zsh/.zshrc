@@ -304,6 +304,7 @@ alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/ner
 ########################
 alias df="cd $DOTFILE_PATH"
 alias viz="cd $DOTFILE_PATH && vi zsh/.zshrc"
+alias vizz="cd $DOTFILE_PATH && vi zsh/.zshrc_configs/$OS_TYPE/.zshrc"
 alias szsh="exec $DOTFILE_PATH/zsh/.zshrc"
 alias viv="cd $DOTFILE_PATH && vi nvim/.config/nvim/init.lua"
 alias vie='vi .env'
