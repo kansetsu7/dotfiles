@@ -23,7 +23,7 @@
 # --colors=path:fg:green
 
 # Exclude directories.
---glob=!{.git,.svn,node_modules,tealdeer,Trash,vendor}
+--glob=!{.git,.svn,node_modules,tealdeer,Trash,vendor/assets,vendor/crs_schema,vendor/fatca,vendor/pdf_form_filler,vendor/xsd,vendor/light_rabbit_mq.rb}
 
 # Don't print lines longer than this limit.
 --max-columns=444

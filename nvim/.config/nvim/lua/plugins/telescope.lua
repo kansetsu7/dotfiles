@@ -9,7 +9,7 @@ return {
       local tele = require("telescope")
       tele.setup {
         defaults = {
-          file_ignore_patterns = { "vendor/", "migrate_archive", "snippets", "image", ".lsp/", ".clj-kondo/" },
+          file_ignore_patterns = { "vendor/assets", "vendor/crs_schema", "vendor/fatca", "vendor/pdf_form_filler", "vendor/xsd", "migrate_archive", "snippets", "image", ".lsp/", ".clj-kondo/" },
           prompt_prefix = " ",
           selection_caret = " ",
           path_display = { "truncate" },
