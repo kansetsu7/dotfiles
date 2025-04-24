@@ -79,27 +79,17 @@ Pry.commands.alias_command('rcdb', 'reconnect_db')
 # Nerv {{{
 if defined?(Nerv)
   CDD = ClientDueDiligenceEvent
-  CMB = CommissionBatch
   CSR = ClientServiceRecord
   CV  = CrsValuation
-  ET  = EmailTemplate
   FDO = FundDealingOrder
-  FI  = FinalizedInfo
-  FII = FinalizedInfoItem
   IQ  = Inquiry
-  ITB = ItemTransferBatch
-  MP  = MasterPlan
-  PA  = PaymentArrangement
   PC  = ProductConfig
   PI  = PlanItem
   PO  = PlanOwner
   POI = PayoutItem
   PS  = PlanService
   SRT = ServiceRecordType
-  TB  = TransferBatch
-  TU  = TopUp
   WCC = WorldCheckCase
-  II  = InitialInstallment
 
   module Nerv::Pry
     RESOURCE_TYPES = {
