@@ -156,6 +156,9 @@ switch_to_tmp_branch() {
     playbooks|playbooks2)
       branch_name="pb"
       ;;
+    amoeba)
+      branch_name="aba"
+      ;;
     *)
       branch_name="master"
       ;;

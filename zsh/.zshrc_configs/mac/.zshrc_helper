@@ -160,3 +160,7 @@ docker-attach() {  # pair host must have this
     echo "Error: no container start with 'edit-' found running"
   fi
 }
+
+playwright_report() {
+  cd ~/proj/playwright-report && docker cp e3:/proj/nerv_hk/e2e/playwright/report/ . && npx playwright show-report report
+}
