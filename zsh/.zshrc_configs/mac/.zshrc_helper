@@ -164,3 +164,37 @@ docker-attach() {  # pair host must have this
 playwright_report() {
   cd ~/proj/playwright-report && docker cp e3:/proj/nerv_hk/e2e/playwright/report/ . && npx playwright show-report report
 }
+
+rebuild_cache(){
+  docker volume rm development-cache
+  docker volume create --name development-cache > /dev/null
+  docker run --rm \
+    -v development-proj:/proj \
+    -v development-cache:/cache \
+    abagile/nerv-dev bash -c "\
+      set -e; \
+      chown -R root:root /proj/nerv_hk; \
+      cd /proj/nerv_hk; \
+      [[ -d /proj/nerv_ck ]]     || git worktree add /proj/nerv_ck; \
+      [[ -d /proj/nerv_sg ]]     || git worktree add /proj/nerv_sg; \
+      [[ -d /proj/nerv_ave_ck ]] || git worktree add /proj/nerv_ave_ck; \
+      bundle config build.pg --with-cflags=-Wno-error=incompatible-pointer-types; \
+      bundle config build.oj --with-cflags=-Wno-error=incompatible-pointer-types; \
+      bundle config build.msgpack --with-cflags=-Wno-error=incompatible-pointer-types; \
+      bundle update --bundler --jobs=10; \
+      asdf reshim ruby;"
+
+  docker run --rm \
+    -v development-proj:/proj \
+    -v development-cache:/cache \
+    abagile/asuka-dev bash -c "\
+      mkdir -p /cache/m2; \
+      mkdir -p /cache/gitlibs; \
+      cd /proj/nerv_hk/clojure/projects/adam; \
+      clj -P;
+      for site in hk ck sg ave_ck; \
+      do \
+        cd /proj/nerv_\$site/clojure/projects/asuka; \
+        npm clean-install;
+      done"
+}
