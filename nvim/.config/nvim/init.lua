@@ -13,3 +13,6 @@ if is_docker then
   require("config.docker.options")
   require("config.docker.lsp.init")
 end
+
+local ft = require('Comment.ft')
+ft.eruby = '<!-- %s -->'
