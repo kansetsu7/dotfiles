@@ -75,6 +75,8 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = "javascript",
   callback = function(event)
     set_debug_keymap(event, "oconsole.log()<ESC>^")
+    vim.bo.autoindent = true
+    vim.bo.smartindent = false
   end,
 })
 
