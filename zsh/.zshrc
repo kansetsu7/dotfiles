@@ -154,7 +154,7 @@ alias grb="rebase_func $1"
 alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
 alias gcaa='git commit --amend'
-alias gbf="git_branch_current | gsed -E 's/\-fork$//' | xargs git checkout"
+alias gbf="git_branch_current | sed -E 's/\-fork$//' | xargs git checkout"
 
 alias sp='switch_to_tmp_branch'
 alias gcmbdc='gcm_and_gbd_current_branch'
