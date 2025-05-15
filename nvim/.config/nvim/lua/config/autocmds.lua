@@ -53,37 +53,41 @@ vim.cmd([[
   augroup end
 ]])
 
+local function set_debug_keymap(event, rhs)
+  vim.keymap.set("n", "<leader>p", rhs, { buffer = event.buf, silent = true })
+end
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "ruby",
   callback = function(event)
-    vim.keymap.set("n", "<Leader>p", "obinding.pry<ESC>^", { buffer = event.buf, silent = true })
+    set_debug_keymap(event, "obinding.pry<ESC>^")
   end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "slim",
   callback = function(event)
-    vim.keymap.set("n", "<Leader>p", "o- binding.pry<ESC>^", { buffer = event.buf, silent = true })
+    set_debug_keymap(event, "o- binding.pry<ESC>^")
   end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "javascript",
   callback = function(event)
-    vim.keymap.set("n", "<Leader>p", "oconsole.log()<ESC>^", { buffer = event.buf, silent = true })
+    set_debug_keymap(event, "oconsole.log()<ESC>^")
   end,
 })
 
 vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
   pattern = "*.clj",
   callback = function(event)
-    vim.keymap.set("n", "<Leader>p", "o(debux.core/dbg )<ESC>^", { buffer = event.buf, silent = true })
+    set_debug_keymap(event, "o(debux.core/dbg )<ESC>^")
   end,
 })
 
 vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
   pattern = "*.cljs",
   callback = function(event)
-    vim.keymap.set("n", "<Leader>p", "o(js/console.log )<Esc>", { buffer = event.buf, silent = true })
+    set_debug_keymap(event, "o(js/console.log )<Esc>")
   end,
 })
