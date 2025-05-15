@@ -40,8 +40,6 @@ vim.cmd([[
   " autocmd FileType clojure setlocal iskeyword+=?,*,!,+,/,=,<,>,$
     autocmd FileType clojure setlocal iskeyword-=.
     autocmd FileType clojure setlocal iskeyword-=/
-    autocmd BufEnter,BufNew,BufRead *.clj nnoremap <leader>p o(debux.core/dbg<Space>)<Esc>
-    autocmd BufEnter,BufNew,BufRead *.cljs nnoremap <leader>p o(js/console.log) <Esc>
     autocmd FileType clojure setlocal commentstring=;;%s
     autocmd FileType clojure setlocal formatoptions+=r
   augroup end
@@ -54,3 +52,38 @@ vim.cmd([[
     autocmd Filetype clojure let b:AutoPairs = {'"':'"'}
   augroup end
 ]])
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "ruby",
+  callback = function(event)
+    vim.keymap.set("n", "<Leader>p", "obinding.pry<ESC>^", { buffer = event.buf, silent = true })
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "slim",
+  callback = function(event)
+    vim.keymap.set("n", "<Leader>p", "o- binding.pry<ESC>^", { buffer = event.buf, silent = true })
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "javascript",
+  callback = function(event)
+    vim.keymap.set("n", "<Leader>p", "oconsole.log()<ESC>^", { buffer = event.buf, silent = true })
+  end,
+})
+
+vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
+  pattern = "*.clj",
+  callback = function(event)
+    vim.keymap.set("n", "<Leader>p", "o(debux.core/dbg )<ESC>^", { buffer = event.buf, silent = true })
+  end,
+})
+
+vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
+  pattern = "*.cljs",
+  callback = function(event)
+    vim.keymap.set("n", "<Leader>p", "o(js/console.log )<Esc>", { buffer = event.buf, silent = true })
+  end,
+})

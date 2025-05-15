@@ -109,7 +109,6 @@ keymap("c", "w!!", "%!sudo tee > /dev/null %", opts)
 -- -- indenting
 -- keymap("n", "<leader>in", "mmgg=G'm", opts)
 -- keymap("n", "<Leader>it", ":IBLToggle<cr>", opts)
-keymap("n", "<leader>p", "obinding.pry<ESC>^", term_opts)
 keymap("n", "<leader>mr", "oSee merge request metis/nerv!", term_opts)
 
 -- use system clipboard
