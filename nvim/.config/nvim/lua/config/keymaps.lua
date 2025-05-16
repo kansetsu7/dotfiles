@@ -223,3 +223,45 @@ keymap('n', "<leader>/", "\"hye/<C-r>h<CR>", opts)
 keymap('n', "<leader>sql", ":UppercaseSQL<CR>", opts)
 
 -- keymap('n', ":ctf!", ":CreateTestFile", opts)
+
+-- keymaps for debugging
+local function set_debug_keymap(event, rhs)
+  vim.keymap.set("n", "<leader>p", rhs, { buffer = event.buf, silent = true })
+end
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "ruby",
+  callback = function(event)
+    set_debug_keymap(event, "obinding.pry<ESC>^")
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "slim",
+  callback = function(event)
+    set_debug_keymap(event, "o- binding.pry<ESC>^")
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "javascript",
+  callback = function(event)
+    set_debug_keymap(event, "oconsole.log()<ESC>i")
+    vim.bo.autoindent = true
+    vim.bo.smartindent = false
+  end,
+})
+
+vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
+  pattern = "*.clj",
+  callback = function(event)
+    set_debug_keymap(event, "o(debux.core/dbg )<ESC>i")
+  end,
+})
+
+vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
+  pattern = "*.cljs",
+  callback = function(event)
+    set_debug_keymap(event, "o(js/console.log )<Esc>i")
+  end,
+})
