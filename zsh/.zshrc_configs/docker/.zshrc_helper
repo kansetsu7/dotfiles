@@ -24,6 +24,12 @@ detect_pwd_project(){
   [[ $PWD =~ $pattern ]] && project=$match[1] && echo ${project#nerv_}
 }
 
+# match $PWD with project folder name
+detect_project_folder(){
+  pattern="(nerv_hk|nerv_ck|nerv_sg|nerv_ave_ck|amoeba|angel|cam)"
+  [[ $PWD =~ $pattern ]] && project=$match[1] && echo $project
+}
+
 # detect project and pass it to dump_db script. Handle amoeba site as well.
 dump_db() {
   project=$(detect_pwd_project)
@@ -80,3 +86,15 @@ sc() {
 # init softlink if not exists
 [ ! -e /cache ] && sc
 # }}
+
+ci_playwright_report() {
+  from=/download/e2e_fail/e2e/playwright-report
+  echo "copy $from to /proj/nerv_$project/e2e"
+  project_folder="${1:-$(detect_project_folder)}"
+  cp -r $from /proj/$project_folder/e2e
+}
+
+e2e_report() {
+  project_folder="${1:-$(detect_project_folder)}"
+  /proj/$project_folder/e2e/show-report.sh
+}
