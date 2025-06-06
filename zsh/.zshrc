@@ -358,6 +358,10 @@ eval "$(zoxide init zsh --cmd j)"
 export PGHOST=localhost
 export PGUSER=psql
 
+if [ -f "$HOME/.config/env/openai.env.gpg" ]; then
+  gpg -dq "$HOME/.config/env/openai.env.gpg" 2>/dev/null | source /dev/stdin
+fi
+
 case `uname` in
   Darwin)
     export HOMEBREW_NO_AUTO_UPDATE=1 # https://docs.brew.sh/Manpage

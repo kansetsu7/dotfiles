@@ -24,6 +24,7 @@ stow --verbose \
   ruby \
   tmux \
   zsh \
+  env \
   lazygit \
   lazydocker \
 
