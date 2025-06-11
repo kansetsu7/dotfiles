@@ -139,7 +139,7 @@ asset_size() {
 
 # Git related {{{
 switch_to_tmp_branch() {
-  [[ $PWD =~ '(ck|sg|hk|ave_ck|playbooks|playbooks2)' ]] && project_name=$match[1]
+  [[ $PWD =~ '(ck|sg|hk|ave_ck|playbooks|playbooks2|amoeba)' ]] && project_name=$match[1]
   case $project_name in
     hk)
       branch_name="hk"
