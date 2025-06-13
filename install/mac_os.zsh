@@ -25,6 +25,7 @@ stow --verbose asdf \
   ruby \
   tmux \
   zsh \
+  env \
   docker \
 
 # TODO: softlink lazygit config to $HOME/Library/Application\ Support/lazygit/config.yml
