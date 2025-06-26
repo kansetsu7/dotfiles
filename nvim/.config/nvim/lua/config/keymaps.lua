@@ -246,7 +246,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "javascript",
   callback = function(event)
-    set_debug_keymap(event, "oconsole.log()<ESC>i")
+    set_debug_keymap(event, "oconsole.log()<ESC>")
     vim.bo.autoindent = true
     vim.bo.smartindent = false
   end,
@@ -255,13 +255,13 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
   pattern = "*.clj",
   callback = function(event)
-    set_debug_keymap(event, "o(debux.core/dbg )<ESC>i")
+    set_debug_keymap(event, "o(debux.core/dbg)<ESC>")
   end,
 })
 
 vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
   pattern = "*.cljs",
   callback = function(event)
-    set_debug_keymap(event, "o(js/console.log )<Esc>i")
+    set_debug_keymap(event, "o(js/console.log)<Esc>")
   end,
 })
