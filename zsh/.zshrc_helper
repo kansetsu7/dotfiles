@@ -1,4 +1,5 @@
 # My functions
+sed=`command -v gsed || command -v sed`
 
 dumplog() {
   local folder
@@ -33,8 +34,8 @@ dumplog() {
 }
 
 check_and_upgrade_clj_kondo() {
-  latest_ver=`curl --silent "https://api.github.com/repos/clj-kondo/clj-kondo/releases/latest" | grep '"tag_name":' | gsed -E 's/.*"([^"]+)".*/\1/'`
-  local_ver=`clj-kondo --version | gsed -E 's/clj-kondo //g'`
+  latest_ver=`curl --silent "https://api.github.com/repos/clj-kondo/clj-kondo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
+  local_ver=`clj-kondo --version | sed -E 's/clj-kondo //g'`
   if [[ "$local_ver" != "$latest_ver" ]]; then
     if [[ "`uname -s`" == "Darwin" ]]; then # macOS
       echo "Version too old ($local_ver), auto update to $latest_ver..."
@@ -57,7 +58,7 @@ lint() {
       check_and_upgrade_clj_kondo
       # echo $files
       if [[ $project_path =~  '(.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk)' ]]; then
-        cd "$project_path/clojure" && echo $files | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
+        cd "$project_path/clojure" && echo $files | sed -E 's/clojure\///g' | xargs clj-kondo --lint
       elif [[ $project_path =~ '(.*awesome_name|.*master_of_coin)' ]]; then
         clj-kondo --lint
       else
@@ -67,12 +68,12 @@ lint() {
     fi
 
     # cd "$project_path/clojure" && "$project_path/eva/asuka/bin/lint"
-    # git diff master... --name-only -- \*.{clj,cljs,edn} | gsed -E 's/clojure\///g' | xargs clj-kondo --lint
+    # git diff master... --name-only -- \*.{clj,cljs,edn} | sed -E 's/clojure\///g' | xargs clj-kondo --lint
   fi
 }
 
 bulk_search_and_replace() {
-  rg $1 -l | xargs gsed -i "s/$1/$2/g"
+  rg $1 -l | xargs sed -i "s/$1/$2/g"
 }
 
 cd_adam() {
