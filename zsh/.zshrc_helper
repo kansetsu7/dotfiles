@@ -86,10 +86,10 @@ cd_adam() {
 }
 
 amoeba_test_reset() {
-  RAILS_ENV=test be rake db:drop
-  RAILS_ENV=test be rake db:create
-  RAILS_ENV=test be rake db:schema:load
-  RAILS_ENV=test be rake db:seed
+  RAILS_ENV=test bundle exec rake db:drop
+  RAILS_ENV=test bundle exec rake db:create
+  RAILS_ENV=test bundle exec rake db:schema:load
+  RAILS_ENV=test bundle exec rake db:seed
 }
 
 tx() {
