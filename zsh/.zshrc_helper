@@ -192,3 +192,20 @@ dhq() {
     esac
   fi
 }
+
+# {{{
+git_config() {
+  if [[ $# -ge 1 ]]; then
+    case $1 in
+      personal)
+        git config user.name 'kansetsu7'
+        git config user.email 'kansetsu4@gmail.com'
+        ;;
+      work)
+        git config user.name 'Andre Kuo'
+        git config user.email 'andre.kuo@abagile.com'
+        ;;
+    esac
+  fi
+}
+# }}}
