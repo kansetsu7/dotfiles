@@ -225,53 +225,28 @@ if defined?(Nerv)
   # }}}
 
   # change-password {{{
-  Pry::Commands.create_command 'change-password' do
+  Pry::Commands.create_command 'andre-change-password' do
     group 'Nerv'
     description 'Change user password for development convenience'
 
     banner <<-BANNER
       Usage: change-password mt000439     Change user with specific login_id
-             change-password              Change users (predefined within snippet)
     BANNER
 
     def process
-      login = args.shift
-
-      if login.blank?
-        play_snippet
-      else
-        puts '-----------'
-        fail "args: #{args}, login: #{login}"
-        login.downcase!
-        cmd = <<-END.gsub(/^\s{4}/, '')
+      login = args.join(' ')
+      login.downcase!
+      cmd = <<-RUBY.gsub(/^\s{4}/, '')
           User.find_by!(login_id: '#{login}').tap do |u|
             u.skip_confirmation! unless u.confirmed?
             u.skip_password_checking = true
-            u.update!(password: '#{Nerv::Pry::DEV_PASSWORD}', otp_required_for_login: false)
+            u.update!(password: '#{DEV_PASSWORD}')
           end
-        END
-        eval_string << cmd
-      end
-    end
-
-    private
-
-    def play_snippet
-      filename = 'change_passwords.rb'
-      dirs = [
-        Pathname.new('~/vm/scripts/nerv')
-      ]
-      src = dirs.map { |s| s + filename}.detect(&:file?)
-      if src
-        run 'play', src
-      else
-        output.puts "Snippet file '#{filename}' not found."
-        output.puts "  Finding pathes: #{dirs.map(&:to_s).inspect}"
-      end
-      # TODO: return void
+      RUBY
+      eval_string << cmd
     end
   end
-  Pry.commands.alias_command('chpw', 'change-password')
+  Pry.commands.alias_command('chpw', 'andre-change-password')
   # }}}
 
   # change-password-all {{{
