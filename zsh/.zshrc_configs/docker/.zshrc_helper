@@ -47,6 +47,7 @@ dump_db() {
       ;;
   esac
 }
+alias dumpdb=dump_db
 
 # shortcut to swap different cache folder for jumping between nerv/amoeba/angel development {{
 sc() {
