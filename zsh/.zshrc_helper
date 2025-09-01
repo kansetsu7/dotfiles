@@ -209,3 +209,8 @@ git_config() {
   fi
 }
 # }}}
+
+# get all `rg` matched files and open by nvim
+rgv() {
+  rg $1 $2 -l | xargs nvim
+}
