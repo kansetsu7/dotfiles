@@ -90,6 +90,7 @@ if defined?(Nerv)
   PS  = PlanService
   SRT = ServiceRecordType
   WCC = WorldCheckCase
+  IC = ItemContribution
 
   module Nerv::Pry
     RESOURCE_TYPES = {
