@@ -172,7 +172,7 @@ switch_to_tmp_branch() {
 gcm_and_gbd_current_branch() {
   branch_name=`git rev-parse --abbrev-ref HEAD`
   git checkout master
-  gbd $branch_name
+  git branch -D $branch_name
   switch_to_tmp_branch
 }
 # }}}
