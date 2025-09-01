@@ -122,7 +122,7 @@ if defined?(Nerv)
       iq:    'Inquiry',
     }
 
-    DEV_PASSWORD = '666'
+    DEV_PASSWORD = '111'
   end
 
   # nerv-resource {{{
