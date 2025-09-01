@@ -84,5 +84,17 @@ return {
         ft = { "markdown", "Avante" },
       },
     },
+  },
+  {
+    -- dir = "/project/commit-enhancer",
+    'kansetsu7/commit-enhancer.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    ft = 'gitcommit',
+    config = function()
+      require('commit-enhancer').setup({
+        model = 'gpt-4o',
+        prompt_template_path = vim.fn.expand('~/.config/prompt/commit-msg-enhance.txt'),
+      })
+    end,
   }
 }
