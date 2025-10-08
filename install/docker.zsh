@@ -27,6 +27,7 @@ stow --verbose \
   env \
   lazygit \
   lazydocker \
+  sql \
 
 # https://github.com/tmux-plugins/tpm
 if [[ ! -d /root/.config/tmux/plugins/tpm ]]; then
