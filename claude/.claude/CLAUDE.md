@@ -128,7 +128,6 @@ When multiple valid approaches exist, choose based on:
 - [ ] No linter/formatter warnings
 - [ ] Commit messages are clear
 - [ ] Implementation matches plan
-- [ ] No TODOs without issue numbers
 
 ### Test Guidelines
 
