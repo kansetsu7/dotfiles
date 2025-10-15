@@ -27,6 +27,7 @@ stow --verbose \
   env \
   lazygit \
   lazydocker \
+  claude \
   sql \
 
 # https://github.com/tmux-plugins/tpm
