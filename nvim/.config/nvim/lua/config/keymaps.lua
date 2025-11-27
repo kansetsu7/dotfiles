@@ -255,7 +255,7 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
   pattern = "*.clj",
   callback = function(event)
-    set_debug_keymap(event, "o(debux.core/dbg)<ESC>")
+    set_debug_keymap(event, "o(prn)<ESC>")
   end,
 })
 
