@@ -51,6 +51,7 @@ vim.g.dbs = {
   { name = 'hk',     url = 'postgres://psql@host.docker.internal:5432/nerv_hk' },
   { name = 'ck',     url = 'postgres://psql@host.docker.internal:5432/nerv_ck' },
   { name = 'sg',     url = 'postgres://psql@host.docker.internal:5432/nerv_sg' },
+  { name = 'sg_test', url = 'postgres://psql@host.docker.internal:5432/nerv_sg_test' },
   { name = 'ave_ck', url = 'postgres://psql@host.docker.internal:5432/nerv_ave_ck' },
   { name = 'amoeba', url = 'postgres://psql@host.docker.internal:5410/amoeba_development' },
 }
