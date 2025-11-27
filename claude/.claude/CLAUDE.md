@@ -92,6 +92,19 @@ Break complex work into 3-5 stages. Document in `.claude/IMPLEMENTATION_PLAN.md`
 - Handle errors at appropriate level
 - Never silently swallow exceptions
 
+### Shell Tool Usage
+
+**IMPORTANT**: Use the following specialized tools instead of traditional Unix commands: (Install if missing)
+
+| Task Type | Must Use | Do Not Use |
+|-----------|----------|------------|
+| Find Files | `fd` | `find`, `ls -R` |
+| Search Text | `rg` (ripgrep) | `grep`, `ag` |
+| Analyze Code Structure | `ast-grep` | `grep`, `sed` |
+| Interactive Selection | `fzf` | Manual filtering |
+| Process JSON | `jq` | `python -m json.tool` |
+| Process YAML/XML | `yq` | Manual parsing |
+
 ## Decision Framework
 
 When multiple valid approaches exist, choose based on:
