@@ -41,5 +41,8 @@ fi
 # forced to provide $ZDOTDDIR here or it will have error at first time loading -> "Failed to source /root/.config/zsh/.zimrc"
 ZDOTDIR=/root source /root/.zshrc
 
+# install
+npm install -g --prefix=/root/npm-global @anthropic-ai/claude-code@latest @google/gemini-cli
+
 echo "Then You are all set!"
 
