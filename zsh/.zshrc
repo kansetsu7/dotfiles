@@ -265,7 +265,7 @@ alias clog='cat /dev/null >! log/lograge_development.log && cat /dev/null >! log
 alias ctlog='cat /dev/null >! log/lograge_test.log && cat /dev/null >! log/test.log'
 
 # Test
-alias mi='rails test'
+alias rt='rails test'
 alias testba='rails test test/controllers test/concepts test/forms test/models'
 
 # Amoeba
@@ -277,7 +277,7 @@ alias ccup='brew reinstall clj-kondo'
 
 # Adam
 alias cjn='cd_adam && clj -M:dev:nrepl'
-alias ctr='cd_adam && clj -M:test:runner --watch'
+alias ct='cd_adam && clj -M:test:runner --focus $1'
 alias ctrf='cd_adam && clj -M:test:runner --watch --focus $1'
 
 # Asuka
