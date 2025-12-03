@@ -201,6 +201,20 @@ Deduplicated, prioritized checklist combining both reviews:
 - [ ] Minor optimizations
 ```
 
+### Step 5: Commit Review Files
+
+Commit the generated review files:
+
+1. Stage the review files:
+   ```
+   git add .claude/code-review-standard.md .claude/code-review-roasted.md .claude/code-review.md
+   ```
+
+2. Commit with message:
+   ```
+   Add code review for <current-branch>
+   ```
+
 ## Output Files
 
 All output files go in the **project's** `.claude/` folder (not global):
