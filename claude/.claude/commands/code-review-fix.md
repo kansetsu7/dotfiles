@@ -29,10 +29,12 @@ For each item where **Decision** is "Accept" and **Status** is `[ ]` (unchecked)
    - If Notes contain questions (indicated by `?`) → answer the question first, explain your reasoning, then proceed with implementation
    - If Notes describe an alternative approach → implement that instead of the original suggestion
 
-3. **Implement the fix:**
+3. **Implement and commit the fix:**
    - Make the code change
    - Verify the change compiles/passes syntax check
    - Mark the item Status as `[x]` in `.claude/code-review.md`
+   - Stage the changed files (including updated `.claude/code-review.md`)
+   - Commit with a message describing the changes made
 
 4. **Report what was done:**
    ```
