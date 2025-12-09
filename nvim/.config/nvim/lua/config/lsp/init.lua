@@ -1,20 +1,20 @@
-local lspconfig = require("lspconfig")
+-- Neovim 0.11+ LSP configuration using vim.lsp.config and vim.lsp.enable
 
+-- Diagnostic signs
 local signs = {
-  { name = "DiagnosticSignError", text = "" },
-  { name = "DiagnosticSignWarn", text = "" },
-  { name = "DiagnosticSignHint", text = "" },
-  { name = "DiagnosticSignInfo", text = "" },
+  { name = "DiagnosticSignError", text = "" },
+  { name = "DiagnosticSignWarn", text = "" },
+  { name = "DiagnosticSignHint", text = "" },
+  { name = "DiagnosticSignInfo", text = "" },
 }
 
 for _, sign in ipairs(signs) do
   vim.fn.sign_define(sign.name, { texthl = sign.name, text = sign.text, numhl = "" })
 end
 
+-- Diagnostic configuration
 vim.diagnostic.config {
-  -- disable virtual text
   virtual_text = false,
-  -- show signs
   signs = {
     active = signs,
   },
@@ -31,6 +31,7 @@ vim.diagnostic.config {
   },
 }
 
+-- LSP handlers
 vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
   border = "rounded",
 })
@@ -39,63 +40,65 @@ vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.s
   border = "rounded",
 })
 
-local function lsp_highlight_document(client)
-  -- Set autocommands conditional on server_capabilities
-  if client.server_capabilities.document_highlight then
-    vim.api.nvim_exec2(
-      [[
-      augroup lsp_document_highlight
-      autocmd! * <buffer>
-      autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()
-      autocmd CursorMoved <buffer> lua vim.lsp.buf.clear_references()
-      augroup END
-      ]],
-      { output = false }
-    )
-  end
-end
+-- LspAttach autocmd (replaces on_attach)
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = vim.api.nvim_create_augroup("UserLspConfig", { clear = true }),
+  callback = function(ev)
+    local bufnr = ev.buf
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
-local function lsp_keymaps(bufnr)
-  local keymap = vim.keymap.set
-  local opts = { noremap = true, silent = true, buffer = bufnr }
+    -- Keymaps
+    local keymap = vim.keymap.set
+    local opts = { noremap = true, silent = true, buffer = bufnr }
 
-  keymap("n", "K", vim.lsp.buf.hover, opts)
-  keymap("n", "gD", vim.lsp.buf.declaration, opts)
-  keymap("n", "gd", vim.lsp.buf.definition, opts)
-  keymap("n", "<localleader>li", "<cmd>lua require('telescope.builtin').lsp_implementations()<cr>", opts)
-  keymap("n", "<localleader>lr", "<cmd>lua require('telescope.builtin').lsp_references()<cr>", opts)
-  keymap("n", "<localleader>lt", vim.lsp.buf.type_definition, opts)
-  keymap("n", "<localleader>lh", vim.lsp.buf.signature_help, opts)
-  keymap("n", "<localleader>ln", vim.lsp.buf.rename, opts)
-  keymap({ "v", "n" }, "<localleader>la", vim.lsp.buf.code_action, opts)
-  keymap("n", "<localleader>lf", vim.lsp.buf.format, opts)
+    keymap("n", "K", vim.lsp.buf.hover, opts)
+    keymap("n", "gD", vim.lsp.buf.declaration, opts)
+    keymap("n", "gd", vim.lsp.buf.definition, opts)
+    keymap("n", "<localleader>li", "<cmd>lua require('telescope.builtin').lsp_implementations()<cr>", opts)
+    keymap("n", "<localleader>lr", "<cmd>lua require('telescope.builtin').lsp_references()<cr>", opts)
+    keymap("n", "<localleader>lt", vim.lsp.buf.type_definition, opts)
+    keymap("n", "<localleader>lh", vim.lsp.buf.signature_help, opts)
+    keymap("n", "<localleader>ln", vim.lsp.buf.rename, opts)
+    keymap({ "v", "n" }, "<localleader>la", vim.lsp.buf.code_action, opts)
+    keymap("n", "<localleader>lf", vim.lsp.buf.format, opts)
 
-  vim.cmd [[ command! Format execute 'lua vim.lsp.buf.formatting()' ]]
-end
+    vim.cmd [[ command! Format execute 'lua vim.lsp.buf.format()' ]]
 
-local on_attach = function(client, bufnr)
-  lsp_keymaps(bufnr)
-  lsp_highlight_document(client)
-end
+    -- Document highlight
+    if client and client.server_capabilities.documentHighlightProvider then
+      local highlight_group = vim.api.nvim_create_augroup("LspDocumentHighlight", { clear = false })
+      vim.api.nvim_clear_autocmds({ group = highlight_group, buffer = bufnr })
+      vim.api.nvim_create_autocmd("CursorHold", {
+        group = highlight_group,
+        buffer = bufnr,
+        callback = vim.lsp.buf.document_highlight,
+      })
+      vim.api.nvim_create_autocmd("CursorMoved", {
+        group = highlight_group,
+        buffer = bufnr,
+        callback = vim.lsp.buf.clear_references,
+      })
+    end
+  end,
+})
 
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
--- local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "ruby_lsp" }
-local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls", "rubocop" }
-
+-- Mason setup (still needed for installing LSP servers)
 require("mason").setup()
 require("mason-lspconfig").setup {
-  ensure_installed = servers
+  ensure_installed = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls", "rubocop" }
 }
 
-for _, server in pairs(servers) do
-  local opts = {
-    on_attach = on_attach,
+-- Add cmp_nvim_lsp capabilities to all servers
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+-- Configure and enable LSP servers
+local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls", "rubocop" }
+
+for _, server in ipairs(servers) do
+  vim.lsp.config(server, {
     capabilities = capabilities,
-  }
-  local has_custom_opts, server_custom_opts = pcall(require, "config.lsp.settings." .. server)
-  if has_custom_opts then
-    opts = vim.tbl_deep_extend("force", server_custom_opts, opts)
-  end
-  lspconfig[server].setup(opts)
+  })
 end
+
+-- Enable all servers
+vim.lsp.enable(servers)
