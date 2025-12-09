@@ -28,6 +28,8 @@ return {
           -- }),
           diagnostics.trail_space,
           diagnostics.yamllint,
+          -- Go
+          formatting.goimports,
         }
       }
     end,
