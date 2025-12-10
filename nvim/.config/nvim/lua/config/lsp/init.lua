@@ -78,14 +78,15 @@ vim.api.nvim_create_autocmd("LspAttach", {
 -- Mason setup (still needed for installing LSP servers)
 require("mason").setup()
 require("mason-lspconfig").setup {
-  ensure_installed = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls", "rubocop" }
+  ensure_installed = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls" }
 }
 
 -- Add cmp_nvim_lsp capabilities to all servers
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
 -- Configure and enable LSP servers
-local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls", "rubocop" }
+-- Note: rubocop LSP requires RuboCop 1.53+, use none-ls for older versions
+local servers = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls" }
 
 for _, server in ipairs(servers) do
   vim.lsp.config(server, {
@@ -95,3 +96,7 @@ end
 
 -- Enable all servers
 vim.lsp.enable(servers)
+
+-- Explicitly disable rubocop LSP (requires RuboCop 1.53+, project uses 1.24.1)
+-- Using none-ls with bundle exec rubocop instead
+vim.lsp.enable("rubocop", false)
