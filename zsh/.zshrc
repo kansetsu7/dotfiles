@@ -359,8 +359,8 @@ eval "$(zoxide init zsh --cmd j)"
 export PGHOST=localhost
 export PGUSER=psql
 
-if [ -f "$HOME/.config/env/openai.env.gpg" ]; then
-  gpg -dq "$HOME/.config/env/openai.env.gpg" 2>/dev/null | source /dev/stdin
+if [ -f "$HOME/.config/credentials/openai.env.gpg" ]; then
+  gpg -dq "$HOME/.config/credentials/openai.env.gpg" 2>/dev/null | source /dev/stdin
 fi
 
 case `uname` in
