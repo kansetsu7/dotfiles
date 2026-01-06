@@ -201,16 +201,21 @@ Deduplicated, prioritized checklist combining both reviews:
 - [ ] Minor optimizations
 ```
 
-### Step 5: Commit Review Files
+### Step 5: Commit Review Summary
 
-Commit the generated review files:
+Commit only the combined summary and clean up intermediate files:
 
-1. Stage the review files:
+1. Remove intermediate files:
    ```
-   git add .claude/code-review-standard.md .claude/code-review-roasted.md .claude/code-review.md
+   rm -f .claude/code-review-standard.md .claude/code-review-roasted.md
    ```
 
-2. Commit with message:
+2. Stage the summary file:
+   ```
+   git add .claude/code-review.md
+   ```
+
+3. Commit with message:
    ```
    Add code review for <current-branch>
    ```
