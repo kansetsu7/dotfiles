@@ -29,28 +29,31 @@ Perform a comprehensive code review workflow on the current branch changes.
 
 Apply the standard code review perspective. Analyze the diff for:
 
-**Style and Formatting**
-- Inconsistent indentation, spacing, or bracket usage
-- Unused imports or variables
-- Non-standard naming conventions
-- Missing or misformatted comments/docstrings
+**Security (Critical)**
+- Injection vulnerabilities, authentication/authorization flaws
+- Data exposure, input validation issues
 
-**Clarity and Readability**
-- Overly complex or deeply nested logic
-- Functions doing too much (violating single responsibility)
-- Poor naming that obscures intent
-- Missing inline documentation for non-obvious logic
+**Correctness**
+- Logic errors, race conditions, resource leaks, error handling
 
-**Security and Common Bug Patterns**
-- Unsanitized user input (SQL, shell, web contexts)
-- Hardcoded secrets or credentials
-- Incorrect use of cryptographic libraries
-- Common pitfalls (null dereferencing, off-by-one errors, race conditions)
+**Performance**
+- N+1 queries, memory issues, blocking operations, inefficient algorithms
 
-**Output Format** for each issue:
-```
-[file_path:line_number] [PRIORITY] Category: Description. Suggestion.
-```
+**Maintainability**
+- Naming, complexity (>50 lines, >3 nesting), duplication, dead code
+
+**Testing**
+- Coverage, edge cases, mocking, assertions
+
+**Ruby/Rails Patterns**
+- N+1 queries, mass assignment, SQL injection via interpolation
+- Missing freeze, unsafe send/constantize
+
+**Output Format** using severity labels:
+- 🔴 [blocking] - Must fix before merge
+- 🟡 [important] - Should fix
+- 🟢 [nit] - Nice to have
+- 💡 [suggestion] - Alternative approach
 
 Write the complete review to `.claude/code-review-standard.md` in the project root.
 
