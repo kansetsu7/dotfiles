@@ -27,66 +27,13 @@ Perform a comprehensive code review workflow on the current branch changes.
 
 ### Step 2: Standard Code Review
 
-Apply the standard code review perspective. Analyze the diff for:
-
-**Security (Critical)**
-- Injection vulnerabilities, authentication/authorization flaws
-- Data exposure, input validation issues
-
-**Correctness**
-- Logic errors, race conditions, resource leaks, error handling
-
-**Performance**
-- N+1 queries, memory issues, blocking operations, inefficient algorithms
-
-**Maintainability**
-- Naming, complexity (>50 lines, >3 nesting), duplication, dead code
-
-**Testing**
-- Coverage, edge cases, mocking, assertions
-
-**Ruby/Rails Patterns**
-- N+1 queries, mass assignment, SQL injection via interpolation
-- Missing freeze, unsafe send/constantize
-
-**Output Format** using severity labels:
-- 🔴 [blocking] - Must fix before merge
-- 🟡 [important] - Should fix
-- 🟢 [nit] - Nice to have
-- 💡 [suggestion] - Alternative approach
+Apply the review criteria and output format defined in `~/.claude/skills/code-review-standard.md`.
 
 Write the complete review to `.claude/code-review-standard.md` in the project root.
 
 ### Step 3: Roasted Code Review (Linus-style)
 
-Apply the critical "good taste" review perspective. Analyze the diff for:
-
-**Data Structure Analysis** (Highest Priority)
-- Poor data structure choices creating unnecessary complexity
-- Data copying/transformation that could be eliminated
-- Unclear data ownership and flow
-- Missing abstractions that would simplify logic
-
-**Complexity and "Good Taste"**
-- Functions with >3 levels of nesting (immediate red flag)
-- Special cases that could be eliminated with better design
-- Complex conditional logic obscuring the core algorithm
-- Code that could be 3 lines instead of 10
-
-**Pragmatic Problem Analysis**
-- Is this solving a real problem or imaginary one?
-- Does solution complexity match problem severity?
-- Over-engineering for theoretical edge cases?
-
-**Breaking Change Risk**
-- Changes that could break existing APIs or behavior
-- Modifications to public interfaces without deprecation
-- Assumptions about backward compatibility
-
-**Output Format:**
-- Start with Taste Rating (Good/Acceptable/Needs Improvement)
-- Group issues by: CRITICAL ISSUES, IMPROVEMENT OPPORTUNITIES, STYLE NOTES
-- End with VERDICT (Worth merging / Needs rework) and KEY INSIGHT
+Apply the review criteria and output format defined in `~/.claude/skills/code-review-roasted.md`.
 
 Write the complete review to `.claude/code-review-roasted.md` in the project root.
 
