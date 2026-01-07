@@ -67,6 +67,10 @@ return {
         "git_config",
         "gitcommit",
         "gitignore",
+        "go",
+        "gomod",
+        "gosum",
+        "gowork",
         "html",
         "javascript",
         "jsdoc",
@@ -108,6 +112,15 @@ return {
           goto_next_end = { ["]F"] = "@function.outer", ["]C"] = "@class.outer" },
           goto_previous_start = { ["[f"] = "@function.outer", ["[c"] = "@class.outer" },
           goto_previous_end = { ["[F"] = "@function.outer", ["[C"] = "@class.outer" },
+        },
+        swap = {
+          enable = true,
+          swap_next = {
+            [">e"] = "@parameter.inner",
+          },
+          swap_previous = {
+            ["<e"] = "@parameter.inner",
+          },
         },
       },
       autopairs = {
