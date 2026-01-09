@@ -146,13 +146,9 @@ alias ggpull='git pull origin $(git_branch_current)'
 alias gpc='git push --set-upstream origin "$(git_branch_current 2> /dev/null)"'
 alias gpcc='lint && cop master... && gpc'
 alias gfo='git fetch origin'
-alias gbd='git branch -D'
 alias grh='git reset --hard'
 alias gfco="gfo $1 && gco $1"
-alias grb="rebase_func $1"
-alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
-alias gcaa='git commit --amend'
 
 alias vgc='git diff --name-only --diff-filter=U | xargs nvim'  # git conflicts
 
