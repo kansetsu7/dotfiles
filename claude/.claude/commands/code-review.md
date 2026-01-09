@@ -12,7 +12,24 @@ Perform a comprehensive code review workflow on the current branch changes.
 
 ## Workflow Steps
 
-### Step 1: Get the Diff
+### Step 1: Gather Business Context
+
+1. **Read context file** (if exists):
+   - Check for `.claude/context.md` in the project root
+   - This file contains business logic, specs, and system design prepared by the developer
+   - Use this context to verify implementation alignment
+
+2. **Scan CLAUDE.md for relevant docs**:
+   - Read the project's `CLAUDE.md` (documentation TOC)
+   - Based on the changed files/features, identify relevant docs mentioned
+   - Read those docs to understand related requirements and design decisions
+
+3. **Keep this context in mind** for subsequent review steps to verify:
+   - Implementation aligns with business requirements
+   - Edge cases from specs are handled
+   - Design decisions are followed
+
+### Step 2: Get the Diff
 
 1. Determine base branch: Use `$ARGUMENTS` if provided, otherwise `master`
 2. Run `git diff <base-branch>...HEAD` to get all changes on this branch
@@ -25,19 +42,19 @@ Perform a comprehensive code review workflow on the current branch changes.
    Please ensure you have uncommitted or committed changes to review.
    ```
 
-### Step 2: Standard Code Review
+### Step 3: Standard Code Review
 
 Apply the review criteria and output format defined in `~/.claude/skills/code-review-standard.md`.
 
 Write the complete review to `.claude/code-review-standard.md` in the project root.
 
-### Step 3: Roasted Code Review (Linus-style)
+### Step 4: Roasted Code Review (Linus-style)
 
 Apply the review criteria and output format defined in `~/.claude/skills/code-review-roasted.md`.
 
 Write the complete review to `.claude/code-review-roasted.md` in the project root.
 
-### Step 4: Combined Summary
+### Step 5: Combined Summary
 
 Create `.claude/code-review.md` combining both reviews with this structure:
 
@@ -151,7 +168,7 @@ Deduplicated, prioritized checklist combining both reviews:
 - [ ] Minor optimizations
 ```
 
-### Step 5: Commit Review Summary
+### Step 6: Commit Review Summary
 
 Commit only the combined summary and clean up intermediate files:
 
