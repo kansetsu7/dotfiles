@@ -102,11 +102,6 @@ tx() {
 }
 
 # git functions {{{
-rebase_func() {
-  # command git rebase -i "HEAD~$1"
-  # git rebase -i "HEAD~$1"
-  git rebase -i "HEAD~$1"
-}
 git_branch_current() {
   git rev-parse --abbrev-ref HEAD
 }
