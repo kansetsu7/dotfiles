@@ -138,7 +138,6 @@ alias gwe='e `git diff --name-only --relative`'
 alias gie='e `git diff --cached --name-only --relative`'
 alias gbs='git branch | grep -v andre'
 # alias gbt='git checkout nerv_ck'
-alias gff='git checkout -b $(git branch --show-current)-fork'
 alias glcs='git rev-parse --short=12 HEAD'
 alias gsh='git show'
 alias gcm='git checkout master'
@@ -154,7 +153,6 @@ alias grb="rebase_func $1"
 alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
 alias gcaa='git commit --amend'
-alias gbf="git_branch_current | sed -E 's/\-fork$//' | xargs git checkout"
 
 alias sp='switch_to_tmp_branch'
 alias gcmbdc='gcm_and_gbd_current_branch'

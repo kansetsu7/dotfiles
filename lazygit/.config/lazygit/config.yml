@@ -11,3 +11,12 @@ keybinding:
   universal:
     quit: 'Q'
     return: 'q'
+customCommands:
+  - key: 'F'
+    context: 'localBranches'
+    command: 'git checkout -b {{.SelectedLocalBranch.Name}}-fork'
+    description: 'Create fork branch from selected'
+  - key: 'B'
+    context: 'localBranches'
+    command: 'branch={{.SelectedLocalBranch.Name}}; git checkout ${branch%-fork}'
+    description: 'Return to original branch (strip -fork suffix)'
