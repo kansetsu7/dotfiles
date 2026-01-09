@@ -20,7 +20,7 @@
 
 ### 1. Planning & Staging
 
-Break complex work into 3-5 stages. Document in `.claude/IMPLEMENTATION_PLAN.md`:
+Break complex work into 3-5 stages. Document in `.claude/plan.md`:
 
 ```markdown
 ## Stage N: [Name]
