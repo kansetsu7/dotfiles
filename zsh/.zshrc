@@ -154,8 +154,6 @@ alias grbi="git rebase -i $1"
 alias gdf="git diff $1"
 alias gcaa='git commit --amend'
 
-alias sp='switch_to_tmp_branch'
-alias gcmbdc='gcm_and_gbd_current_branch'
 alias vgc='git diff --name-only --diff-filter=U | xargs nvim'  # git conflicts
 
 # TODO: not sure the effect of below 3 configs, maybe I don't need it?
