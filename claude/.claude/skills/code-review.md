@@ -1,6 +1,8 @@
 ---
 triggers:
 - /code-review
+context: fork
+agent: general-purpose
 ---
 
 Perform a comprehensive code review workflow on the current branch changes.
