@@ -44,21 +44,11 @@ Perform a comprehensive code review workflow on the current branch changes.
    Please ensure you have uncommitted or committed changes to review.
    ```
 
-### Step 3: Standard Code Review
+### Step 3: Code Review
 
-Apply the review criteria and output format defined in `~/.claude/skills/code-review-standard.md`.
+Apply the review criteria and output format defined in `~/.claude/skills/code-review-criteria.md`.
 
-Write the complete review to `.claude/code-review-standard.md` in the project root.
-
-### Step 4: Roasted Code Review (Linus-style)
-
-Apply the review criteria and output format defined in `~/.claude/skills/code-review-roasted.md`.
-
-Write the complete review to `.claude/code-review-roasted.md` in the project root.
-
-### Step 5: Combined Summary
-
-Create `.claude/code-review.md` combining both reviews with this structure:
+Write the review directly to `.claude/code-review.md` using this structure:
 
 ```markdown
 # Code Review Summary
@@ -68,14 +58,9 @@ Create `.claude/code-review.md` combining both reviews with this structure:
 **Files Changed:** <count>
 **Lines:** +<additions> / -<deletions>
 
-## Priority Level Definitions
+## Taste Rating
 
-| Priority | Criteria |
-|----------|----------|
-| **Critical** | Security vulnerabilities, data loss risk, breaking changes, crashes |
-| **High** | Bugs, significant complexity, poor data structures, >3 nesting levels |
-| **Medium** | Readability issues, missing error handling, code smells |
-| **Low** | Style inconsistencies, minor optimizations, documentation gaps |
+🟢/🟡/🔴 **<Rating>** - <One line explanation>
 
 ## Decision Options
 
@@ -90,9 +75,9 @@ Create `.claude/code-review.md` combining both reviews with this structure:
 
 ---
 
-## Priority Summary
+## Findings
 
-### Critical (Must Fix)
+### 🔴 Blocking (Must Fix)
 
 #### 1. `<file_path:line>` - <brief title>
 - **Issue:** <description of the problem>
@@ -104,7 +89,7 @@ Create `.claude/code-review.md` combining both reviews with this structure:
 
 ---
 
-### High (Should Fix)
+### 🟡 Important (Should Fix)
 
 #### 1. `<file_path:line>` - <brief title>
 - **Issue:** <description>
@@ -116,7 +101,7 @@ Create `.claude/code-review.md` combining both reviews with this structure:
 
 ---
 
-### Medium (Consider Fixing)
+### 🟢 Nit (Nice to Have)
 
 #### 1. `<file_path:line>` - <brief title>
 - **Issue:** <description>
@@ -128,7 +113,7 @@ Create `.claude/code-review.md` combining both reviews with this structure:
 
 ---
 
-### Low (Nice to Have)
+### 💡 Suggestions
 
 #### 1. `<file_path:line>` - <brief title>
 - **Issue:** <description>
@@ -140,58 +125,27 @@ Create `.claude/code-review.md` combining both reviews with this structure:
 
 ---
 
-## Standard Review
+## Verdict
 
-[Full content from code-review-standard.md]
+✅/❌ **<Verdict>** - <Summary explanation>
 
----
+## Key Insight
 
-## Critical Review (Linus-style)
-
-[Full content from code-review-roasted.md]
-
----
-
-## Action Items
-
-Deduplicated, prioritized checklist combining both reviews:
-
-### Must Address Before Merge
-- [ ] Critical security issues
-- [ ] Breaking changes
-- [ ] Data structure problems
-
-### Recommended Improvements
-- [ ] Complexity reductions
-- [ ] Readability improvements
-
-### Optional Enhancements
-- [ ] Style consistency
-- [ ] Minor optimizations
+<One sentence summary of the most important observation>
 ```
 
-### Step 6: Commit Review Summary
+### Step 4: Commit Review
 
-Commit only the combined summary and clean up intermediate files:
-
-1. Remove intermediate files:
-   ```
-   rm -f .claude/code-review-standard.md .claude/code-review-roasted.md
-   ```
-
-2. Stage the summary file:
+1. Stage the review file:
    ```
    git add .claude/code-review.md
    ```
 
-3. Commit with message:
+2. Commit with message:
    ```
    Add code review for <current-branch>
    ```
 
 ## Output Files
 
-All output files go in the **project's** `.claude/` folder (not global):
-- `.claude/code-review-standard.md` - Standard review
-- `.claude/code-review-roasted.md` - Critical review
-- `.claude/code-review.md` - Combined summary with action items
+- `.claude/code-review.md` - Code review with actionable findings
