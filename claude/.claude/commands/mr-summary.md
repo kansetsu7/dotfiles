@@ -3,31 +3,40 @@ description: Generate a summary for the current branch changes
 allowed-tools: Bash(git:*)
 ---
 
-# PR Summary
+# MR Summary
 
 Generate a merge request summary for the current branch.
 
+**Base branch**: $ARGUMENTS
+
 ## Instructions
 
-1. **Analyze changes**:
+1. **Determine base branch**:
+   - If argument provided, use it
+   - Else if current branch ends with `-fork`, use branch name without `-fork`
+     (e.g., `feature/abc-def-fork` → `feature/abc-def`)
+   - Else default to `master`
+
+2. **Analyze changes**:
    ```bash
-   git log main..HEAD --oneline
-   git diff main...HEAD --stat
+   git log <base_branch>..HEAD --oneline
+   git diff <base_branch>...HEAD --stat
+   git diff <base_branch>...HEAD
    ```
 
-2. **Generate summary** with:
-   - Brief description of what changed
-   - List of files modified
+3. **Generate summary** with:
+   - Focus on **why** the changes are needed, not what changed
+   - Explain the problem being solved or motivation
    - Breaking changes (if any)
    - Testing notes
 
-3. **Format as PR body**:
+4. **Format as MR body**:
    ```markdown
    ## Summary
-   [1-3 bullet points describing the changes]
+   [1-3 bullet points explaining why these changes are needed]
 
    ## Changes
-   - [List of significant changes]
+   - [List of significant changes with rationale]
 
    ## Test Plan
    - [ ] [Testing checklist items]
