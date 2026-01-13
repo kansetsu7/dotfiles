@@ -14,7 +14,7 @@ Process the code review summary and implement fixes for accepted items.
 ### Step 1: Read and Parse Review
 
 1. Read `.claude/code-review.md`
-2. Parse all items across all priority sections (Critical, High, Medium, Low)
+2. Parse all items across all priority sections (Blocking, Important, Nit, Suggestions)
 3. Categorize items by their Decision field
 
 ### Step 2: Process Accepted Items
@@ -74,7 +74,7 @@ After processing all items, provide a summary:
 
 ## Important Notes
 
-- Process items in priority order: Critical → High → Medium → Low
+- Process items in priority order: 🔴 Blocking → 🟡 Important → 🟢 Nit → 💡 Suggestions
 - If an alternative approach in Notes is unclear, ask for clarification before implementing
 - If a fix would conflict with another accepted item, flag it and ask how to proceed
 - Run project tests after all fixes if a test command is available
