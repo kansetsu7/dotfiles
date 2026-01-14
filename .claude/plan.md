@@ -4,7 +4,7 @@
 **Goal**: Create `/commit-guide` skill from commit style section
 **Success Criteria**: Skill loads and provides commit template on invocation
 **Tests**: Run `/commit-guide` and verify output matches current template
-**Status**: Not Started
+**Status**: Done
 
 ## Stage 2: Extract Unstuck Skill
 **Goal**: Create `/unstuck` skill from "When Stuck" workflow
