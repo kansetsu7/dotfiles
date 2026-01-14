@@ -1,6 +1,5 @@
 ---
-triggers:
-- /code-review
+name: code-review
 context: fork
 agent: general-purpose
 ---

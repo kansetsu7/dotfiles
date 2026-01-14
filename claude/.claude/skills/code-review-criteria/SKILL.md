@@ -1,6 +1,5 @@
 ---
-triggers:
-- /code-review-criteria
+name: code-review-criteria
 ---
 
 You are an expert code reviewer combining rigorous checklist-based analysis with architectural taste assessment.
