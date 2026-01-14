@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(awk:*)",
+      "Bash(find:*)",
+      "Bash(fd:*)",
+      "Bash(git log:*)",
+      "Bash(git merge-base:*)",
+      "Bash(git show:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(bundle exec ruby -I test:*)",
+      "Bash(ruby -I test:*)",
+      "Bash(cop master...:*)",
+      "Skill(claude-docs-consultant)",
+      "Skill(commit-guide)",
+      "Skill(unstuck)",
+      "Skill(code-review)",
+      "Skill(code-review-criteria)",
+      "Read(~/.claude/skills/**)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "gopls-lsp@claude-plugins-official": true
+  }
+}
