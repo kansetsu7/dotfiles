@@ -10,7 +10,7 @@
 **Goal**: Create `/unstuck` skill from "When Stuck" workflow
 **Success Criteria**: Skill guides through structured debugging process
 **Tests**: Invoke skill and verify it prompts through all 4 steps
-**Status**: Not Started
+**Status**: Done
 
 ## Stage 3: Move Shell Tools to Reference
 **Goal**: Extract shell tool table to `.claude/tooling.md`
