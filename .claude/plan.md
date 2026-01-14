@@ -16,7 +16,7 @@
 **Goal**: Extract shell tool table to `.claude/tooling.md`
 **Success Criteria**: CLAUDE.md references external file, tooling.md contains table
 **Tests**: Verify both files are correctly linked
-**Status**: Not Started
+**Status**: Done
 
 ## Stage 4: Add Learning Capture Mechanism
 **Goal**: Implement automatic knowledge capture with isolated agent workflow
