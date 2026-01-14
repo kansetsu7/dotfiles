@@ -30,6 +30,16 @@ Perform a comprehensive code review workflow on the current branch changes.
    - Edge cases from specs are handled
    - Design decisions are followed
 
+### Step 1.5: Read Reviewer Feedback (if exists)
+
+1. Check for `.claude/reviewer-feedback.md`
+2. If exists:
+   - Parse all reviewer items (they have structured format from `/process-reviewer-feedback`)
+   - Store items for merging in Step 3
+   - Reviewer items take priority for overlapping concerns
+3. If not exists:
+   - Continue with AI-only review (no reviewer feedback to merge)
+
 ### Step 2: Get the Diff
 
 1. Determine base branch: Use `$ARGUMENTS` if provided, otherwise `master`
@@ -43,9 +53,19 @@ Perform a comprehensive code review workflow on the current branch changes.
    Please ensure you have uncommitted or committed changes to review.
    ```
 
-### Step 3: Code Review
+### Step 3: Code Review & Merge
 
-Apply the review criteria and output format defined in `~/.claude/skills/code-review-criteria.md`.
+Apply the review criteria defined in `~/.claude/skills/code-review-criteria.md`.
+
+**Merging with reviewer feedback** (if `.claude/reviewer-feedback.md` exists):
+
+1. Start with all reviewer items (preserve exactly, mark as `👤 Reviewer`)
+2. Perform AI review and add AI items (mark as `🤖 AI`)
+3. For overlapping concerns (same file/area, similar issue):
+   - Keep reviewer's version as primary
+   - Add AI's additional context if valuable
+   - Mark as `🤖 AI + 👤 Reviewer`
+4. Number items sequentially within each priority section
 
 Write the review directly to `.claude/code-review.md` using this structure:
 
@@ -79,6 +99,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 ### 🔴 Blocking (Must Fix)
 
 #### 1. `<file_path:line>` - <brief title>
+- **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description of the problem>
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
@@ -91,6 +112,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 ### 🟡 Important (Should Fix)
 
 #### 1. `<file_path:line>` - <brief title>
+- **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description>
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
@@ -103,6 +125,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 ### 🟢 Nit (Nice to Have)
 
 #### 1. `<file_path:line>` - <brief title>
+- **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description>
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
@@ -115,6 +138,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 ### 💡 Suggestions
 
 #### 1. `<file_path:line>` - <brief title>
+- **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description>
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending

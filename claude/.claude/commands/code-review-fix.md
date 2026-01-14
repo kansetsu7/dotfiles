@@ -56,20 +56,25 @@ After processing all items, provide a summary:
 ## Code Review Fix Summary
 
 ### Fixed (<count>)
-- `<file_path:line>` - <title> (AI suggestion)
-- `<file_path:line>` - <title> (Alternative)
+- 🤖 AI: <count> items
+- 👤 Reviewer: <count> items
+- 🤖 AI + 👤 Reviewer: <count> items
+
+**Details:**
+- `<file_path:line>` - <title> (AI suggestion) [🤖 AI]
+- `<file_path:line>` - <title> (Alternative) [👤 Reviewer]
 
 ### Skipped - Drop (<count>)
-- `<file_path:line>` - <title>
+- `<file_path:line>` - <title> [<source>]
 
 ### Skipped - Won't Fix (<count>)
-- `<file_path:line>` - <title>
+- `<file_path:line>` - <title> [<source>]
 
 ### Already Done (<count>)
-- `<file_path:line>` - <title>
+- `<file_path:line>` - <title> [<source>]
 
 ### Remaining (<count>)
-- `<file_path:line>` - <title> (no decision yet)
+- `<file_path:line>` - <title> (no decision yet) [<source>]
 ```
 
 ## Important Notes
