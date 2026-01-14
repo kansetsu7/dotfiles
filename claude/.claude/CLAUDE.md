@@ -138,6 +138,17 @@ When multiple valid approaches exist, choose based on:
 - Learn from existing implementations
 - Stop after 3 failed attempts and reassess
 
+## Knowledge Capture
+
+Delegate to the `learning-capture` agent when detecting new knowledge:
+- User prompt contains "Background:" or context sections
+- User explains domain concepts or business rules
+- User corrects your understanding of the system
+- After exploring code and discovering undocumented patterns
+- Explicit: user says "remember this", "note this", or `/learn`
+
+The agent captures knowledge to `.claude/learning.md` for later documentation.
+
 ## Commit Style
 
 For complex commits, use 'Background', 'Problem', 'Approach' structure.

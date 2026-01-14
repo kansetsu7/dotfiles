@@ -58,7 +58,10 @@ Learning agent must read these before determining what's new:
 - Project `CLAUDE.md`
 - `.claude/learning.md` (existing learnings)
 - `.claude/context.md` (user-prepared context for code review, if exists)
-- Any docs referenced in CLAUDE.md that are relevant to the topic
+- Project documentation (with context explosion prevention):
+  - If `docs/toc.md` exists: read TOC, fetch only relevant docs by description
+  - Otherwise: grep keywords in `docs/**/*.md`, read only matching files
+  - Never read all docs at once
 
 #### 4.3: Define learning.md Structure
 ```markdown
@@ -219,7 +222,7 @@ Verified against: https://code.claude.com/docs/en/sub-agents.md
 name: learning-capture
 description: Captures new knowledge to learning.md. Use proactively when user provides background context, explains business logic, or after exploring unfamiliar code.
 tools: Read, Glob, Grep, Write, Edit, AskUserQuestion
-model: sonnet
+model: inherit  # Uses main conversation's model, auto-upgrades with new releases
 ---
 ```
 
