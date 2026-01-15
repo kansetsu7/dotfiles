@@ -66,10 +66,53 @@ For each concern that lacks clarity, use `AskUserQuestion` to clarify.
    Options: [2-4 reasonable alternatives based on context]
    ```
 
+4. **Questions requiring investigation** (when reviewer asks a question):
+   ```
+   Question: "Reviewer asked: '<question>'. What would you like to do?"
+   Options:
+   - "Investigate now - search codebase and report findings"
+   - "Skip - leave as open question"
+   - "I know the answer" (use Other to provide)
+   ```
+
 **Important:**
 - Reviewer can always select "Other" to provide custom answer
 - Try to infer from context first before asking
 - Batch related questions when possible (up to 4 per AskUserQuestion)
+
+### Step 3a: Handle Investigation Requests
+
+When user selects "Investigate now":
+
+1. **Perform investigation:**
+   - Search codebase for relevant code using Grep/Glob
+   - Read related files to understand current behavior
+   - Check for existing tests, comments, or documentation
+
+2. **Report findings:**
+   ```
+   Investigation: <original question>
+
+   Findings:
+   - <key finding 1>
+   - <key finding 2>
+   - ...
+
+   Relevant files:
+   - `<file:line>` - <what it shows>
+   ```
+
+3. **Ask follow-up:**
+   ```
+   Question: "Based on findings, how should we handle: '<concern>'?"
+   Options:
+   - "Add as blocking issue"
+   - "Add as important issue"
+   - "Not an issue - remove from list"
+   - "Need more investigation" (specify in Other)
+   ```
+
+4. **Record outcome** in structured feedback based on user's decision
 
 ### Step 4: Structure Output
 
@@ -130,6 +173,41 @@ Display summary to reviewer:
 
 **Next step:** Run `/code-review` to generate AI review and merge with your feedback.
 ```
+
+### Step 6: Capture Knowledge
+
+Check for new knowledge to capture from the review session.
+
+**Sources to check:**
+1. **Context section** in `reviewer-notes.md` - background info, business logic, domain explanations
+2. **Discussion outcomes** - clarifications, investigations, and answers provided during Steps 3-3a
+3. **Domain terms or abbreviations** - any terminology explained during the session
+
+**When to trigger:**
+- Context section has non-placeholder content (not just the template example)
+- User provided explanations during clarification that reveal business logic
+- Investigations uncovered undocumented patterns or behaviors
+
+**Action:**
+Delegate to the `learning-capture` agent with a summary of potential knowledge:
+
+```
+Capture knowledge from code review session:
+
+Context from reviewer-notes.md:
+<content from Context section>
+
+Clarifications from discussion:
+<summary of explanations provided during Q&A>
+
+Investigation findings:
+<key discoveries from Step 3a investigations>
+```
+
+**Skip if:**
+- Context section is empty or contains only template placeholders
+- No substantive clarifications were needed
+- All information is already documented
 
 ## Output Files
 
