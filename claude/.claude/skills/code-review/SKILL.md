@@ -89,7 +89,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 
 ## Approach Options
 
-- **AI suggestion**: Use the recommended fix as-is
+- **Suggested fix**: Use the recommended fix as-is
 - **Alternative**: Your different approach (describe in Notes)
 
 ---
@@ -104,7 +104,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
-- **Approach:** _AI suggestion / Alternative_
+- **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
 
 ---
@@ -117,7 +117,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
-- **Approach:** _AI suggestion / Alternative_
+- **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
 
 ---
@@ -130,7 +130,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
-- **Approach:** _AI suggestion / Alternative_
+- **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
 
 ---
@@ -143,7 +143,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Suggestion:** <recommended fix>
 - **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
-- **Approach:** _AI suggestion / Alternative_
+- **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
 
 ---
