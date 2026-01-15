@@ -59,6 +59,7 @@ Determine which category fits best:
 - **Business Logic**: Domain rules, calculations, workflows
 - **Architecture**: System design, patterns, integrations
 - **Domain Terms**: Vocabulary, definitions, terminology
+- **Abbreviations**: Acronyms, shorthand, project-specific abbreviations
 - **Data Model**: Entity relationships, constraints
 - **External Services**: API behaviors, third-party quirks
 - **Gotchas**: Edge cases, surprising behaviors, workarounds
@@ -139,6 +140,12 @@ If confirmed:
 ### [Term]
 - **Definition**: ...
 - **Usage**: ...
+
+## Abbreviations
+### [Abbreviation]
+- **Stands for**: [full form]
+- **Context**: [where/when used]
+- **Example**: [usage example]
 
 ## Data Model
 ### [Entity/Relationship]
