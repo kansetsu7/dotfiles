@@ -129,5 +129,7 @@ The agent captures knowledge to `.claude/learning.md` for later documentation.
 
 ## Commit Style
 
-For complex commits, use 'Background', 'Problem', 'Approach' structure.
+Always use 'Background', 'Problem', 'Approach' structure for commits.
 See `/commit-guide` skill for template and examples.
+
+Exception: Single-line typo fixes or trivial changes (e.g., fixing a typo in comments).
