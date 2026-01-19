@@ -127,6 +127,10 @@ Delegate to the `learning-capture` agent when detecting new knowledge:
 
 The agent captures knowledge to `.claude/learning.md` for later documentation.
 
+## Plan Mode
+- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
+- At the end of each plan, give me a list of unresolved questions to answer, if any.
+
 ## Commit Style
 
 For complex commits, use the 'Background', 'Problem', 'Approach' structure.
