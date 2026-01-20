@@ -1,3 +1,9 @@
+# OPENSPEC:START
+# OpenSpec shell completions configuration
+# NOTE: Only add to fpath here; Zim's completion module will run compinit
+fpath=("/root/.zsh/completions" $fpath)
+# OPENSPEC:END
+
 ########################
 # Zim
 ########################
