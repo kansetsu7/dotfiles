@@ -25,10 +25,16 @@ Perform a comprehensive code review workflow on the current branch changes.
    - Based on the changed files/features, identify relevant docs mentioned
    - Read those docs to understand related requirements and design decisions
 
-3. **Keep this context in mind** for subsequent review steps to verify:
+3. **Check for testing philosophy** (if test files changed):
+   - Look for `docs/rails_testing_philosophy.md` in the project root
+   - If found, read it and use as additional criteria for reviewing test changes
+   - Apply these project-specific testing standards alongside general test review
+
+4. **Keep this context in mind** for subsequent review steps to verify:
    - Implementation aligns with business requirements
    - Edge cases from specs are handled
    - Design decisions are followed
+   - Test changes follow project's testing philosophy (if available)
 
 ### Step 1.5: Read Reviewer Feedback (if exists)
 

@@ -66,6 +66,7 @@ Before reviewing, ask yourself:
 - Critical paths tested
 - Edge cases: null, empty, boundary values covered
 - Test names descriptive of behavior
+- Follow project's testing philosophy (from `docs/rails_testing_philosophy.md` if available)
 
 ### 8. Ruby/Rails Patterns
 
