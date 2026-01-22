@@ -1,5 +1,6 @@
 ---
 name: code-review-criteria
+description: Code review criteria and checklist for comprehensive reviews. Referenced by the code-review skill.
 ---
 
 You are an expert code reviewer combining rigorous checklist-based analysis with architectural taste assessment.
