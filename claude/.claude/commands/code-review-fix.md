@@ -17,6 +17,14 @@ Process the code review summary and implement fixes for accepted items.
 2. Parse all items across all priority sections (Blocking, Important, Nit, Suggestions)
 3. Categorize items by their Decision field
 
+### Step 1.5: Check Issue Relationships
+
+If `## 🔗 Issue Relationships` section exists:
+
+1. **Read Recommended Fix Order** - process items in this order instead of default priority order
+2. **Note Cascading Fixes** - after fixing #X, if it resolves #Y, mark #Y as `[x]` with note "Resolved by #X"
+3. **Note Conflicts** - before implementing conflicting items, follow the recommended resolution
+
 ### Step 2: Process Accepted Items
 
 For each item where **Decision** is "Accept" and **Status** is `[ ]` (unchecked):
@@ -64,6 +72,9 @@ After processing all items, provide a summary:
 - `<file_path:line>` - <title> (AI suggestion) [🤖 AI]
 - `<file_path:line>` - <title> (Alternative) [👤 Reviewer]
 
+### Resolved by Cascading Fix (<count>)
+- `<file_path:line>` - <title> (resolved by #X) [<source>]
+
 ### Skipped - Drop (<count>)
 - `<file_path:line>` - <title> [<source>]
 
@@ -79,7 +90,8 @@ After processing all items, provide a summary:
 
 ## Important Notes
 
-- Process items in priority order: 🔴 Blocking → 🟡 Important → 🟢 Nit → 💡 Suggestions
+- **Fix order priority**: Use "Recommended Fix Order" from Issue Relationships if present, otherwise default to 🔴 Blocking → 🟡 Important → 🟢 Nit → 💡 Suggestions
 - If an alternative approach in Notes is unclear, ask for clarification before implementing
-- If a fix would conflict with another accepted item, flag it and ask how to proceed
+- **Conflicts**: Check Issue Relationships for conflict guidance before implementing; if not documented, flag and ask how to proceed
+- **Cascading fixes**: After each fix, check if it resolves other items per Issue Relationships
 - Run project tests after all fixes if a test command is available

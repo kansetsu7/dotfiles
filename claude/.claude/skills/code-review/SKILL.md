@@ -154,6 +154,12 @@ Write the review directly to `.claude/code-review.md` using this structure:
 
 ---
 
+## 🔗 Issue Relationships
+
+<!-- Added by Step 3.5 - see that step for format -->
+
+---
+
 ## Verdict
 
 ✅/❌ **<Verdict>** - <Summary explanation>
@@ -161,6 +167,47 @@ Write the review directly to `.claude/code-review.md` using this structure:
 ## Key Insight
 
 <One sentence summary of the most important observation>
+```
+
+### Step 3.5: Dependency & Conflict Analysis
+
+After generating findings, analyze relationships between issues:
+
+1. **Same-location issues**: Items targeting the same file/method
+2. **Cascading fixes**: Fixing one issue may resolve another
+3. **Conflicting solutions**: Fixes that contradict or interfere with each other
+4. **Merge candidates**: Issues that should be addressed together
+
+**Add this section to `.claude/code-review.md` before Verdict:**
+
+```markdown
+---
+
+## 🔗 Issue Relationships
+
+### Cascading Fixes
+<!-- Issues where fixing one resolves another -->
+- **#X resolves #Y**: <explanation>
+
+### Conflicts
+<!-- Fixes that may interfere with each other -->
+- **#X vs #Y**: <describe conflict and recommended resolution>
+
+### Same-Location Changes
+<!-- Issues modifying the same code area - coordinate fixes -->
+- **#X, #Y, #Z** (`file:lines`): <coordination notes>
+
+### Recommended Fix Order
+<!-- Optimal sequence considering dependencies -->
+1. #X - <reason>
+2. #Y - <reason>
+```
+
+If no relationships found, add:
+```markdown
+## 🔗 Issue Relationships
+
+No dependencies or conflicts detected between findings.
 ```
 
 ### Step 4: Commit Review
