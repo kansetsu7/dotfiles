@@ -35,25 +35,32 @@ One of these files must exist:
 
 For each review item, generate a coaching section with:
 
-#### A. Understanding Questions (Ask First)
+#### A. What Author Did Well (Lead With This)
+Acknowledge positives before discussing issues:
+- What the author got right in this area
+- Working aspects of their implementation
+- Good instincts or patterns they followed
+- Foundation they built that we're improving on
+
+#### B. Understanding Questions (Ask Second)
 Questions to understand author's thinking before suggesting changes:
 - "What led you to this approach?"
 - "What alternatives did you consider?"
 - "What constraints were you working with?"
 
-#### B. Discovery Questions (Socratic Method)
+#### C. Discovery Questions (Socratic Method)
 Questions that guide author to discover the issue themselves:
 - Lead author toward the problem without stating it directly
 - Build on their domain knowledge
 - Help them see edge cases or implications
 
-#### C. Teaching Points (If Needed)
+#### D. Teaching Points (If Needed)
 When direct teaching is appropriate:
 - Explain the "why" behind the suggestion
 - Connect to broader principles (SOLID, DRY, etc.)
 - Share relevant project conventions
 
-#### D. Discussion Prompts
+#### E. Discussion Prompts
 Open-ended questions for deeper exploration:
 - Trade-offs to consider together
 - Alternative approaches to evaluate
@@ -74,10 +81,11 @@ Write to `.claude/coaching-guide.md`:
 
 ## How to Use This Guide
 
-1. **Start with understanding** - Ask the "Understanding Questions" first
-2. **Guide discovery** - Use "Discovery Questions" to help author see issues
-3. **Teach when needed** - Use "Teaching Points" only if discovery doesn't work
-4. **Explore together** - End with "Discussion Prompts" for collaborative learning
+1. **Acknowledge first** - Start each item with "What Author Did Well"
+2. **Understand their thinking** - Ask the "Understanding Questions"
+3. **Guide discovery** - Use "Discovery Questions" to help author see issues
+4. **Teach when needed** - Use "Teaching Points" only if discovery doesn't work
+5. **Explore together** - End with "Discussion Prompts" for collaborative learning
 
 ---
 
@@ -88,8 +96,15 @@ Write to `.claude/coaching-guide.md`:
 **File:** `<file:line>`
 **Issue Summary:** <brief description>
 
+#### What Author Did Well
+> Acknowledge before discussing the issue
+
+- <what they got right in this area>
+- <working aspects of their implementation>
+- <good instincts or foundation they built>
+
 #### Understanding Questions
-> Ask these first to understand author's perspective
+> Ask these to understand author's perspective
 
 - <question about their approach>
 - <question about constraints they faced>
@@ -201,6 +216,37 @@ At the end of the guide, add:
 **Understanding:** "What's the expected data volume here?"
 **Discovery:** "What happens when this list grows to 1000 items?"
 **Teaching:** "N+1 queries compound because... We use eager loading to..."
+
+## Identifying Positives
+
+For each review item, find something genuine to acknowledge:
+
+### For Validation Issues
+- "You set up the form property correctly"
+- "The happy path works as expected"
+- "You understood the business requirement"
+
+### For Missing Edge Cases
+- "The main flow is solid"
+- "You handled the common cases well"
+- "The foundation is there to build on"
+
+### For Convention Violations
+- "The code works and solves the problem"
+- "You followed the pattern you saw elsewhere"
+- "This approach is consistent with existing code"
+
+### For Architectural Concerns
+- "You got the feature working end-to-end"
+- "The separation of concerns is close"
+- "You used existing patterns as reference"
+
+### For Test Issues
+- "You wrote tests - that's the right instinct"
+- "The test structure follows conventions"
+- "You identified the scenarios that need coverage"
+
+**Key principle:** Every issue exists because the author tried something. Acknowledge the effort and working parts before discussing improvements.
 
 ## Tone Guidelines
 
