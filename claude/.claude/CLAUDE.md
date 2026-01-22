@@ -116,6 +116,14 @@ When multiple valid approaches exist, choose based on:
 - Learn from existing implementations
 - Stop after 3 failed attempts and reassess
 
+## File Dependencies
+
+When editing files in the left column, check if related files need updates:
+
+| When you edit | Also check |
+|---------------|------------|
+| `skills/code-review/SKILL.md` | `commands/code-review-fix.md` |
+
 ## Knowledge Capture
 
 Delegate to the `learning-capture` agent when detecting new knowledge:
