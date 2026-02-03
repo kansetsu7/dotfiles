@@ -126,14 +126,14 @@ When editing files in the left column, check if related files need updates:
 
 ## Knowledge Capture
 
-Delegate to the `learning-capture` agent when detecting new knowledge:
+Use the `knowledge-capture` skill when detecting domain knowledge:
 - User prompt contains "Background:" or context sections
 - User explains domain concepts or business rules
 - User corrects your understanding of the system
 - After exploring code and discovering undocumented patterns
 - Explicit: user says "remember this", "note this", or `/learn`
 
-The agent captures knowledge to `.claude/learning.md` for later documentation.
+Knowledge is captured to `~/.claude/knowledge/` organized by domain.
 
 ## Plan Mode
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.

@@ -1,17 +1,4 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/check-file-dependencies.sh"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(rg:*)",
@@ -25,6 +12,7 @@
       "Bash(bundle exec ruby -I test:*)",
       "Bash(ruby -I test:*)",
       "Bash(cop master...:*)",
+      "Bash(bin/rails test:*)",
       "Skill(claude-docs-consultant)",
       "Skill(commit-guide)",
       "Skill(unstuck)",
@@ -34,6 +22,19 @@
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/check-file-dependencies.sh"
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",

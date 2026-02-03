@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "detection": {
+    "enabled": true,
+    "signals_path": "~/.claude/knowledge/signals.jsonl",
+    "context_lines_before": 5,
+    "context_lines_after": 2,
+    "patterns": {
+      "explicit": [
+        "^Background:",
+        "^Context:",
+        "remember (this|that)",
+        "note (this|that)",
+        "/learn"
+      ],
+      "domain": [
+        "in (our|the) (system|codebase)",
+        "(business|domain) (rule|logic)",
+        "(hk|ck|sg|ave_ck) (site|specific)",
+        "in nerv",
+        "(all|valid in|except) sites",
+        "sites? except (hk|ck|sg|ave_ck)",
+        "\\b(SR|CC|PA)\\b.*(can only|cannot|should|must|valid|status)",
+        "(can only|cannot).*(when|if|unless)",
+        "status.*=.*['\"`]?[A-Z]['\"`]?",
+        "when.*(created|completed|cancelled|pending|confirmed)",
+        "(validation|validate).*required"
+      ],
+      "correction": [
+        "^no,? actually",
+        "that'?s not (right|correct)",
+        "it should be",
+        "you('re| are) wrong"
+      ]
+    }
+  },
+  "knowledge": {
+    "base_path": "~/.claude/knowledge/",
+    "domains": [
+      "business-logic",
+      "testing",
+      "site-specific",
+      "architecture",
+      "workflow"
+    ],
+    "default_confidence": 0.6,
+    "stale_days": 90
+  },
+  "extractor": {
+    "model": "haiku",
+    "run_mode": "background"
+  }
+}

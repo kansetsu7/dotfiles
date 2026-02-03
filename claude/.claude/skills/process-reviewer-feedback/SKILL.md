@@ -189,7 +189,7 @@ Check for new knowledge to capture from the review session.
 - Investigations uncovered undocumented patterns or behaviors
 
 **Action:**
-Delegate to the `learning-capture` agent with a summary of potential knowledge:
+Delegate to the `knowledge-capture` agent with a summary of potential knowledge:
 
 ```
 Capture knowledge from code review session:
