@@ -1,8 +1,19 @@
 # /learn - Capture Knowledge
 
-Manually trigger knowledge capture from the current conversation context.
+Manually trigger knowledge capture from conversation context or files.
 
-## Instructions
+## Mode Detection
+
+1. **If file path provided** (`/learn @file.md`):
+   - Read the file using the Read tool
+   - Infer topic via LLM (ask yourself: "What is the main subject of this document?")
+   - Run: `python3 ~/.claude/skills/knowledge-capture/scripts/knowledge-cli.py scan <file> -t "<inferred-topic>"`
+   - Show captured signals summary to user
+
+2. **If no file** (`/learn`):
+   - Continue with conversation capture below
+
+## Instructions (Conversation Mode)
 
 1. **Identify knowledge to capture** from recent conversation:
    - Look for business rules, domain logic, or system behavior explanations
@@ -58,3 +69,11 @@ User: "The site_code in Nerv determines which payment gateway we use"
 User: "/learn"
 
 → Create `~/.claude/knowledge/site-specific/nerv-site-code-payment-gateway.md`
+
+---
+
+User: "/learn @docs/payment-rules.md"
+
+→ Read file, infer topic "Payment Processing Rules"
+→ Run: `knowledge-cli.py scan docs/payment-rules.md -t "Payment Processing Rules"`
+→ Report: "Captured 3 signals from payment-rules.md under topic 'Payment Processing Rules'"

@@ -47,6 +47,33 @@ The hook detects three types of knowledge signals:
 - "it should be..."
 - "you're wrong"
 
+## Hybrid Detection
+
+Detection uses a two-tier approach:
+
+1. **Explicit signals** - Always trigger (regex patterns above)
+2. **LLM classification** - For substantial messages (50+ words) without explicit signals
+
+The LLM classifier is skipped for:
+- Messages with code blocks (```)
+- Messages with file references (`@file.md`)
+
+This reduces maintenance burden on regex patterns while catching knowledge-rich explanations.
+
+## File Learning
+
+Extract knowledge directly from documentation files:
+
+```bash
+/learn @reviewer-notes.md
+```
+
+Workflow:
+1. Claude reads the file
+2. Infers topic from content ("What is the main subject?")
+3. Runs `knowledge-cli.py scan <file> -t "<topic>"`
+4. Shows captured signals summary
+
 ## Knowledge Domains
 
 - **business-logic** - Payment rules, validation, workflows
@@ -57,7 +84,8 @@ The hook detects three types of knowledge signals:
 
 ## Commands
 
-- `/learn` - Manually trigger knowledge capture from current context
+- `/learn` - Capture knowledge from current conversation context
+- `/learn @file.md` - Extract knowledge from a file (infers topic automatically)
 - `/knowledge-status` - View all captured knowledge by domain
 
 ## CLI
@@ -116,7 +144,8 @@ related: [ck-payment-rules]
 ## Configuration
 
 See `config.json` for:
-- Detection patterns
+- Detection patterns (explicit, domain, correction)
+- Hybrid detection settings (LLM min words, exclude patterns)
 - Domain definitions
 - Confidence thresholds
 - Stale period

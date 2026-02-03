@@ -5,6 +5,11 @@
     "signals_path": "~/.claude/knowledge/signals.jsonl",
     "context_lines_before": 5,
     "context_lines_after": 2,
+    "hybrid": {
+      "enabled": true,
+      "min_words_for_llm": 50,
+      "exclude_patterns": ["```", "@.+\\.(md|txt|py|rb)"]
+    },
     "patterns": {
       "explicit": [
         "^Background:",
