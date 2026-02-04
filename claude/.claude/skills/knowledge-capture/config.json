@@ -1,5 +1,13 @@
 {
   "version": "1.0",
+  "projects": {
+    "aliases": {
+      "nerv_hk": "nerv",
+      "nerv_ck": "nerv",
+      "nerv_sg": "nerv",
+      "nerv_ave_ck": "nerv"
+    }
+  },
   "detection": {
     "enabled": true,
     "signals_path": "~/.claude/knowledge/signals.jsonl",

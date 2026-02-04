@@ -6,6 +6,41 @@ Hook-based knowledge capture system that automatically detects when users explai
 
 Unlike `continuous-learning-v2` which captures behavioral patterns from tool usage, this skill captures **explicit knowledge** - business rules, site-specific logic, and domain concepts that users explain during conversations.
 
+## Project Organization
+
+Knowledge is organized by project, auto-detected from git root:
+
+```
+~/.claude/knowledge/
+├── _global/           # Non-git directories or unrecognized projects
+├── amoeba/
+├── nerv/              # All nerv worktrees merge here
+├── vm/
+└── ...
+```
+
+### Project Detection
+
+1. Runs `git rev-parse --show-toplevel` to find git root
+2. Uses basename of git root as project name
+3. Applies aliases from `config.json` for worktrees
+4. Falls back to `_global` if not in a git repo
+
+### Worktree Aliases
+
+Multiple git worktrees can be aliased to a single project. For example, all Nerv worktrees share the same knowledge:
+
+```json
+"projects": {
+  "aliases": {
+    "nerv_hk": "nerv",
+    "nerv_ck": "nerv",
+    "nerv_sg": "nerv",
+    "nerv_ave_ck": "nerv"
+  }
+}
+```
+
 ## How It Works
 
 ```

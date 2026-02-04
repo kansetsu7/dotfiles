@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -14,11 +15,34 @@ from typing import Optional
 
 # Paths
 KNOWLEDGE_BASE = Path.home() / ".claude" / "knowledge"
-SIGNALS_FILE = KNOWLEDGE_BASE / "signals.jsonl"
 SKILL_DIR = Path(__file__).parent.parent
 CONFIG_FILE = SKILL_DIR / "config.json"
 
 DOMAINS = ["business-logic", "testing", "site-specific", "architecture", "workflow"]
+
+
+def get_project() -> str:
+    """Detect project from git root, apply aliases."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, check=True
+        )
+        git_root = Path(result.stdout.strip()).name
+        aliases = load_config().get("projects", {}).get("aliases", {})
+        return aliases.get(git_root, git_root)
+    except Exception:
+        return "_global"
+
+
+def get_project_base() -> Path:
+    """Get knowledge base path for current project."""
+    return KNOWLEDGE_BASE / get_project()
+
+
+def get_signals_file() -> Path:
+    """Get signals file path for current project."""
+    return get_project_base() / "signals.jsonl"
 
 
 def load_config() -> dict:
@@ -30,10 +54,11 @@ def load_config() -> dict:
 
 
 def load_signals() -> list[dict]:
-    """Load all knowledge signals."""
+    """Load all knowledge signals for current project."""
     signals = []
-    if SIGNALS_FILE.exists():
-        with open(SIGNALS_FILE) as f:
+    signals_file = get_signals_file()
+    if signals_file.exists():
+        with open(signals_file) as f:
             for line in f:
                 line = line.strip()
                 if line:
@@ -45,11 +70,12 @@ def load_signals() -> list[dict]:
 
 
 def load_knowledge_files() -> list[dict]:
-    """Load all knowledge files from domain directories."""
+    """Load all knowledge files from domain directories for current project."""
     knowledge = []
+    project_base = get_project_base()
 
     for domain in DOMAINS:
-        domain_path = KNOWLEDGE_BASE / domain
+        domain_path = project_base / domain
         if not domain_path.exists():
             continue
 
@@ -91,6 +117,7 @@ def parse_frontmatter(content: str) -> dict:
 def cmd_status(args):
     """Show knowledge status by domain."""
     config = load_config()
+    project = get_project()
     knowledge = load_knowledge_files()
     signals = load_signals()
 
@@ -100,6 +127,9 @@ def cmd_status(args):
     print("=" * 60)
     print("KNOWLEDGE STATUS")
     print("=" * 60)
+    print()
+    print(f"Project: {project}")
+    print(f"Path: {get_project_base()}")
     print()
 
     if pending > 0:
@@ -352,19 +382,19 @@ def cmd_signals(args):
 
 def cmd_scan(args):
     """Scan a file for knowledge signals with a specified topic."""
-    import subprocess
-
     file_path = args.file
     topic = args.topic
     clear = getattr(args, 'clear', False)
+    project = get_project()
+    signals_file = get_signals_file()
 
     if not Path(file_path).exists():
         print(f"File not found: {file_path}")
         sys.exit(1)
 
     # Clear existing signals if requested
-    if clear and SIGNALS_FILE.exists():
-        SIGNALS_FILE.unlink()
+    if clear and signals_file.exists():
+        signals_file.unlink()
 
     # Read file content
     content = Path(file_path).read_text()
@@ -384,6 +414,7 @@ def cmd_scan(args):
 
     print(f"Scanning: {file_path}")
     print(f"Topic: {topic}")
+    print(f"Project: {project}")
     print()
 
     for line_num, line in enumerate(lines, 1):
@@ -402,12 +433,13 @@ def cmd_scan(args):
                 continue
 
         if matched:
-            # Send to hook with topic
+            # Send to hook with topic and project
             payload = json.dumps({
                 "user_message": line,
                 "source_file": str(Path(file_path).resolve()),
                 "line_number": line_num,
-                "file_topic": topic
+                "file_topic": topic,
+                "project": project
             })
 
             try:
