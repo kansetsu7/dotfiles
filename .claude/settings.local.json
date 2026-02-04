@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Read(//root/.config/nvim/**)"
+      "Read(//root/.config/nvim/**)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "Bash(curl:*)",
+      "Bash(/root/.dotfiles/claude/.claude/skills/learning-capture-v2/hooks/detect-knowledge.sh:*)",
+      "Bash(ls:*)",
+      "Bash(python3:*)",
+      "Bash(git -C /root/.dotfiles status --short)",
+      "Bash(git -C /root/.dotfiles diff --stat HEAD)",
+      "Bash(git -C /root/.dotfiles log --oneline -5)"
     ],
     "deny": [],
     "ask": []
