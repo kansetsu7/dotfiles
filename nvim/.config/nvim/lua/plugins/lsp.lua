@@ -27,7 +27,7 @@ return {
             args = vim.list_extend({ "exec", "rubocop" }, formatting.rubocop._opts.args),
           }),
           diagnostics.trail_space,
-          diagnostics.yamllint,
+          -- diagnostics.yamllint,
           -- Go
           formatting.goimports,
         }
