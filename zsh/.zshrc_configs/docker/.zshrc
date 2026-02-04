@@ -6,6 +6,15 @@ export NERV_PREFIX=nerv_
 export PATH="/root/npm-global/bin:$PATH"
 
 alias aba_site="amoeba_site $1"
-alias update_cc='curl -fsSL https://claude.ai/install.sh | bash'
+
+# AI
+alias cl='claude'
+alias cr='claude --resume'
+cf(){ claude -r $1 --fork-session }
+
 alias ccu='npx ccusage@latest'
 alias ccm='npx ccusage@latest monthly'
+alias ccb='npx ccusage@latest blocks'
+
+alias gmn='gemini'
+alias ecc='cd /project/everything-claude-code'
