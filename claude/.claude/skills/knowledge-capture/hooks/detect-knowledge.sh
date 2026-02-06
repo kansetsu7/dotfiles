@@ -7,10 +7,29 @@ set -euo pipefail
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG_FILE="$SKILL_DIR/config.json"
-SIGNALS_FILE="${HOME}/.claude/knowledge/signals.jsonl"
+KNOWLEDGE_BASE="${HOME}/.claude/knowledge"
+
+# Detect project from git root
+get_project() {
+    local git_root
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "_global"; return; }
+    local basename=$(basename "$git_root")
+
+    # Check aliases in config
+    local alias=$(jq -r --arg name "$basename" '.projects.aliases[$name] // empty' "$CONFIG_FILE" 2>/dev/null)
+    if [[ -n "$alias" ]]; then
+        echo "$alias"
+    else
+        echo "$basename"
+    fi
+}
+
+PROJECT=$(get_project)
+PROJECT_BASE="${KNOWLEDGE_BASE}/${PROJECT}"
+SIGNALS_FILE="${PROJECT_BASE}/signals.jsonl"
 
 # Ensure signals directory exists
-mkdir -p "$(dirname "$SIGNALS_FILE")"
+mkdir -p "$PROJECT_BASE"
 
 # Read hook input from stdin
 INPUT=$(cat)
@@ -133,6 +152,7 @@ if [[ -n "$DETECTION" ]]; then
         --arg pattern "$MATCHED_PATTERN" \
         --arg content "$USER_MESSAGE" \
         --arg session "$SESSION_ID" \
+        --arg project "$PROJECT" \
         --arg source_file "$SOURCE_FILE" \
         --arg line_number "$LINE_NUMBER" \
         --arg file_topic "$FILE_TOPIC" \
@@ -145,6 +165,7 @@ if [[ -n "$DETECTION" ]]; then
             matched_pattern: $pattern,
             content: $content,
             session: $session,
+            project: $project,
             source_file: (if $source_file == "" then null else $source_file end),
             line_number: (if $line_number == "" then null else ($line_number | tonumber) end),
             file_topic: (if $file_topic == "" then null else $file_topic end),

@@ -24,13 +24,24 @@
     "ask": []
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/skills/knowledge-capture/hooks/detect-knowledge.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/check-file-dependencies.sh"
+            "command": "~/.dotfiles/claude/.claude/hooks/check-file-dependencies.sh"
           }
         ]
       }
@@ -44,5 +55,5 @@
     "gopls-lsp@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
-  "autoUpdatesChannel": "stable"
+  "autoUpdatesChannel": "latest"
 }
