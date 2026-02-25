@@ -5,6 +5,9 @@ ld() {
     hq)
       lazydocker -f "/current/hq/compose.yml"
       ;;
+    extra)
+      lazydocker -f "/current/extra/compose.yml"
+      ;;
     hk|ck|sg|ave_ck)
       lazydocker -f "/current/sites/nerv_by_site_code/$project/compose.yml"
       ;;
