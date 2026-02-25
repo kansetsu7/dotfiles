@@ -53,6 +53,14 @@ Before reviewing, ask yourself:
 - Special cases that could be eliminated with better design
 - Code that could be 3 lines instead of 10
 - Poor naming, duplication, dead code
+- Nested ternaries — prefer switch/if-else for multiple conditions
+- Redundant abstractions that add indirection without value
+- Overly compact/clever one-liners that sacrifice readability
+- Related logic scattered across locations that could be consolidated
+- Comments that restate the obvious (remove or make meaningful)
+
+Balance: don't flag fewer-lines-for-fewer-lines' sake. Preserve helpful
+abstractions that improve organization. Explicit > compact.
 
 ### 6. Breaking Changes
 
