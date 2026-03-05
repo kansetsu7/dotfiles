@@ -37,7 +37,7 @@ Perform a comprehensive code review workflow on the current branch changes.
    - Design decisions are followed
    - Test changes follow project's testing philosophy (if available)
 
-### Step 1.5: Read Reviewer Feedback (if exists)
+### Step 2: Read Reviewer Feedback (if exists)
 
 1. Check for `.claude/reviewer-feedback.md`
 2. If exists:
@@ -47,7 +47,7 @@ Perform a comprehensive code review workflow on the current branch changes.
 3. If not exists:
    - Continue with AI-only review (no reviewer feedback to merge)
 
-### Step 2: Get the Diff
+### Step 3: Get the Diff
 
 1. Determine base branch: Use `$ARGUMENTS` if provided, otherwise `master`
 2. Run `git diff <base-branch>...HEAD` to get all changes on this branch
@@ -60,7 +60,7 @@ Perform a comprehensive code review workflow on the current branch changes.
    Please ensure you have uncommitted or committed changes to review.
    ```
 
-### Step 3: Code Review & Merge
+### Step 4: Code Review & Merge
 
 Apply the review criteria defined in `~/.claude/skills/code-review-criteria.md`.
 
@@ -73,11 +73,6 @@ Apply the review criteria defined in `~/.claude/skills/code-review-criteria.md`.
    - Add AI's additional context if valuable
    - Mark as `🤖 AI + 👤 Reviewer`
 4. Number items sequentially within each priority section
-
-**Source-based field defaults:**
-
-- **👤 Reviewer** (or 🤖 AI + 👤 Reviewer) items: Set Decision to `Accept`, Approach to `Suggested fix`, and omit Notes
-- **🤖 AI** items: Leave Decision/Approach/Notes as placeholders for the reviewer to fill in
 
 Write the review directly to `.claude/code-review.md` using this structure:
 
@@ -158,7 +153,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 
 ## 🔗 Issue Relationships
 
-<!-- Added by Step 3.5 - see that step for format -->
+<!-- Added by Step 5 - see that step for format -->
 
 ---
 
@@ -171,7 +166,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 <One sentence summary of the most important observation>
 ```
 
-### Step 3.5: Dependency & Conflict Analysis
+### Step 5: Dependency & Conflict Analysis
 
 After generating findings, analyze relationships between issues:
 
@@ -212,7 +207,16 @@ If no relationships found, add:
 No dependencies or conflicts detected between findings.
 ```
 
-### Step 4: Commit Review
+### Step 6: Apply Source-Based Field Defaults
+
+After writing the review file, re-read `.claude/code-review.md` and apply defaults based on each item's Source:
+
+- **👤 Reviewer** (or 🤖 AI + 👤 Reviewer) items: Set Decision to `Accept`, Approach to `Suggested fix`, and omit Notes
+- **🤖 AI** items: Leave Decision/Approach/Notes as placeholders for the reviewer to fill in
+
+Update the file in-place with these defaults applied.
+
+### Step 7: Commit Review
 
 1. Stage the review file:
    ```
