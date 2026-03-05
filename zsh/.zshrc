@@ -200,6 +200,7 @@ alias aba="j $PROJECT_PATH/amoeba"
 alias angel="j $PROJECT_PATH/angel"
 alias adam="j clojure/projects/adam"
 alias asuka="j clojure/projects/asuka"
+alias lth="j lilith"
 alias asu=asuka
 alias lcl='j clojure/components/lcl'
 alias magi='j clojure/components/magi'
