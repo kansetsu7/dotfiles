@@ -89,10 +89,6 @@ Write the review directly to `.claude/code-review.md` using this structure:
 **Files Changed:** <count>
 **Lines:** +<additions> / -<deletions>
 
-## Taste Rating
-
-🟢/🟡/🔴 **<Rating>** - <One line explanation>
-
 ## Decision Options
 
 - **Accept**: Will fix this issue
