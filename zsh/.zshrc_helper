@@ -188,6 +188,11 @@ dhq() {
   fi
 }
 
+function cs() {
+  colima stop
+  colima start -c 10 -m 12 -d 120 --vm-type vz --vz-rosetta --mount-type virtiofs
+}
+
 # {{{
 git_config() {
   if [[ $# -ge 1 ]]; then
