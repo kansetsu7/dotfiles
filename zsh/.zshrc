@@ -367,6 +367,9 @@ fi
 if [ -f "$HOME/.config/credentials/vpn_otp.env.gpg" ]; then
   gpg -dq "$HOME/.config/credentials/vpn_otp.env.gpg" 2>/dev/null | source /dev/stdin
 fi
+if [ -f "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" ]; then
+  gpg -dq "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" 2>/dev/null | source /dev/stdin
+fi
 
 case `uname` in
   Darwin)
