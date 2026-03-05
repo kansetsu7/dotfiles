@@ -122,7 +122,8 @@ When editing files in the left column, check if related files need updates:
 
 | When you edit | Also check |
 |---------------|------------|
-| `skills/code-review/SKILL.md` | `commands/code-review-fix.md` |
+| `skills/code-review/SKILL.md` | `commands/fix-plan.md`, `commands/code-review-fix.md` |
+| `commands/fix-plan.md` | `commands/code-review-fix.md` |
 
 ## Knowledge Capture
 
