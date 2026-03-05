@@ -74,6 +74,11 @@ Apply the review criteria defined in `~/.claude/skills/code-review-criteria.md`.
    - Mark as `🤖 AI + 👤 Reviewer`
 4. Number items sequentially within each priority section
 
+**Source-based field defaults:**
+
+- **👤 Reviewer** (or 🤖 AI + 👤 Reviewer) items: Set Decision to `Accept`, Approach to `Suggested fix`, and omit Notes
+- **🤖 AI** items: Leave Decision/Approach/Notes as placeholders for the reviewer to fill in
+
 Write the review directly to `.claude/code-review.md` using this structure:
 
 ```markdown
