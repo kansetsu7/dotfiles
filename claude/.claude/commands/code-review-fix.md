@@ -42,10 +42,11 @@ For each Fix Group in order:
       - If Notes contain questions (indicated by `?`) → answer the question first, explain reasoning, then proceed
 
    c. **Implement and commit:**
-      - Make the code change
+      - Follow the **Todo** checklist in `fix-plan.md`, completing each sub-task in order
+      - Mark each todo as `[x]` in `fix-plan.md` as you go
       - Verify the change compiles/passes syntax check
       - Mark the item Status as `[x]` in `.claude/code-review.md`
-      - Stage the changed files (including updated `.claude/code-review.md`)
+      - Stage the changed files (including updated `.claude/code-review.md` and `.claude/fix-plan.md`)
       - Commit with a message describing the changes made
 
    d. **Check cascading fixes:**

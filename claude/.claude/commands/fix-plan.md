@@ -85,6 +85,10 @@ Items are organized into ordered groups. Complete each group before starting the
 - **Plan:** <concrete description of what to change>
 - **Side effects:** <any risks or things to verify>
 - **Resolves:** #Y, #Z (if cascading)
+- **Todo:**
+  - [ ] <specific task>
+  - [ ] <another task if complex>
+  - [ ] Verify: <side effects to check>
 
 #### #Y `<file:line>` - <title>
 ...
