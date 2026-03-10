@@ -363,13 +363,13 @@ export PGHOST=localhost
 export PGUSER=psql
 
 if [ -f "$HOME/.config/credentials/openai.env.gpg" ]; then
-  gpg -dq "$HOME/.config/credentials/openai.env.gpg" 2>/dev/null | source /dev/stdin
+  source <(gpg -dq "$HOME/.config/credentials/openai.env.gpg" 2>/dev/null)
 fi
 if [ -f "$HOME/.config/credentials/vpn_otp.env.gpg" ]; then
-  gpg -dq "$HOME/.config/credentials/vpn_otp.env.gpg" 2>/dev/null | source /dev/stdin
+  source <(gpg -dq "$HOME/.config/credentials/vpn_otp.env.gpg" 2>/dev/null)
 fi
 if [ -f "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" ]; then
-  gpg -dq "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" 2>/dev/null | source /dev/stdin
+  source <(gpg -dq "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" 2>/dev/null)
 fi
 
 case `uname` in
@@ -445,3 +445,6 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 export PATH="$HOME/.local/bin:$PATH"
+
+# Czkawka GUI requires this for icon themes
+export XDG_DATA_DIRS="/opt/homebrew/share:$XDG_DATA_DIRS"
