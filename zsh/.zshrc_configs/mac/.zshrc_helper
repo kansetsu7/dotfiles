@@ -10,7 +10,7 @@ dump_db() {
 
 # sync clipboard between mac and docker {{{
 socat_started(){
-  lsof -i :"$1" | grep -q socat
+  lsof -i :"$1" 2>/dev/null | grep -q socat
 }
 
 sync_docker_clipboard(){
