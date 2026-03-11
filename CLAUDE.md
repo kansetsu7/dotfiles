@@ -32,3 +32,12 @@ stow --verbose nvim
 # If conflicts with existing files, adopt them into repo
 stow --adopt --verbose nvim
 ```
+
+## File Dependencies
+
+When editing files in the left column, check if related files need updates:
+
+| When you edit | Also check |
+|---------------|------------|
+| `skills/code-review/SKILL.md` | `commands/fix-plan.md`, `commands/code-review-fix.md` |
+| `commands/fix-plan.md` | `commands/code-review-fix.md` |

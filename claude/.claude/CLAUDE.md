@@ -116,15 +116,6 @@ When multiple valid approaches exist, choose based on:
 - Learn from existing implementations
 - Stop after 3 failed attempts and reassess
 
-## File Dependencies
-
-When editing files in the left column, check if related files need updates:
-
-| When you edit | Also check |
-|---------------|------------|
-| `skills/code-review/SKILL.md` | `commands/fix-plan.md`, `commands/code-review-fix.md` |
-| `commands/fix-plan.md` | `commands/code-review-fix.md` |
-
 ## Knowledge Capture
 
 Use the `knowledge-capture` skill when detecting domain knowledge:
