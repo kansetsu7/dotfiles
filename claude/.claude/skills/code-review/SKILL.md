@@ -60,7 +60,29 @@ Perform a comprehensive code review workflow on the current branch changes.
    Please ensure you have uncommitted or committed changes to review.
    ```
 
-### Step 4: Code Review & Merge
+### Step 4: Dead Code Analysis
+
+Before reviewing, search for code made dead by this MR's changes:
+
+1. **From the diff, extract:**
+   - Methods/functions that were **deleted or renamed**
+   - Methods/functions whose **callers were removed** (e.g., a call site was deleted)
+   - Conditions/guards that make downstream code **unreachable**
+
+2. **For each candidate, search the codebase** (using `rg` or grep):
+   - Search for references to the method/function name outside of its definition
+   - Exclude test files from caller search (tests don't count as callers)
+   - Exclude the method's own definition and comments
+
+3. **Build a dead code list:**
+   - Methods with **zero remaining callers** in non-test code
+   - Note the confidence level: **high** (no callers found) vs **medium** (only dynamic/ambiguous callers like `send(:method_name)`)
+
+4. **Keep this list** for use in Step 5 (review) and Step 6 (conflict detection).
+
+**Scope:** Only analyze methods/functions in files touched by the MR. Do not scan the entire codebase for pre-existing dead code.
+
+### Step 5: Code Review & Merge
 
 Apply the review criteria defined in `~/.claude/skills/code-review-criteria.md`.
 
@@ -153,7 +175,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 
 ## 🔗 Issue Relationships
 
-<!-- Added by Step 5 - see that step for format -->
+<!-- Added by Step 6 - see that step for format -->
 
 ---
 
@@ -166,7 +188,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 <One sentence summary of the most important observation>
 ```
 
-### Step 5: Dependency & Conflict Analysis
+### Step 6: Dependency, Conflict & Dead Code Conflict Analysis
 
 After generating findings, analyze relationships between issues:
 
@@ -174,6 +196,7 @@ After generating findings, analyze relationships between issues:
 2. **Cascading fixes**: Fixing one issue may resolve another
 3. **Conflicting solutions**: Fixes that contradict or interfere with each other
 4. **Merge candidates**: Issues that should be addressed together
+5. **Dead code conflicts**: Cross-reference all findings against the dead code list from Step 4. If any finding (reviewer or AI) suggests changes to code identified as dead, flag it.
 
 **Add this section to `.claude/code-review.md` before Verdict:**
 
@@ -189,6 +212,10 @@ After generating findings, analyze relationships between issues:
 ### Conflicts
 <!-- Fixes that may interfere with each other -->
 - **#X vs #Y**: <describe conflict and recommended resolution>
+
+### Dead Code Conflicts
+<!-- Findings that suggest changes to code with no remaining callers -->
+- **#X** targets `method_name` (`file:line`) which has no callers after this MR — consider removing instead of modifying. Confidence: high/medium.
 
 ### Same-Location Changes
 <!-- Issues modifying the same code area - coordinate fixes -->
@@ -207,7 +234,7 @@ If no relationships found, add:
 No dependencies or conflicts detected between findings.
 ```
 
-### Step 6: Apply Source-Based Field Defaults
+### Step 7: Apply Source-Based Field Defaults
 
 After writing the review file, re-read `.claude/code-review.md` and apply defaults based on each item's Source:
 
@@ -216,7 +243,7 @@ After writing the review file, re-read `.claude/code-review.md` and apply defaul
 
 Update the file in-place with these defaults applied.
 
-### Step 7: Commit Review
+### Step 8: Commit Review
 
 1. Stage the review file:
    ```

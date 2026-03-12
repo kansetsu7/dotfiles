@@ -62,7 +62,23 @@ Before reviewing, ask yourself:
 Balance: don't flag fewer-lines-for-fewer-lines' sake. Preserve helpful
 abstractions that improve organization. Explicit > compact.
 
-### 6. Breaking Changes
+### 6. Dead Code (MR-Introduced)
+
+Focus on code made dead **by this MR's changes**, not pre-existing dead code.
+
+- Methods/functions whose last caller was removed or replaced in this MR
+- Code paths made unreachable by new conditions or early returns
+- Old implementations left behind after refactoring (replaced but not removed)
+- Imports/requires no longer referenced after this MR's changes
+- Variables assigned but never read after this MR's modifications
+- Callback/hook registrations for methods that no longer exist
+- Ruby-specific: `before_action`, `after_action`, `validate`, `scope` referencing removed methods
+
+**Caveat:** Accept false negatives for dynamic dispatch (`send`, `public_send`,
+`define_method`, `method_missing`, routing, serializers). When unsure, note the
+uncertainty rather than suppressing the finding.
+
+### 7. Breaking Changes
 
 "We don't break user space!"
 
@@ -70,14 +86,14 @@ abstractions that improve organization. Explicit > compact.
 - Modifications to public interfaces without deprecation
 - Assumptions about backward compatibility
 
-### 7. Testing
+### 8. Testing
 
 - Critical paths tested
 - Edge cases: null, empty, boundary values covered
 - Test names descriptive of behavior
 - Follow project's testing philosophy (from `docs/rails_testing_philosophy.md` if available)
 
-### 8. Ruby/Rails Patterns
+### 9. Ruby/Rails Patterns
 
 - N+1 queries (use `includes` or `eager_load`)
 - Mass assignment vulnerabilities
