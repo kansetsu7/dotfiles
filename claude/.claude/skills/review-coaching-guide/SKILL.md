@@ -16,6 +16,9 @@ One of these files must exist:
 - `.claude/code-review.md` (preferred - comprehensive review)
 - `.claude/reviewer-feedback.md` (alternative - processed reviewer notes)
 
+Optional:
+- `.claude/fix-plan.md` - enriches coaching with complexity estimates and side effects
+
 ## Workflow
 
 ### Step 1: Read Review Input
@@ -30,8 +33,15 @@ One of these files must exist:
    - `/code-review` to generate AI code review
    - `/process-reviewer-feedback` to process your manual notes
    ```
+4. Check for `.claude/fix-plan.md` - if found, read it for complexity and side effects
 
 ### Step 2: Generate Coaching Guide
+
+When fix-plan exists, use it to enrich coaching:
+- **Complexity** → calibrate discussion depth (Simple = brief, Moderate = standard, Complex = deeper exploration)
+- **Side effects** → add to Discovery Questions ("What might break if we change this?")
+- **Skipped items** → omit from coaching guide (already decided to skip)
+- **Needs Decision / Design Decisions** → flag as collaborative discussion topics, not teaching moments
 
 For each review item, generate a coaching section with:
 
@@ -95,6 +105,7 @@ Write to `.claude/coaching-guide.md`:
 
 **File:** `<file:line>`
 **Issue Summary:** <brief description>
+**Complexity:** <Simple / Moderate / Complex>
 
 #### What Author Did Well
 > Acknowledge before discussing the issue
@@ -143,11 +154,13 @@ Write to `.claude/coaching-guide.md`:
 
 ### Step 4: Prioritize Items
 
-Order items in the guide by teaching value:
+Order by teaching value:
 1. **Blocking items** - These are learning priorities
 2. **Pattern issues** - Issues that repeat across codebase teach broader lessons
 3. **Architectural concerns** - These build understanding of system design
 4. **Nits** - Lower priority, but can teach conventions
+
+Include **Design Decisions** as collaborative discussion topics (not teaching moments) — these are areas where reviewer and author should explore options together.
 
 ### Step 5: Add Session Planning Section
 
