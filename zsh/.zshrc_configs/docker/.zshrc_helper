@@ -102,3 +102,8 @@ e2e_report() {
   project_folder="${1:-$(detect_project_folder)}"
   /proj/$project_folder/e2e/show-report.sh
 }
+
+cy() {  # cc yolo
+  export DOCKER_WORKING_DIR="$PWD"
+  docker compose -f /current/edit/e3/compose.yml run --rm yolo zsh -ic "IS_SANDBOX=1 claude --dangerously-skip-permissions"
+}
