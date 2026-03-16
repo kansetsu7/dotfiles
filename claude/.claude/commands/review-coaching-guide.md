@@ -1,7 +1,4 @@
----
-name: review-coaching-guide
-description: Generate a coaching guide from code review feedback to help tech leads conduct effective review discussions. Use when the user wants to discuss review items with authors, create discussion questions, or prepare for 1:1 code review sessions.
----
+Generate a coaching guide from code review feedback to help tech leads conduct effective review discussions. Use when the user wants to discuss review items with authors, create discussion questions, or prepare for 1:1 code review sessions.
 
 # Review Coaching Guide
 
