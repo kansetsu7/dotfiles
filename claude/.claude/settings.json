@@ -18,7 +18,9 @@
       "Skill(unstuck)",
       "Skill(code-review)",
       "Skill(code-review-criteria)",
-      "Read(~/.claude/skills/**)"
+      "Read(~/.claude/skills/**)",
+      "Bash(curl -s --header \"PRIVATE-TOKEN: $GITLAB_READONLY_TOKEN\":*)",
+      "Skill(gitlab)"
     ],
     "deny": [],
     "ask": []
@@ -52,8 +54,11 @@
     "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); branch=$(git -C \"$cwd\" branch --show-current 2>/dev/null || echo \"\"); dir=$(basename \"$cwd\"); ctx=$(echo \"$input\" | jq -r '.context_window.remaining_percentage // empty'); agent=$(echo \"$input\" | jq -r '.agent.name // empty'); printf \"\\033[34m${dir}\\033[0m\"; [ -n \"$branch\" ] && printf \"\\033[33m (${branch})\\033[0m\"; [ -n \"$ctx\" ] && printf \" \\033[36m[ctx:${ctx}%%]\\033[0m\"; [ -n \"$agent\" ] && printf \" \\033[33m[agent:${agent}]\\033[0m\"; true"
   },
   "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
-  "autoUpdatesChannel": "latest"
+  "effortLevel": "medium",
+  "autoUpdatesChannel": "latest",
+  "skipDangerousModePermissionPrompt": true
 }
