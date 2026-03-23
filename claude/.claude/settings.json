@@ -51,7 +51,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); branch=$(git -C \"$cwd\" branch --show-current 2>/dev/null || echo \"\"); dir=$(basename \"$cwd\"); ctx=$(echo \"$input\" | jq -r '.context_window.remaining_percentage // empty'); agent=$(echo \"$input\" | jq -r '.agent.name // empty'); printf \"\\033[34m${dir}\\033[0m\"; [ -n \"$branch\" ] && printf \"\\033[33m (${branch})\\033[0m\"; [ -n \"$ctx\" ] && printf \" \\033[36m[ctx:${ctx}%%]\\033[0m\"; [ -n \"$agent\" ] && printf \" \\033[33m[agent:${agent}]\\033[0m\"; true"
+    "command": "input=$(cat); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); branch=$(git -C \"$cwd\" branch --show-current 2>/dev/null || echo \"\"); dir=$(basename \"$cwd\"); ctx=$(echo \"$input\" | jq -r '.context_window.remaining_percentage // empty'); rl5=$(echo \"$input\" | jq -r '.rate_limits.five_hour.used_percentage // empty'); agent=$(echo \"$input\" | jq -r '.agent.name // empty'); printf \"\\033[34m${dir}\\033[0m\"; [ -n \"$branch\" ] && printf \"\\033[33m (${branch})\\033[0m\"; [ -n \"$ctx\" ] && printf \" \\033[36m[ctx:${ctx}%%]\\033[0m\"; [ -n \"$rl5\" ] && printf \" \\033[35m[5h:${rl5}%%]\\033[0m\"; [ -n \"$agent\" ] && printf \" \\033[33m[agent:${agent}]\\033[0m\"; true"
   },
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": true,
