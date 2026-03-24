@@ -299,6 +299,7 @@ alias dcn='docker container'
 alias ndb='~/tmp/dumpdb/nerv_hk'
 alias upload_ndb="scp ~/tmp/dumpdb/nerv_hk/$1 dev.abagile.com:~/tmp/snapshot_share/$2"
 alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/nerv_hk/$2"
+alias dumpdbv='vi /current/edit/scripts/dump_db.sh'
 
 # AI
 alias cl=claude
