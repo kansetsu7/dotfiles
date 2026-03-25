@@ -133,8 +133,14 @@ Knowledge is captured to `~/.claude/knowledge/` organized by domain.
 
 ## Commit Style
 
-For complex commits, use the 'Background', 'Problem', 'Approach' structure.
-For simple changes, a concise subject line is sufficient.
+Default to the 'Background', 'Problem', 'Approach' structure.
+Use a concise subject line only for truly trivial changes (typos, formatting,
+dependency bumps) where there is no meaningful context to explain.
+
+If there is a *reason* behind the change — a bug, a prior commit that set up
+the situation, a subtlety in how the code works — use the structural style,
+regardless of diff size.
+
 Use backticks to quote code and file paths.
 
 ### Background
