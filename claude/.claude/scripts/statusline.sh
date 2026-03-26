@@ -22,7 +22,7 @@ if [ -n "$ctx" ]; then
     printf " \033[32mctx:%s%%\033[0m" "$ctx"
   fi
 fi
-[ -n "$rl5" ] && printf " \033[35m[5h:%s%%]\033[0m" "$rl5"
+[ -n "$rl5" ] && printf " \033[35m[5h:%.1f%%]\033[0m" "$rl5"
 [ -n "$agent" ] && printf " \033[33m[agent:%s]\033[0m" "$agent"
 
 true
