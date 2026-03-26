@@ -18,3 +18,10 @@ alias ccb='npx ccusage@latest blocks'
 
 alias gmn='gemini'
 alias ecc='cd /project/everything-claude-code'
+
+# SSH agent - reuse single agent across all tmux windows
+export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+if ! ssh-add -l &>/dev/null; then
+  rm -f "$SSH_AUTH_SOCK"
+  eval $(ssh-agent -a "$SSH_AUTH_SOCK" -t 86400) >/dev/null
+fi
