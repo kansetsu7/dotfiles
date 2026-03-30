@@ -7,6 +7,8 @@
 : ${ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim}
 # }}} End configuration added by Zim install
 
+export CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1
+
 source ~/.zshrc_helper
 
 alias krpu='rpu kill'
