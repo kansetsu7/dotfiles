@@ -7,6 +7,8 @@ return {
         nilness = true,
         unusedwrite = true,
         useany = true,
+        ST1000 = false, -- package comments
+        ST1003 = false -- naming conventions
       },
       staticcheck = true,
       gofumpt = true,
