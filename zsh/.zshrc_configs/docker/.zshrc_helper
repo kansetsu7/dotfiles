@@ -52,6 +52,20 @@ dump_db() {
 }
 alias dumpdb=dump_db
 
+# change password in project's container {{{
+chpwa(){
+  project=$(detect_pwd_project)
+  container_name="$project-nerv_$project-1"
+  echo "change-password-all $1" | docker exec -i "$container_name" bundle exec rails console
+}
+
+chpw(){
+  project=$(detect_pwd_project)
+  container_name="$project-nerv_$project-1"
+  echo "change-password $1" | docker exec -i "$container_name" bundle exec rails console
+}
+# }}}
+
 # shortcut to swap different cache folder for jumping between nerv/amoeba/angel development {{
 sc() {
   err='\\033[0;31m'
