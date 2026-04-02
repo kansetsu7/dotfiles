@@ -11,87 +11,43 @@ Analyze branches merged into master within a given time range (default: this wee
 
 - Optional: time range like "this week", "last 2 weeks", "since 2026-03-01", "last 3 months". Default: "1 week ago".
 
-## Step 1: Determine Time Range and Mode
+## Step 1: Run gather script
 
-Parse the user's time range argument and classify:
-- **Short mode** (up to 2 weeks): detailed per-branch summaries, rapid-fix detection
-- **Long mode** (over 2 weeks): trend analysis, compressed per-branch output
-
-## Step 2: Find Merge Commits
+The gather script handles ALL data collection (git log, GitLab API, diff stats, hotspot counting, rapid-fix detection, weekly density, author summary) and outputs compact structured text.
 
 ```bash
-git fetch origin master
-git log origin/master --merges --first-parent --since="<date>" --format="%H %s"
+bash ~/.claude/skills/merge-insights/gather.sh "<time_range>"
 ```
 
-Parse branch names from commit messages (format: `Merge branch '<branch>' into 'master'`).
-Also extract branch type prefix: `feature/`, `bug/`, `patch/`, `hotfix/`, etc.
+The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, and `---METADATA---`.
 
-## Step 3: Get MR Details from GitLab
+The `---METADATA---` section includes `mode: short` or `mode: long` (short = up to 14 days, long = over 14 days).
 
-For each merge commit, find the corresponding MR to get the title and description (which often contains business context).
+## Step 2: Read full diffs for notable MRs only
 
-Use the `gitlab` skill's conventions for API access:
-- Token: `$GITLAB_READONLY_TOKEN`
-- Base URL: `https://gitlab.abagile.com/api/v4`
-- Detect project from git remote and resolve to numeric ID
+From the gather output, identify notable MRs:
+- Large diffs (insertions > 200)
+- Flagged in rapid-fix section
+- Bug/patch branches touching hotspot files
 
-```bash
-# Search for MR by source branch
-curl -s --header "PRIVATE-TOKEN: $GITLAB_READONLY_TOKEN" \
-  "https://gitlab.abagile.com/api/v4/projects/$PROJECT_ID/merge_requests?state=merged&source_branch=<branch>&per_page=1" \
-  | jq '.[0] | {iid, title, description, author: .author.name, merged_at, web_url}'
-```
-
-## Step 4: Get Diff Summary
-
-For each merge commit, get the diff stat and key changes:
+For these only, read the full diff for business context:
 
 ```bash
-# Diff stat from merge commit
-git diff --stat <merge_sha>^1...<merge_sha>
-
-# Changed files list (for hotspot/rapid-fix analysis)
-git diff --name-only <merge_sha>^1...<merge_sha>
-
-# For deeper understanding, read the actual diff (short mode only, or large/risky MRs in long mode)
 git diff <merge_sha>^1...<merge_sha>
 ```
 
-## Step 5: Hotspot Analysis
+Do NOT read diffs for small/routine MRs — the commit messages from the gather output are sufficient.
 
-Collect all changed file paths across MRs.
+## Step 3: Analyze and write report
 
-- Find files touched by 2+ MRs (hotspots)
-- Roll up to directory/module level for broader patterns (e.g. `app/models/payment_arrangement*`)
-- In **long mode**, rank modules by total MR count to surface chronic hotspots
+Using the structured data from the script, the LLM's job is:
 
-## Step 6: Rapid-Fix Detection
+1. **Classify rapid fixes** as: rapid fix, follow-up fix, or cascade
+2. **Group related MR clusters** by domain and assess: incremental rollout vs churn signal
+3. **Summarize business logic** for each MR from commit messages + MR descriptions
+4. **Write narrative highlights** — what matters to a tech lead
 
-Identify cases where a `bug/*`, `patch/*`, or `hotfix/*` branch modifies files that were also touched by another MR merged within the prior 7 days.
-
-For each bug/patch MR:
-1. Get its changed file set
-2. Check all other MRs merged within the 7 days before it
-3. If file overlap exists, flag as a potential rapid fix
-
-Classification:
-- **Rapid fix**: bug/patch MR touches same files as a feature MR merged < 7 days prior — the feature likely introduced the issue
-- **Follow-up fix**: bug/patch by the same author on their own recent MR — self-correction
-- **Cascade**: multiple bug/patch MRs on the same files in quick succession — area is unstable
-
-## Step 7: Cross-cutting Concerns
-
-Group MRs that touch the same domain or are clearly related:
-- Same model/module modified by different MRs
-- Same author working on sequential branches in the same area
-- Branch names sharing a prefix (e.g. multiple `topup-termination` branches)
-
-Flag whether related MRs look like:
-- **Incremental rollout** — planned sequence of changes
-- **Churn signal** — same area getting repeated fixes, possibly unstable
-
-## Step 8: Output
+## Step 4: Output
 
 ### Part 1: Tech Lead Dashboard (always present)
 
@@ -135,7 +91,7 @@ Flag whether related MRs look like:
 - Key change 2
 ```
 
-**Long mode** — compressed table, with full detail only for large/risky MRs:
+**Long mode** — compressed table, with full detail only for notable MRs:
 
 ```
 ## All MRs
@@ -172,8 +128,6 @@ Flag whether related MRs look like:
 - Highlight business logic changes over mechanical/refactoring changes
 - If an MR description contains business context (Trello links, user stories), include it
 - Group related MRs together if they're part of the same feature
-- Use the git diff to understand changes, but don't dump raw diffs in output
-- Process MRs in parallel (batch API calls) when possible for speed
 - For hotspot analysis, roll up to meaningful boundaries (model, concept, view directory) not individual files unless a single file is hit 3+ times
 - For rapid-fix detection, only flag when there's actual file overlap — don't flag based on branch name similarity alone
-- In long mode, read full diffs only for notable MRs (large, risky, or flagged). For the rest, diff stat + commit messages are sufficient.
+- In long mode, read full diffs only for notable MRs (large, risky, or flagged). For the rest, commit messages from the script output are sufficient.
