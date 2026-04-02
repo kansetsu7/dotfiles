@@ -8,6 +8,7 @@ set -uo pipefail
 SINCE="${1:-1 week ago}"
 GITLAB_URL="https://gitlab.abagile.com"
 API_URL="$GITLAB_URL/api/v4"
+MAX_PARALLEL="${MERGE_INSIGHTS_PARALLEL:-10}"
 
 # --- Resolve GitLab project ID ---
 PROJECT_PATH=$(git remote get-url origin 2>/dev/null \
@@ -35,7 +36,6 @@ fi
 TOTAL=$(echo "$MERGES" | wc -l | tr -d ' ')
 
 # Determine mode based on date range
-# Find the oldest merge date to calculate actual span (handles relative dates like "1 week ago")
 OLDEST_DATE=$(echo "$MERGES" | tail -1 | cut -d'|' -f2 | cut -d' ' -f1)
 OLDEST_EPOCH=$(date -d "$OLDEST_DATE" +%s 2>/dev/null || echo 0)
 NOW_EPOCH=$(date +%s)
@@ -49,12 +49,9 @@ fi
 # --- Temp files ---
 TMPDIR_WORK=$(mktemp -d)
 trap "rm -rf $TMPDIR_WORK" EXIT
+mkdir -p "$TMPDIR_WORK/mr_cache" "$TMPDIR_WORK/git_data"
 
-# parse_shortstat: extract files/insertions/deletions from git shortstat
-# e.g. " 3 files changed, 10 insertions(+), 5 deletions(-)"
 parse_shortstat() {
-  # Parse " 3 files changed, 10 insertions(+), 5 deletions(-)" using awk
-  # Handles missing fields (e.g. no deletions)
   local stat="$1"
   FILES_CHANGED=$(echo "$stat" | awk -F',' '{for(i=1;i<=NF;i++) if($i ~ /file/) {gsub(/[^0-9]/,"",$i); print $i}}')
   INSERTIONS=$(echo "$stat" | awk -F',' '{for(i=1;i<=NF;i++) if($i ~ /insertion/) {gsub(/[^0-9]/,"",$i); print $i}}')
@@ -64,52 +61,93 @@ parse_shortstat() {
   DELETIONS=${DELETIONS:-0}
 }
 
-# --- Per-merge data collection ---
+# ===========================================================================
+# Phase 1: Parallel data collection — GitLab API and git operations run
+#          concurrently for each merge commit
+# ===========================================================================
+
+# Worker function: collects all data for one merge commit
+collect_one_merge() {
+  local SHA="$1" DATE="$2" MSG="$3" TMPDIR="$4" API_URL="$5" PROJECT_ID="$6" TOKEN="$7"
+
+  local BRANCH=$(echo "$MSG" | sed -n "s/Merge branch '\(.*\)' into 'master'/\1/p")
+  [ -z "$BRANCH" ] && return
+
+  local SAFE_SHA="${SHA:0:12}"
+
+  # --- GitLab API call (the slow part we're parallelizing) ---
+  local ENCODED_BRANCH=$(echo "$BRANCH" | sed 's#/#%2F#g; s# #%20#g')
+  curl -s --header "PRIVATE-TOKEN: $TOKEN" \
+    "$API_URL/projects/$PROJECT_ID/merge_requests?state=merged&source_branch=$ENCODED_BRANCH&per_page=1" \
+    | jq -r '.[0] // empty | "\(.iid)|\(.title)|\(.author.name)|\(.description // "" | gsub("\n"; " ") | .[0:200])"' \
+    > "$TMPDIR/mr_cache/$SAFE_SHA" 2>/dev/null || echo "" > "$TMPDIR/mr_cache/$SAFE_SHA"
+
+  # --- Git operations (fast, local) ---
+  {
+    git diff --shortstat "${SHA}^1...${SHA}" 2>/dev/null || echo ""
+    echo "---SEPARATOR---"
+    git diff --name-only "${SHA}^1...${SHA}" 2>/dev/null || echo ""
+    echo "---SEPARATOR---"
+    git log "${SHA}^1...${SHA}" --format="%s" --no-merges 2>/dev/null | head -5 | cut -c1-120
+  } > "$TMPDIR/git_data/$SAFE_SHA" 2>/dev/null
+}
+export -f collect_one_merge
+
+# Launch all workers in parallel
+echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
+  echo "${SHA}|${DATE}|${MSG}|${TMPDIR_WORK}|${API_URL}|${PROJECT_ID}|${GITLAB_READONLY_TOKEN}"
+done | xargs -I{} -P "$MAX_PARALLEL" bash -c '
+  IFS="|" read -r SHA DATE MSG TMPDIR API PID TOKEN <<< "{}"
+  collect_one_merge "$SHA" "$DATE" "$MSG" "$TMPDIR" "$API" "$PID" "$TOKEN"
+'
+
+# ===========================================================================
+# Phase 2: Assemble output from cached results (serial, fast)
+# ===========================================================================
+
 echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
   BRANCH=$(echo "$MSG" | sed -n "s/Merge branch '\(.*\)' into 'master'/\1/p")
   [ -z "$BRANCH" ] && continue
 
-  # Branch type
+  SAFE_SHA="${SHA:0:12}"
   TYPE=$(echo "$BRANCH" | sed -n 's#^\(feature\|bug\|patch\|hotfix\|refactor\|doc\)/.*#\1#p')
   [ -z "$TYPE" ] && TYPE="other"
-
-  # Date (just YYYY-MM-DD)
   MERGE_DATE=$(echo "$DATE" | cut -d' ' -f1)
 
-  # Diff shortstat
-  SHORTSTAT=$(git diff --shortstat "${SHA}^1...${SHA}" 2>/dev/null || echo "")
-  parse_shortstat "$SHORTSTAT"
+  # Read cached git data
+  if [ -f "$TMPDIR_WORK/git_data/$SAFE_SHA" ]; then
+    SHORTSTAT=$(sed -n '1,/---SEPARATOR---/p' "$TMPDIR_WORK/git_data/$SAFE_SHA" | head -1)
+    CHANGED_FILES=$(sed -n '/---SEPARATOR---/,/---SEPARATOR---/p' "$TMPDIR_WORK/git_data/$SAFE_SHA" \
+      | grep -v '^---SEPARATOR---$' || true)
+    COMMIT_MSGS=$(sed -n '/---SEPARATOR---/{n; :loop; /---SEPARATOR---/q; p; n; b loop}' "$TMPDIR_WORK/git_data/$SAFE_SHA" 2>/dev/null || true)
+    # Simpler: just get everything after the second separator
+    COMMIT_MSGS=$(awk '/---SEPARATOR---/{n++; next} n>=2' "$TMPDIR_WORK/git_data/$SAFE_SHA")
+  else
+    SHORTSTAT=""
+    CHANGED_FILES=""
+    COMMIT_MSGS=""
+  fi
 
-  # Changed files list
-  CHANGED_FILES=$(git diff --name-only "${SHA}^1...${SHA}" 2>/dev/null || echo "")
+  parse_shortstat "$SHORTSTAT"
 
   # Save files for hotspot analysis
   echo "$CHANGED_FILES" | while read -r f; do
     [ -n "$f" ] && echo "${SHA}|${BRANCH}|${MERGE_DATE}|${TYPE}|${f}" >> "$TMPDIR_WORK/all_files.tsv"
   done
 
-  # Commit messages (first line of each non-merge commit, truncated)
-  COMMIT_MSGS=$(git log "${SHA}^1...${SHA}" --format="%s" --no-merges 2>/dev/null \
-    | head -5 | while read -r line; do echo "$line" | cut -c1-120; done)
-
-  # GitLab MR info
-  ENCODED_BRANCH=$(echo "$BRANCH" | sed 's#/#%2F#g; s# #%20#g')
-  MR_JSON=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_READONLY_TOKEN" \
-    "$API_URL/projects/$PROJECT_ID/merge_requests?state=merged&source_branch=$ENCODED_BRANCH&per_page=1" \
-    | jq -r '.[0] // empty | "\(.iid)|\(.title)|\(.author.name)|\(.description // "" | gsub("\n"; " ") | .[0:200])"' 2>/dev/null || echo "")
-
+  # Read cached MR data
+  MR_JSON=""
+  [ -f "$TMPDIR_WORK/mr_cache/$SAFE_SHA" ] && MR_JSON=$(cat "$TMPDIR_WORK/mr_cache/$SAFE_SHA")
   MR_IID=$(echo "$MR_JSON" | cut -d'|' -f1)
   MR_TITLE=$(echo "$MR_JSON" | cut -d'|' -f2)
   MR_AUTHOR=$(echo "$MR_JSON" | cut -d'|' -f3)
   MR_DESC=$(echo "$MR_JSON" | cut -d'|' -f4-)
 
-  # Save author for author summary (avoid redundant API calls)
   echo "${MR_AUTHOR:-unknown}|${TYPE}" >> "$TMPDIR_WORK/authors.tsv"
 
-  # Output one record per merge
   cat <<RECORD
 ---MERGE---
-sha: ${SHA:0:12}
+sha: $SAFE_SHA
 date: $MERGE_DATE
 branch: $BRANCH
 type: $TYPE
@@ -152,7 +190,6 @@ if [ -f "$TMPDIR_WORK/all_files.tsv" ]; then
       BUG_EPOCH=$(date -d "$DATE" +%s 2>/dev/null || echo 0)
       SEVEN_DAYS_BEFORE=$((BUG_EPOCH - 7*86400))
 
-      # Exclude expected multi-touch files from overlap detection
       BUG_FILES=$(grep "^${SHA}|" "$TMPDIR_WORK/all_files.tsv" | cut -d'|' -f5 \
         | grep -vE '^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml|config/system_config\.yml)$' \
         | sort -u)
