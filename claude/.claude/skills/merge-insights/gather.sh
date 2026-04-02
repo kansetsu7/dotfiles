@@ -61,6 +61,30 @@ parse_shortstat() {
   DELETIONS=${DELETIONS:-0}
 }
 
+# Classify branch type using prefix first, then content signals.
+# Args: branch_name, commit_messages, mr_title
+classify_type() {
+  local branch="$1" msgs="$2" mr_title="$3"
+  local prefix_type
+  prefix_type=$(echo "$branch" | sed -n 's#^\(feature\|bug\|patch\|hotfix\|refactor\|doc\)/.*#\1#p')
+
+  # Trust explicit bug/patch/hotfix/refactor/doc prefixes
+  if [ -n "$prefix_type" ] && [ "$prefix_type" != "feature" ]; then
+    echo "$prefix_type"
+    return
+  fi
+
+  # For feature/ or unprefixed branches, scan content for fix signals
+  local text
+  text=$(printf "%s\n%s" "$msgs" "$mr_title" | tr '[:upper:]' '[:lower:]')
+  if echo "$text" | grep -qiE '\bfix(e[sd])?\b|\bbug\b|\bhotfix\b|\bpatch(e[sd])?\s+(data|record|amount|balance)|\brevert\b|\brepair\b|\bcorrect(ed|ion)?\b'; then
+    echo "bug"
+    return
+  fi
+
+  echo "${prefix_type:-other}"
+}
+
 # ===========================================================================
 # Phase 1: Parallel data collection — GitLab API and git operations run
 #          concurrently for each merge commit
@@ -110,8 +134,6 @@ echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
   [ -z "$BRANCH" ] && continue
 
   SAFE_SHA="${SHA:0:12}"
-  TYPE=$(echo "$BRANCH" | sed -n 's#^\(feature\|bug\|patch\|hotfix\|refactor\|doc\)/.*#\1#p')
-  [ -z "$TYPE" ] && TYPE="other"
   MERGE_DATE=$(echo "$DATE" | cut -d' ' -f1)
 
   # Read cached git data
@@ -130,11 +152,6 @@ echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
 
   parse_shortstat "$SHORTSTAT"
 
-  # Save files for hotspot analysis
-  echo "$CHANGED_FILES" | while read -r f; do
-    [ -n "$f" ] && echo "${SHA}|${BRANCH}|${MERGE_DATE}|${TYPE}|${f}" >> "$TMPDIR_WORK/all_files.tsv"
-  done
-
   # Read cached MR data
   MR_JSON=""
   [ -f "$TMPDIR_WORK/mr_cache/$SAFE_SHA" ] && MR_JSON=$(cat "$TMPDIR_WORK/mr_cache/$SAFE_SHA")
@@ -142,6 +159,17 @@ echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
   MR_TITLE=$(echo "$MR_JSON" | cut -d'|' -f2)
   MR_AUTHOR=$(echo "$MR_JSON" | cut -d'|' -f3)
   MR_DESC=$(echo "$MR_JSON" | cut -d'|' -f4-)
+
+  # Classify type using branch prefix + content signals
+  TYPE=$(classify_type "$BRANCH" "$COMMIT_MSGS" "$MR_TITLE")
+
+  # Save SHA→TYPE mapping for weekly density
+  echo "${SHA}|${TYPE}" >> "$TMPDIR_WORK/type_map.tsv"
+
+  # Save files for hotspot analysis
+  echo "$CHANGED_FILES" | while read -r f; do
+    [ -n "$f" ] && echo "${SHA}|${BRANCH}|${MERGE_DATE}|${TYPE}|${f}" >> "$TMPDIR_WORK/all_files.tsv"
+  done
 
   echo "${MR_AUTHOR:-unknown}|${TYPE}" >> "$TMPDIR_WORK/authors.tsv"
 
@@ -212,8 +240,8 @@ fi
 echo ""
 echo "---WEEKLY-DENSITY---"
 echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
-  BRANCH=$(echo "$MSG" | sed -n "s/Merge branch '\(.*\)' into 'master'/\1/p")
-  TYPE=$(echo "$BRANCH" | sed -n 's#^\(feature\|bug\|patch\|hotfix\|refactor\|doc\)/.*#\1#p')
+  # Look up content-aware type from Phase 2
+  TYPE=$(grep "^${SHA}|" "$TMPDIR_WORK/type_map.tsv" 2>/dev/null | head -1 | cut -d'|' -f2)
   [ -z "$TYPE" ] && TYPE="other"
   WEEK=$(date -d "$(echo "$DATE" | cut -d' ' -f1)" +%Y-W%V 2>/dev/null || echo "unknown")
   echo "$WEEK|$TYPE"
