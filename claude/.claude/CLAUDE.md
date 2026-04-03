@@ -34,11 +34,7 @@ Break complex work into 3-5 stages. Document in `.claude/plan.md`:
 
 ### 2. Implementation Flow
 
-1. **Understand** - Study existing patterns in codebase
-2. **Test** - Write test first (red)
-3. **Implement** - Minimal code to pass (green)
-4. **Refactor** - Clean up with tests passing
-5. **Commit** - With clear message linking to plan
+Follow red-green-refactor when tests exist. Study existing patterns first.
 
 ### 3. When Stuck (After 3 Attempts)
 
@@ -62,59 +58,15 @@ Use `/unstuck` skill for structured problem-solving workflow.
 
 ### Shell Tool Usage
 
-Use specialized tools (`fd`, `rg`, `ast-grep`, `fzf`, `jq`, `yq`) instead of
-traditional Unix commands. See @.claude/tooling.md for details.
-
-## Decision Framework
-
-When multiple valid approaches exist, choose based on:
-
-1. **Testability** - Can I easily test this?
-2. **Readability** - Will someone understand this in 6 months?
-3. **Consistency** - Does this match project patterns?
-4. **Simplicity** - Is this the simplest solution that works?
-5. **Reversibility** - How hard to change later?
+For Bash commands (not Claude Code built-in tools), prefer `fd`, `rg`,
+`ast-grep`, `jq`, `yq` over traditional Unix equivalents when available.
 
 ## Project Integration
 
-### Learning the Codebase
-
-- Find 3 similar features/components
-- Identify common patterns and conventions
-- Use same libraries/utilities when possible
-- Follow existing test patterns
-
-### Tooling
-
-- Use project's existing build system
-- Use project's test framework
-- Use project's formatter/linter settings
+- Study 3 similar features before implementing
+- Use project's existing build system, test framework, and linters
 - Don't introduce new tools without strong justification
-- Use agents to run tests.
-
-## Quality Gates
-
-### Definition of Done
-
-- [ ] Tests written and passing
-- [ ] Code follows project conventions
-- [ ] No linter/formatter warnings
-- [ ] Commit messages are clear
-- [ ] Implementation matches plan
-
-## Important Reminders
-
-**NEVER**:
-- Use `--no-verify` to bypass commit hooks
-- Disable tests instead of fixing them
-- Commit code that doesn't compile
-- Make assumptions - verify with existing code
-
-**ALWAYS**:
-- Commit working code incrementally
-- Update plan documentation as you go
-- Learn from existing implementations
-- Stop after 3 failed attempts and reassess
+- Use agents to run tests
 
 ## Knowledge Capture
 
