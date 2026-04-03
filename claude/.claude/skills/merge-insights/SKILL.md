@@ -1,6 +1,6 @@
 ---
 name: merge-insights
-description: Analyze branches merged into master with summaries, hotspot analysis, rapid-fix detection, and time-aware trend insights. Adapts output depth based on short vs long time range.
+description: Analyze branches merged into master with summaries, hotspot analysis, rapid-fix detection, review metrics, pipeline health, and time-aware trend insights. Adapts output depth based on short vs long time range.
 ---
 
 # Merge Insights
@@ -19,7 +19,9 @@ The gather script handles ALL data collection (git log, GitLab API, diff stats, 
 bash ~/.claude/skills/merge-insights/gather.sh "<time_range>"
 ```
 
-The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, and `---METADATA---`.
+The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, `---REVIEW-METRICS---`, `---SIZE-DISTRIBUTION---`, `---TEST-COVERAGE---`, `---DOC-CHANGES---`, `---PIPELINE-HEALTH---`, `---REVIEWERS---`, and `---METADATA---`.
+
+Each `---MERGE---` record now includes: `time_to_merge_hours`, `cycle_time_hours`, `reviewers`, `has_tests`, `has_docs`, `pipeline_runs`, `pipeline_failures`.
 
 The `---METADATA---` section includes `mode: short` or `mode: long` (short = up to 14 days, long = over 14 days).
 
@@ -46,6 +48,11 @@ Using the structured data from the script, the LLM's job is:
 2. **Group related MR clusters** by domain and assess: incremental rollout vs churn signal
 3. **Summarize business logic** for each MR from commit messages + MR descriptions
 4. **Write narrative highlights** — what matters to a tech lead
+5. **Interpret review metrics** — flag MRs with unusually long time-to-merge or cycle time; note if avg TTM suggests review bottlenecks
+6. **Assess MR size discipline** — comment on size distribution shape (healthy = mostly xs/s/m; concerning = many l/xl)
+7. **Evaluate test coverage signal** — highlight if ratio is low or if large feature MRs lack tests
+8. **Flag pipeline concerns** — high failure rate suggests flaky tests or CI issues
+9. **Note reviewer load imbalance** — if one reviewer handles disproportionate share, flag as bottleneck risk
 
 ## Step 4: Output
 
@@ -77,6 +84,36 @@ Using the structured data from the script, the LLM's job is:
 ## Author Distribution
 | Author | MRs | Areas |
 |---|---|---|
+
+## Review Quality
+- Avg time-to-merge: Xh | Avg cycle time: Xh
+- Slowest MRs: list top 3 by time-to-merge with brief reason if apparent
+(omit if no data available)
+
+## Reviewer Load
+| Reviewer | MRs Reviewed | Concern |
+|---|---|---|
+(flag if one reviewer handles >40% of MRs — bottleneck risk)
+(omit section if no reviewer data)
+
+## MR Size Distribution
+| XS (<10) | S (10-50) | M (50-200) | L (200-500) | XL (500+) |
+|---|---|---|---|---|
+- Commentary: healthy if mostly XS-M; flag if >30% are L/XL
+
+## Test Coverage Signal
+- X/Y MRs (Z%) include test file changes
+- Flag feature MRs without tests by name
+(omit section if ratio is 100%)
+
+## Pipeline Health
+- Total runs: N | Failures: N | Failure rate: N%
+- Flag if failure rate >15%
+(omit section if no pipeline data)
+
+## Documentation Changes
+- X/Y MRs include doc/changelog changes
+(omit section if not meaningful — e.g., all bug fixes)
 ```
 
 ### Part 2: Per-Branch Details

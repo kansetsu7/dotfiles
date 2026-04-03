@@ -99,12 +99,24 @@ collect_one_merge() {
 
   local SAFE_SHA="${SHA:0:12}"
 
-  # --- GitLab API call (the slow part we're parallelizing) ---
+  # --- GitLab API calls ---
   local ENCODED_BRANCH=$(echo "$BRANCH" | sed 's#/#%2F#g; s# #%20#g')
-  curl -s --header "PRIVATE-TOKEN: $TOKEN" \
-    "$API_URL/projects/$PROJECT_ID/merge_requests?state=merged&source_branch=$ENCODED_BRANCH&per_page=1" \
-    | jq -r '.[0] // empty | "\(.iid)|\(.title)|\(.author.name)|\(.description // "" | gsub("\n"; " ") | .[0:200])"' \
+  local MR_RAW
+  MR_RAW=$(curl -s --header "PRIVATE-TOKEN: $TOKEN" \
+    "$API_URL/projects/$PROJECT_ID/merge_requests?state=merged&source_branch=$ENCODED_BRANCH&per_page=1")
+  echo "$MR_RAW" \
+    | jq -r '.[0] // empty | "\(.iid)|\(.title)|\(.author.name)|\(.description // "" | gsub("\n"; " ") | .[0:200])|\(.created_at // "")|\(.merged_at // "")|\([.reviewers[]?.name] | join(","))"' \
     > "$TMPDIR/mr_cache/$SAFE_SHA" 2>/dev/null || echo "" > "$TMPDIR/mr_cache/$SAFE_SHA"
+
+  # Fetch pipeline data if MR found
+  local MR_IID
+  MR_IID=$(echo "$MR_RAW" | jq -r '.[0].iid // empty')
+  if [ -n "$MR_IID" ]; then
+    curl -s --header "PRIVATE-TOKEN: $TOKEN" \
+      "$API_URL/projects/$PROJECT_ID/merge_requests/$MR_IID/pipelines?per_page=100" \
+      | jq -r 'length as $total | [.[] | select(.status == "failed")] | length as $failed | "\($total)|\($failed)"' \
+      > "$TMPDIR/mr_cache/${SAFE_SHA}_pipelines" 2>/dev/null || echo "0|0" > "$TMPDIR/mr_cache/${SAFE_SHA}_pipelines"
+  fi
 
   # --- Git operations (fast, local) ---
   {
@@ -113,6 +125,8 @@ collect_one_merge() {
     git diff --name-only "${SHA}^1...${SHA}" 2>/dev/null || echo ""
     echo "---SEPARATOR---"
     git log "${SHA}^1...${SHA}" --format="%s" --no-merges 2>/dev/null | head -5 | cut -c1-120
+    echo "---SEPARATOR---"
+    git log "${SHA}^1...${SHA}" --reverse --format="%ai" --no-merges 2>/dev/null | head -1
   } > "$TMPDIR/git_data/$SAFE_SHA" 2>/dev/null
 }
 export -f collect_one_merge
@@ -141,24 +155,60 @@ echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
     SHORTSTAT=$(sed -n '1,/---SEPARATOR---/p' "$TMPDIR_WORK/git_data/$SAFE_SHA" | head -1)
     CHANGED_FILES=$(sed -n '/---SEPARATOR---/,/---SEPARATOR---/p' "$TMPDIR_WORK/git_data/$SAFE_SHA" \
       | grep -v '^---SEPARATOR---$' || true)
-    COMMIT_MSGS=$(sed -n '/---SEPARATOR---/{n; :loop; /---SEPARATOR---/q; p; n; b loop}' "$TMPDIR_WORK/git_data/$SAFE_SHA" 2>/dev/null || true)
-    # Simpler: just get everything after the second separator
-    COMMIT_MSGS=$(awk '/---SEPARATOR---/{n++; next} n>=2' "$TMPDIR_WORK/git_data/$SAFE_SHA")
+    COMMIT_MSGS=$(awk '/---SEPARATOR---/{n++; next} n==2' "$TMPDIR_WORK/git_data/$SAFE_SHA")
+    FIRST_COMMIT_DATE=$(awk '/---SEPARATOR---/{n++; next} n==3 && NF' "$TMPDIR_WORK/git_data/$SAFE_SHA" | head -1 | cut -d' ' -f1)
   else
     SHORTSTAT=""
     CHANGED_FILES=""
     COMMIT_MSGS=""
+    FIRST_COMMIT_DATE=""
   fi
 
   parse_shortstat "$SHORTSTAT"
 
-  # Read cached MR data
-  MR_JSON=""
-  [ -f "$TMPDIR_WORK/mr_cache/$SAFE_SHA" ] && MR_JSON=$(cat "$TMPDIR_WORK/mr_cache/$SAFE_SHA")
-  MR_IID=$(echo "$MR_JSON" | cut -d'|' -f1)
-  MR_TITLE=$(echo "$MR_JSON" | cut -d'|' -f2)
-  MR_AUTHOR=$(echo "$MR_JSON" | cut -d'|' -f3)
-  MR_DESC=$(echo "$MR_JSON" | cut -d'|' -f4-)
+  # Read cached MR data (format: iid|title|author|desc|created_at|merged_at|reviewers)
+  MR_LINE=""
+  [ -f "$TMPDIR_WORK/mr_cache/$SAFE_SHA" ] && MR_LINE=$(cat "$TMPDIR_WORK/mr_cache/$SAFE_SHA")
+  MR_IID=$(echo "$MR_LINE" | cut -d'|' -f1)
+  MR_TITLE=$(echo "$MR_LINE" | cut -d'|' -f2)
+  MR_AUTHOR=$(echo "$MR_LINE" | cut -d'|' -f3)
+  # Fields from the end: reviewers(last), merged_at(2nd-last), created_at(3rd-last)
+  MR_REVIEWERS=$(echo "$MR_LINE" | awk -F'|' '{print $NF}')
+  MR_MERGED_AT=$(echo "$MR_LINE" | awk -F'|' '{print $(NF-1)}')
+  MR_CREATED_AT=$(echo "$MR_LINE" | awk -F'|' '{print $(NF-2)}')
+  # Description is everything between field 4 and the last 3 fields
+  MR_DESC=$(echo "$MR_LINE" | awk -F'|' '{for(i=4;i<=NF-3;i++) printf "%s%s",$i,(i<NF-3?"|":""); print ""}')
+
+  # Read cached pipeline data
+  PIPELINE_RUNS=0; PIPELINE_FAILURES=0
+  if [ -f "$TMPDIR_WORK/mr_cache/${SAFE_SHA}_pipelines" ]; then
+    PIPELINE_RUNS=$(cut -d'|' -f1 "$TMPDIR_WORK/mr_cache/${SAFE_SHA}_pipelines")
+    PIPELINE_FAILURES=$(cut -d'|' -f2 "$TMPDIR_WORK/mr_cache/${SAFE_SHA}_pipelines")
+  fi
+
+  # Compute time-to-merge (hours) and cycle time (hours)
+  TTM_HOURS=""
+  if [ -n "$MR_CREATED_AT" ] && [ -n "$MR_MERGED_AT" ]; then
+    CREATED_EPOCH=$(date -d "$MR_CREATED_AT" +%s 2>/dev/null || echo "")
+    MERGED_EPOCH=$(date -d "$MR_MERGED_AT" +%s 2>/dev/null || echo "")
+    if [ -n "$CREATED_EPOCH" ] && [ -n "$MERGED_EPOCH" ]; then
+      TTM_HOURS=$(( (MERGED_EPOCH - CREATED_EPOCH) / 3600 ))
+    fi
+  fi
+  CYCLE_HOURS=""
+  if [ -n "$FIRST_COMMIT_DATE" ] && [ -n "$MR_MERGED_AT" ]; then
+    FC_EPOCH=$(date -d "$FIRST_COMMIT_DATE" +%s 2>/dev/null || echo "")
+    MERGED_EPOCH=$(date -d "$MR_MERGED_AT" +%s 2>/dev/null || echo "")
+    if [ -n "$FC_EPOCH" ] && [ -n "$MERGED_EPOCH" ]; then
+      CYCLE_HOURS=$(( (MERGED_EPOCH - FC_EPOCH) / 3600 ))
+    fi
+  fi
+
+  # Detect test and doc file changes
+  HAS_TESTS="no"
+  echo "$CHANGED_FILES" | grep -qE '(^|/)spec/|_spec\.rb$|_test\.(rb|go|js|ts)$|(^|/)test/' && HAS_TESTS="yes"
+  HAS_DOCS="no"
+  echo "$CHANGED_FILES" | grep -qiE 'changelog|readme|\.md$|(^|/)doc/' && HAS_DOCS="yes"
 
   # Classify type using branch prefix + content signals
   TYPE=$(classify_type "$BRANCH" "$COMMIT_MSGS" "$MR_TITLE")
@@ -173,6 +223,20 @@ echo "$MERGES" | while IFS='|' read -r SHA DATE MSG; do
 
   echo "${MR_AUTHOR:-unknown}|${TYPE}" >> "$TMPDIR_WORK/authors.tsv"
 
+  # Track new metrics in temp files
+  [ -n "$TTM_HOURS" ] && echo "${SAFE_SHA}|${BRANCH}|${TTM_HOURS}" >> "$TMPDIR_WORK/ttm.tsv"
+  [ -n "$CYCLE_HOURS" ] && echo "${SAFE_SHA}|${BRANCH}|${CYCLE_HOURS}" >> "$TMPDIR_WORK/cycle.tsv"
+  echo "${INSERTIONS:-0}" >> "$TMPDIR_WORK/sizes.tsv"
+  echo "${SAFE_SHA}|${HAS_TESTS}" >> "$TMPDIR_WORK/test_coverage.tsv"
+  echo "${SAFE_SHA}|${HAS_DOCS}" >> "$TMPDIR_WORK/doc_changes.tsv"
+  echo "${PIPELINE_RUNS}|${PIPELINE_FAILURES}" >> "$TMPDIR_WORK/pipelines.tsv"
+  # Track each reviewer for load analysis
+  if [ -n "$MR_REVIEWERS" ]; then
+    echo "$MR_REVIEWERS" | tr ',' '\n' | while read -r reviewer; do
+      [ -n "$reviewer" ] && echo "$reviewer" >> "$TMPDIR_WORK/reviewers.tsv"
+    done
+  fi
+
   cat <<RECORD
 ---MERGE---
 sha: $SAFE_SHA
@@ -185,6 +249,13 @@ author: ${MR_AUTHOR:-unknown}
 files_changed: $FILES_CHANGED
 insertions: $INSERTIONS
 deletions: $DELETIONS
+time_to_merge_hours: ${TTM_HOURS:-?}
+cycle_time_hours: ${CYCLE_HOURS:-?}
+reviewers: ${MR_REVIEWERS:-?}
+has_tests: $HAS_TESTS
+has_docs: $HAS_DOCS
+pipeline_runs: $PIPELINE_RUNS
+pipeline_failures: $PIPELINE_FAILURES
 commit_messages:
 $COMMIT_MSGS
 mr_description_excerpt: ${MR_DESC:-}
@@ -252,6 +323,89 @@ echo ""
 echo "---AUTHORS---"
 if [ -f "$TMPDIR_WORK/authors.tsv" ]; then
   sort "$TMPDIR_WORK/authors.tsv" | uniq -c | sort -rn
+fi
+
+# --- Review metrics ---
+echo ""
+echo "---REVIEW-METRICS---"
+if [ -f "$TMPDIR_WORK/ttm.tsv" ]; then
+  echo "time_to_merge:"
+  while IFS='|' read -r SHA BRANCH HOURS; do
+    echo "  ${BRANCH}|${HOURS}h"
+  done < "$TMPDIR_WORK/ttm.tsv"
+  AVG_TTM=$(awk -F'|' '{sum+=$3; n++} END{if(n>0) printf "%d", sum/n}' "$TMPDIR_WORK/ttm.tsv")
+  echo "avg_ttm_hours: ${AVG_TTM:-?}"
+fi
+if [ -f "$TMPDIR_WORK/cycle.tsv" ]; then
+  echo "cycle_time:"
+  while IFS='|' read -r SHA BRANCH HOURS; do
+    echo "  ${BRANCH}|${HOURS}h"
+  done < "$TMPDIR_WORK/cycle.tsv"
+  AVG_CYCLE=$(awk -F'|' '{sum+=$3; n++} END{if(n>0) printf "%d", sum/n}' "$TMPDIR_WORK/cycle.tsv")
+  echo "avg_cycle_hours: ${AVG_CYCLE:-?}"
+fi
+
+# --- MR size distribution ---
+echo ""
+echo "---SIZE-DISTRIBUTION---"
+if [ -f "$TMPDIR_WORK/sizes.tsv" ]; then
+  awk '
+    { v=$1+0
+      if (v < 10) xs++
+      else if (v < 50) s++
+      else if (v < 200) m++
+      else if (v < 500) l++
+      else xl++
+    }
+    END {
+      printf "xs(<10):%d\ns(10-50):%d\nm(50-200):%d\nl(200-500):%d\nxl(500+):%d\n",
+        xs+0, s+0, m+0, l+0, xl+0
+    }
+  ' "$TMPDIR_WORK/sizes.tsv"
+fi
+
+# --- Test coverage signal ---
+echo ""
+echo "---TEST-COVERAGE---"
+if [ -f "$TMPDIR_WORK/test_coverage.tsv" ]; then
+  WITH=$(grep -c '|yes$' "$TMPDIR_WORK/test_coverage.tsv" || echo 0)
+  WITHOUT=$(grep -c '|no$' "$TMPDIR_WORK/test_coverage.tsv" || echo 0)
+  TOTAL_TC=$((WITH + WITHOUT))
+  RATIO=0
+  [ "$TOTAL_TC" -gt 0 ] && RATIO=$((WITH * 100 / TOTAL_TC))
+  echo "with_tests: $WITH"
+  echo "without_tests: $WITHOUT"
+  echo "ratio: ${RATIO}%"
+fi
+
+# --- Documentation changes ---
+echo ""
+echo "---DOC-CHANGES---"
+if [ -f "$TMPDIR_WORK/doc_changes.tsv" ]; then
+  WITH=$(grep -c '|yes$' "$TMPDIR_WORK/doc_changes.tsv" || echo 0)
+  WITHOUT=$(grep -c '|no$' "$TMPDIR_WORK/doc_changes.tsv" || echo 0)
+  echo "with_docs: $WITH"
+  echo "without_docs: $WITHOUT"
+fi
+
+# --- Pipeline health ---
+echo ""
+echo "---PIPELINE-HEALTH---"
+if [ -f "$TMPDIR_WORK/pipelines.tsv" ]; then
+  awk -F'|' '
+    { runs+=$1; failures+=$2 }
+    END {
+      rate=0; if (runs > 0) rate=int(failures * 100 / runs)
+      printf "total_runs:%d\ntotal_failures:%d\nfailure_rate:%d%%\n", runs, failures, rate
+    }
+  ' "$TMPDIR_WORK/pipelines.tsv"
+fi
+
+# --- Reviewer load ---
+echo ""
+echo "---REVIEWERS---"
+if [ -f "$TMPDIR_WORK/reviewers.tsv" ]; then
+  sort "$TMPDIR_WORK/reviewers.tsv" | uniq -c | sort -rn
 fi
 
 echo ""
