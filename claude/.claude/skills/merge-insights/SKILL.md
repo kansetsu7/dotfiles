@@ -91,10 +91,10 @@ Using the structured data from the script, the LLM's job is:
 (omit if no data available)
 
 ## Reviewer Load
-| Reviewer | MRs Reviewed | Concern |
+| Assignee | MRs Reviewed | Concern |
 |---|---|---|
-(flag if one reviewer handles >40% of MRs — bottleneck risk)
-(omit section if no reviewer data)
+(flag if one assignee handles >40% of MRs — bottleneck risk)
+(omit section if no assignee data)
 
 ## MR Size Distribution
 | XS (<10) | S (10-50) | M (50-200) | L (200-500) | XL (500+) |

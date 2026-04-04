@@ -105,7 +105,9 @@ collect_one_merge() {
   MR_RAW=$(curl -s --header "PRIVATE-TOKEN: $TOKEN" \
     "$API_URL/projects/$PROJECT_ID/merge_requests?state=merged&source_branch=$ENCODED_BRANCH&per_page=1")
   echo "$MR_RAW" \
-    | jq -r '.[0] // empty | "\(.iid)|\(.title)|\(.author.name)|\(.description // "" | gsub("\n"; " ") | .[0:200])|\(.created_at // "")|\(.merged_at // "")|\([.reviewers[]?.name] | join(","))"' \
+    | jq -r '
+      def norm_date: if . then sub("T"; " ") | sub("\\.[0-9]+"; "") | sub("[+-][0-9]{2}:[0-9]{2}$"; "") | sub("Z$"; "") else "" end;
+      .[0] // empty | "\(.iid)|\(.title)|\(.author.name)|\(.description // "" | gsub("\n"; " ") | .[0:200])|\(.created_at | norm_date)|\(.merged_at | norm_date)|\([.assignees[]?.name] | join(","))"' \
     > "$TMPDIR/mr_cache/$SAFE_SHA" 2>/dev/null || echo "" > "$TMPDIR/mr_cache/$SAFE_SHA"
 
   # Fetch pipeline data if MR found
