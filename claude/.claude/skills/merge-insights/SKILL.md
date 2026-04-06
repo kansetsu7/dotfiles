@@ -16,7 +16,7 @@ Analyze branches merged into master within a given time range (default: this wee
 The gather script handles ALL data collection (git log, GitLab API, diff stats, hotspot counting, rapid-fix detection, weekly density, author summary) and outputs compact structured text.
 
 ```bash
-bash ~/.claude/skills/merge-insights/gather.sh "<time_range>"
+cd ~/.claude/skills/merge-insights && go build -o /tmp/merge-insights . && cd - > /dev/null && /tmp/merge-insights "<time_range>"
 ```
 
 The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, `---REVIEW-METRICS---`, `---SIZE-DISTRIBUTION---`, `---TEST-COVERAGE---`, `---DOC-CHANGES---`, `---PIPELINE-HEALTH---`, `---REVIEWERS---`, and `---METADATA---`.
@@ -55,6 +55,10 @@ Using the structured data from the script, the LLM's job is:
 9. **Note reviewer load imbalance** — if one reviewer handles disproportionate share, flag as bottleneck risk
 
 ## Step 4: Output
+
+Write the final report to `.claude/merge-insights-<slug>.md` where `<slug>` is a filesystem-safe version of the time range (e.g. "last 3 months" → `last-3-months`, "2026 Q1" → `2026-Q1`).
+
+After writing, tell the user the file path.
 
 ### Part 1: Tech Lead Dashboard (always present)
 
