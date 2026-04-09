@@ -357,6 +357,11 @@ bindkey '^F' autosuggest-accept
 bindkey '^p' history-substring-search-up
 bindkey '^n' history-substring-search-down
 
+autoload -z edit-command-line
+zle -N edit-command-line
+bindkey '^o' edit-command-line
+bindkey '^_' undo
+
 eval "$(zoxide init zsh --cmd j)"
 
 # use localhost / nerv for postgres service running in docker
