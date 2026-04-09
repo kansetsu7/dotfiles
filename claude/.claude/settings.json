@@ -19,8 +19,7 @@
       "Skill(code-review)",
       "Skill(code-review-criteria)",
       "Read(~/.claude/skills/**)",
-      "Bash(curl -s --header \"PRIVATE-TOKEN: $GITLAB_READONLY_TOKEN\":*)",
-      "Skill(gitlab)"
+      "mcp__gitlab__*"
     ],
     "deny": [],
     "ask": []

@@ -368,14 +368,16 @@ eval "$(zoxide init zsh --cmd j)"
 export PGHOST=localhost
 export PGUSER=psql
 
-if [ -f "$HOME/.config/credentials/openai.env.gpg" ]; then
-  source <(gpg -dq "$HOME/.config/credentials/openai.env.gpg" 2>/dev/null)
-fi
-if [ -f "$HOME/.config/credentials/vpn_otp.env.gpg" ]; then
-  source <(gpg -dq "$HOME/.config/credentials/vpn_otp.env.gpg" 2>/dev/null)
-fi
-if [ -f "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" ]; then
-  source <(gpg -dq "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" 2>/dev/null)
+if [[ -z "$IS_SANDBOX" ]]; then
+  if [ -f "$HOME/.config/credentials/openai.env.gpg" ]; then
+    source <(gpg -dq "$HOME/.config/credentials/openai.env.gpg" 2>/dev/null)
+  fi
+  if [ -f "$HOME/.config/credentials/vpn_otp.env.gpg" ]; then
+    source <(gpg -dq "$HOME/.config/credentials/vpn_otp.env.gpg" 2>/dev/null)
+  fi
+  if [ -f "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" ]; then
+    source <(gpg -dq "$HOME/.config/credentials/gitlab-readonly-token.env.gpg" 2>/dev/null)
+  fi
 fi
 
 case `uname` in

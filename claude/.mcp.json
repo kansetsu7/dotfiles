@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "gitlab": {
+      "command": "/root/.dotfiles/claude/.claude/scripts/gitlab-mcp.sh"
+    }
+  }
+}
