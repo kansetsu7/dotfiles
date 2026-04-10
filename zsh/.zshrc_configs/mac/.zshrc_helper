@@ -198,7 +198,7 @@ rebuild_cache(){
         npm clean-install;
       done"
 }
-cy() {  # cc yolo
+_claude_in_container() {
   export DOCKER_WORKING_DIR="$PWD"
-  docker compose -f ~/proj/vm/docker-dev/edit/e3/compose.yml run --rm yolo zsh -ic "IS_SANDBOX=1 claude --dangerously-skip-permissions"
+  docker compose -f ~/proj/vm/docker-dev/edit/e3/compose.yml run --rm yolo zsh -ic "IS_SANDBOX=1 claude $*"
 }

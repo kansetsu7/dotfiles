@@ -7,10 +7,7 @@ export PATH="/root/npm-global/bin:$PATH"
 
 alias aba_site="amoeba_site $1"
 
-# AI
-alias cl='claude'
-alias cr='claude --resume'
-cf(){ claude -r $1 --fork-session }
+# AI (cl/cr/cf/cy defined in shared .zshrc, using _claude_in_container from .zshrc_helper)
 
 alias ccu='npx ccusage@latest'
 alias ccm='npx ccusage@latest monthly'

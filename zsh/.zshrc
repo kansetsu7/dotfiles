@@ -302,8 +302,10 @@ alias download_ndb="scp dev.abagile.com:~/tmp/snapshot_share/$1 ~/tmp/dumpdb/ner
 alias dumpdbv='vi /current/edit/scripts/dump_db.sh'
 
 # AI
-alias cl=claude
-alias cr='claude --resume'
+cl()  { _claude_in_container }
+cr()  { _claude_in_container --resume }
+cf()  { _claude_in_container -r "$1" --fork-session }
+cy()  { _claude_in_container --dangerously-skip-permissions }
 
 ########################
 # Jump Into Config File

@@ -117,7 +117,7 @@ e2e_report() {
   /proj/$project_folder/e2e/show-report.sh
 }
 
-cy() {  # cc yolo
+_claude_in_container() {
   export DOCKER_WORKING_DIR="$PWD"
-  docker compose -f /current/edit/e3/compose.yml run --rm yolo zsh -ic "IS_SANDBOX=1 claude --dangerously-skip-permissions"
+  docker compose -f /current/edit/e3/compose.yml run --rm yolo zsh -ic "IS_SANDBOX=1 claude $*"
 }
