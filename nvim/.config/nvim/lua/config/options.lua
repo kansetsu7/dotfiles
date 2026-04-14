@@ -54,6 +54,7 @@ vim.g.dbs = {
   { name = 'sg_test', url = 'postgres://psql@host.docker.internal:5432/nerv_sg_test' },
   { name = 'ave_ck', url = 'postgres://psql@host.docker.internal:5432/nerv_ave_ck' },
   { name = 'amoeba', url = 'postgres://psql@host.docker.internal:5410/amoeba_development' },
+  { name = 'absg', url = 'postgres://psql@host.docker.internal:5432/amoeba_development' },
 }
 vim.g.db_ui_use_nvim_notify = 1
 -- }}}
