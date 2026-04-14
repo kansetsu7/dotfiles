@@ -200,5 +200,5 @@ rebuild_cache(){
 }
 _claude_in_container() {
   export DOCKER_WORKING_DIR="$PWD"
-  docker compose -f ~/proj/vm/docker-dev/edit/e3/compose.yml run --rm yolo zsh -ic "IS_SANDBOX=1 claude $*"
+  docker compose -f ~/proj/vm/docker-dev/edit/e3/compose.yml run --rm -e IS_SANDBOX=1 yolo zsh -ic "claude $*"
 }
