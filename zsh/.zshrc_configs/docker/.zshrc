@@ -9,10 +9,6 @@ alias aba_site="amoeba_site $1"
 
 # AI (cl/cr/cf/cy defined in shared .zshrc, using _claude_in_container from .zshrc_helper)
 
-alias ccu='npx ccusage@latest'
-alias ccm='npx ccusage@latest monthly'
-alias ccb='npx ccusage@latest blocks'
-
 alias gmn='gemini'
 alias ecc='cd /project/everything-claude-code'
 
