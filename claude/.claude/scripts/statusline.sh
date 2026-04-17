@@ -8,6 +8,7 @@ dir=$(basename "$cwd")
 ctx=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
 ctx_size=$(echo "$input" | jq -r '.context_window.context_window_size // empty')
 rl5=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+rl7d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 agent=$(echo "$input" | jq -r '.agent.name // empty')
 
 printf "\033[34m \uf07c %s\033[0m" "$dir"
@@ -23,6 +24,7 @@ if [ -n "$ctx" ]; then
   fi
 fi
 [ -n "$rl5" ] && printf " \033[35m[5h:%.1f%%]\033[0m" "$rl5"
+[ -n "$rl7d" ] && printf " \033[35m[7d:%.1f%%]\033[0m" "$rl7d"
 [ -n "$agent" ] && printf " \033[33m[agent:%s]\033[0m" "$agent"
 
 true
