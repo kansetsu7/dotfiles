@@ -77,12 +77,11 @@ rely on agent memory or built-in tasklist alone for cross-phase state.
 
 ### 4. Shell Over Loading
 
-Prefer `glob`/`grep`/shell commands over reading entire files into context.
+Prefer built-in Glob/Grep tools over reading entire files into context.
 "80% of RAG can be replaced with glob/grep."
 
-- Extract specific sections with targeted grep patterns
-- Use shell pipelines to filter before loading
-- Only read the lines you actually need
+- Extract specific sections with targeted Grep patterns
+- Filter before loading; only read the lines you actually need
 
 ### 5. Script Delegation
 

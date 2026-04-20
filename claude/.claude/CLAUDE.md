@@ -1,21 +1,5 @@
 # Development Guidelines
 
-## Philosophy
-
-### Core Beliefs
-
-- **Incremental progress over big bangs** - Small changes that compile and pass tests
-- **Learning from existing code** - Study and plan before implementing
-- **Pragmatic over dogmatic** - Adapt to project reality
-- **Clear intent over clever code** - Be boring and obvious
-
-### Simplicity Means
-
-- Single responsibility per function/class
-- Avoid premature abstractions
-- No clever tricks - choose the boring solution
-- If you need to explain it, it's too complex
-
 ## Process
 
 ### 1. Planning & Staging
@@ -32,41 +16,19 @@ Break complex work into 3-5 stages. Document in `.claude/plan.md`:
 - Update status as you progress
 - Remove file when all stages are done
 
-### 2. Implementation Flow
-
-Follow red-green-refactor when tests exist. Study existing patterns first.
-
-### 3. When Stuck (After 3 Attempts)
+### 2. When Stuck (After 3 Attempts)
 
 **CRITICAL**: Maximum 3 attempts per issue, then STOP.
 Use `/unstuck` skill for structured problem-solving workflow.
 
-## Technical Standards
+## Shell Tool Usage
 
-### Code Quality
+When Bash is genuinely needed (shell-only operations), prefer `fd`, `rg`,
+`ast-grep`, `jq`, `yq`. Use built-in Glob/Grep/Read tools otherwise.
 
-- **Every commit must**:
-  - Compile successfully
-  - Pass all existing tests
-  - Include tests for new functionality
-  - Follow project formatting/linting
+## Testing
 
-- **Before committing**:
-  - Run formatters/linters
-  - Self-review changes
-  - Ensure commit message explains "why"
-
-### Shell Tool Usage
-
-For Bash commands (not Claude Code built-in tools), prefer `fd`, `rg`,
-`ast-grep`, `jq`, `yq` over traditional Unix equivalents when available.
-
-## Project Integration
-
-- Study 3 similar features before implementing
-- Use project's existing build system, test framework, and linters
-- Don't introduce new tools without strong justification
-- Use agents to run tests
+Use agents to run tests.
 
 ## Knowledge Capture
 
