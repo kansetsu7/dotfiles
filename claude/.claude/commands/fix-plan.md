@@ -32,18 +32,31 @@ If `## 🔗 Issue Relationships` section exists:
 
 ### Step 3: Analyze Complexity & Dependencies
 
-For each accepted item:
+**Per-item investigation (parallelizable):**
+
+If there are more than ~3 accepted items, dispatch one `Explore` subagent per
+item in a single message (parallel fan-out). Each subagent should:
 
 1. **Read the relevant code** around the file/line mentioned
-2. **Assess complexity**:
+2. **Assess complexity** and return a short report:
    - **Simple**: Straightforward change, no side effects (e.g., rename, add validation, fix typo)
    - **Moderate**: Requires understanding context, may affect related code
    - **Complex**: Requires design decision, touches multiple files, or has dependency on other items
-3. **Identify dependencies between items**:
+3. Return: files touched, complexity rating, side-effect risks, any questions.
+   Keep under ~150 words per item.
+
+Use serial reads instead when there are only a few items, or when items
+cluster in the same file (redundant reads).
+
+**Cross-item synthesis (main thread only):**
+
+After collecting per-item reports:
+
+1. **Identify dependencies between items**:
    - Which items must be fixed before others?
    - Which items can be fixed independently in parallel?
    - Which items conflict and need a unified approach?
-4. **Flag items needing design discussion**:
+2. **Flag items needing design discussion**:
    - Items where the suggested fix may not be the best approach
    - Items with conflicting solutions from Issue Relationships
    - Items that would benefit from a broader refactor instead of point fixes
