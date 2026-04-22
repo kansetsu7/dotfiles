@@ -8,9 +8,23 @@ dir=$(basename "$cwd")
 ctx=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
 ctx_size=$(echo "$input" | jq -r '.context_window.context_window_size // empty')
 rl5=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+rl5_reset=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 rl7d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 rl7d_reset=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 agent=$(echo "$input" | jq -r '.agent.name // empty')
+
+format_reset() {
+  local ts=$1
+  [ -z "$ts" ] && return
+  local delta=$(( ts - $(date +%s) ))
+  if [ "$delta" -ge 86400 ]; then
+    printf "  %dd%dh" $((delta / 86400)) $(((delta % 86400) / 3600))
+  elif [ "$delta" -ge 3600 ]; then
+    printf "  %dh%dm" $((delta / 3600)) $(((delta % 3600) / 60))
+  elif [ "$delta" -gt 0 ]; then
+    printf "  %dm" $((delta / 60))
+  fi
+}
 
 printf "\033[34m \uf07c %s\033[0m" "$dir"
 [ -n "$branch" ] && printf "\033[33m \ue725 %s\033[0m" "$branch"
@@ -24,21 +38,8 @@ if [ -n "$ctx" ]; then
     printf " \033[32mctx:%s%%\033[0m" "$ctx"
   fi
 fi
-[ -n "$rl5" ] && printf " \033[35m[5h:%.1f%%]\033[0m" "$rl5"
-if [ -n "$rl7d" ]; then
-  reset_str=""
-  if [ -n "$rl7d_reset" ]; then
-    delta=$(( rl7d_reset - $(date +%s) ))
-    if [ "$delta" -ge 86400 ]; then
-      reset_str=$(printf " resets in %dd %dh" $((delta / 86400)) $(((delta % 86400) / 3600)))
-    elif [ "$delta" -ge 3600 ]; then
-      reset_str=$(printf " resets in %dh %dm" $((delta / 3600)) $(((delta % 3600) / 60)))
-    elif [ "$delta" -gt 0 ]; then
-      reset_str=$(printf " resets in %dm" $((delta / 60)))
-    fi
-  fi
-  printf " \033[35m[7d:%.1f%%%s]\033[0m" "$rl7d" "$reset_str"
-fi
+[ -n "$rl5" ] && printf " \033[35m[5h:%.1f%%%s]\033[0m" "$rl5" "$(format_reset "$rl5_reset")"
+[ -n "$rl7d" ] && printf " \033[35m[7d:%.1f%%%s]\033[0m" "$rl7d" "$(format_reset "$rl7d_reset")"
 [ -n "$agent" ] && printf " \033[33m[agent:%s]\033[0m" "$agent"
 
 true
