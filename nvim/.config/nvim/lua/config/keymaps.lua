@@ -265,3 +265,10 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufNew", "BufRead"}, {
     set_debug_keymap(event, "o(js/console.log)<Esc>")
   end,
 })
+
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "go",
+  callback = function(event)
+    set_debug_keymap(event, "ofmt.Println()<ESC>")
+  end,
+})
