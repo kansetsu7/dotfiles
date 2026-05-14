@@ -202,3 +202,50 @@ _claude_in_container() {
   export DOCKER_WORKING_DIR="$PWD"
   docker compose -f ~/proj/vm/docker-dev/edit/e3/compose.yml run --rm -e IS_SANDBOX=1 yolo zsh -ic "claude $*"
 }
+
+# colima {{{
+function cs() {
+  colima stop
+  colima start -c 10 -m 12 -d 120 --vm-type vz --vz-rosetta --mount-type virtiofs
+}
+
+cs-amoeba() {
+  if ! command -v colima >/dev/null; then
+    echo "cs-amoeba: must run on the Mac host (colima not found)" >&2
+    return 1
+  fi
+  colima ssh -- sudo sh -c 'echo -1 > /proc/sys/fs/binfmt_misc/rosetta 2>/dev/null; true'
+  docker run --privileged --rm tonistiigi/binfmt --install amd64
+  colima ssh -- sudo sh -c 'echo 1 > /proc/sys/fs/binfmt_misc/qemu-x86_64'
+  echo "amd64 → QEMU. Run 'colima restart' to revert."
+}
+
+cs-status() {
+  if ! command -v colima >/dev/null; then
+    echo "cs-status: must run on the Mac host (colima not found)" >&2
+    return 1
+  fi
+
+  echo "=== Handler registration (in VM) ==="
+  for h in rosetta qemu-x86_64; do
+    state=$(colima ssh -- sh -c "head -1 /proc/sys/fs/binfmt_misc/$h 2>/dev/null" 2>/dev/null | tr -d '\r\n')
+    if [ -z "$state" ]; then
+      printf "  %-14s not registered\n" "$h"
+    else
+      printf "  %-14s %s\n" "$h" "$state"
+    fi
+  done
+
+  echo ""
+  echo "=== Functional test (amd64 alpine) ==="
+  output=$(docker run --rm --platform linux/amd64 alpine sh -c \
+    'grep -oE "rosetta|qemu-x86_64" /proc/self/maps 2>/dev/null | head -1' 2>&1)
+
+  case "$output" in
+    *rosetta*)             echo "  Active: Rosetta  (fast; fails on wkhtmltopdf-amoeba)" ;;
+    *qemu-x86_64*)         echo "  Active: QEMU     (slower; compatible)" ;;
+    *"exec format error"*) echo "  Active: NONE — exec format error (no working handler)" ;;
+    *)                     echo "  Active: unknown"; echo "  Raw: $output" ;;
+  esac
+}
+# }}}
