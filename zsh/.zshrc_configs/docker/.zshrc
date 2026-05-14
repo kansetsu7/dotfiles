@@ -7,7 +7,11 @@ export PATH="/root/npm-global/bin:$PATH"
 
 alias aba_site="amoeba_site $1"
 
-# AI (cl/cr/cf/cy defined in shared .zshrc, using _claude_in_container from .zshrc_helper)
+# AI
+cl()  { _claude_in_container }
+cr()  { _claude_in_container --resume "$1" }
+cf()  { _claude_in_container -r "$1" --fork-session }
+cy()  { _claude_in_container --dangerously-skip-permissions }
 
 alias gmn='gemini'
 alias ecc='cd /project/everything-claude-code'
