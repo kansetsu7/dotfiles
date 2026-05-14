@@ -18,8 +18,12 @@ alias ecc='cd /project/everything-claude-code'
 
 # SSH agent - reuse single agent across all tmux windows
 # Skip in sandbox: ~/.ssh isn't mounted and there are no keys to load.
+# Socket lives in /tmp because ~/.ssh may be a bind-mount on a filesystem
+# (e.g. Docker Desktop grpcfuse) that doesn't support unix domain sockets.
 if [[ -z "$IS_SANDBOX" ]]; then
-  export SSH_AUTH_SOCK="$HOME/.ssh/agent.sock"
+  export SSH_AUTH_SOCK="/tmp/ssh-agent.$(id -u).sock"
+  _ssh_agent_lock="/tmp/ssh-agent.$(id -u).lock"
+  [[ -f "$_ssh_agent_lock" ]] || touch "$_ssh_agent_lock"
   (
     flock -n 9 || exit 0
     ssh-add -l &>/dev/null
@@ -28,5 +32,6 @@ if [[ -z "$IS_SANDBOX" ]]; then
       rm -f "$SSH_AUTH_SOCK"
       eval $(ssh-agent -a "$SSH_AUTH_SOCK" -t 86400) >/dev/null
     fi
-  ) 9>>"$HOME/.ssh/agent.lock"
+  ) 9<"$_ssh_agent_lock"
+  unset _ssh_agent_lock
 fi
