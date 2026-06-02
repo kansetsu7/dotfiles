@@ -4,17 +4,9 @@
 
 ### 1. Planning & Staging
 
-Break complex work into 3-5 stages. Document in `.claude/plan.md`:
-
-```markdown
-## Stage N: [Name]
-**Goal**: [Specific deliverable]
-**Success Criteria**: [Testable outcomes]
-**Tests**: [Specific test cases]
-**Status**: [Not Started|In Progress|Complete]
-```
-- Update status as you progress
-- Remove file when all stages are done
+Break complex work into stages tracked in `.claude/plan.md` (goal, success
+criteria, tests, status per stage). Update status as you progress; remove the
+file when all stages are done.
 
 ### 2. When Stuck (After 3 Attempts)
 
@@ -23,8 +15,7 @@ Use `/unstuck` skill for structured problem-solving workflow.
 
 ## Shell Tool Usage
 
-When Bash is genuinely needed (shell-only operations), prefer `fd`, `rg`,
-`ast-grep`, `jq`, `yq`. Use built-in Glob/Grep/Read tools otherwise.
+When Bash is needed for shell-only ops, prefer `fd`, `rg`, `ast-grep`, `jq`, `yq`.
 
 ## Testing
 
@@ -32,14 +23,8 @@ Use agents to run tests.
 
 ## Knowledge Capture
 
-Use the `knowledge-capture` skill when detecting domain knowledge:
-- User prompt contains "Background:" or context sections
-- User explains domain concepts or business rules
-- User corrects your understanding of the system
-- After exploring code and discovering undocumented patterns
-- Explicit: user says "remember this", "note this", or `/learn`
-
-Knowledge is captured to `~/.claude/knowledge/` organized by domain.
+Use the `knowledge-capture` skill when domain knowledge surfaces (or on
+`/learn`); captured to `~/.claude/knowledge/` organized by domain.
 
 ## Plan Mode
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
@@ -57,48 +42,12 @@ regardless of diff size.
 
 Use backticks to quote code and file paths.
 
-### Background
-- Describes current system behavior, business logic, and technical context
-- Explains previous changes or MRs that led to the current state
-- Provides setup information about how existing code works
-- May include references to external resources (Trello cards, Slack discussions)
-
-### Problem
-- Clearly states specific issues, bugs, or inconsistencies discovered
-- Includes user reports, specific cases, or plan numbers when relevant
-- Describes gaps in implementation, missing validations, or logic flaws
-- Points out redundancies, scattered logic, or maintenance concerns
-
-### Approach
-- Lists specific technical changes being made (use bullet points for multiple items)
-- Explains refactoring decisions and their rationale
-- Documents test updates and validation changes
-- May include future TODOs or follow-up work when relevant
-- When multiple problems exist, clearly indicate which problem each change addresses
-
-### Template
-
-```
-Subject line (imperative mood, 50 chars max)
-
-Background
-==========
-- Current system behavior/setup
-- Previous changes that led to this
-- Business context or references
-
-Problem
-==========
-- Specific issue discovered
-- User reports or cases
-- What's broken or inconsistent
-
-Approach
-==========
-- Technical changes made
-- Test updates
-- Future TODOs if needed
-```
+- **Background** — current behavior/setup, prior changes (MRs) that led here,
+  business context or references (Trello, Slack).
+- **Problem** — the specific issue, bug, or inconsistency; user reports, cases,
+  or plan numbers; gaps, logic flaws, redundancies.
+- **Approach** — the technical changes (bullets), refactoring rationale, test
+  updates, future TODOs; when multiple problems, tie each change to its problem.
 
 ### Example
 
