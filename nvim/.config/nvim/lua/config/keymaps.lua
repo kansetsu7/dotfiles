@@ -198,6 +198,7 @@ keymap("n", "<Leader>gB", ":Telescope git_branches<CR>", opts)
 
 -- Vim Test
 vim.g["test#strategy"] = "vtr"
+vim.g['test#go#gotest#options'] = '-v'
 
 keymap("n", "<leader>tn", ":TestNearest<CR>", opts)
 keymap("n", "<leader>tc", ":TestNearest<CR>", opts)
