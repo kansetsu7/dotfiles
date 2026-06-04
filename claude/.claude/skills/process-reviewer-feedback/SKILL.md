@@ -171,7 +171,7 @@ Display summary to reviewer:
 
 **Output:** `.claude/reviewer-feedback.md`
 
-**Next step:** Run `/code-review` to generate AI review and merge with your feedback.
+**Next step:** Run `/mr-review` to generate AI review and merge with your feedback.
 ```
 
 ### Step 6: Capture Knowledge

@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: mr-review
 description: Perform a comprehensive code review workflow on the current branch changes. Gathers business context, analyzes diffs, and generates structured review output with prioritized issues.
 context: fork
 agent: general-purpose
@@ -10,7 +10,7 @@ Perform a comprehensive code review workflow on the current branch changes.
 ## Arguments
 
 - `$ARGUMENTS`: Base branch to compare against (default: `master`)
-  - Example: `/code-review main` or `/code-review develop`
+  - Example: `/mr-review main` or `/mr-review develop`
 
 ## Workflow Steps
 

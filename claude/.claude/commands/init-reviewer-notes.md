@@ -50,5 +50,5 @@ Created `.claude/reviewer-notes.md`
 Next steps:
 1. Fill in your feedback in the file
 2. Run `/process-reviewer-feedback` to convert to structured format
-3. Run `/code-review` to generate AI review and merge with your feedback
+3. Run `/mr-review` to generate AI review and merge with your feedback
 ```

@@ -27,7 +27,7 @@ Optional:
    Error: No review feedback found.
 
    Run one of these first:
-   - `/code-review` to generate AI code review
+   - `/mr-review` to generate AI code review
    - `/process-reviewer-feedback` to process your manual notes
    ```
 4. Check for `.claude/fix-plan.md` - if found, read it for complexity and side effects
