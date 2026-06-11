@@ -156,7 +156,7 @@ return {
   "clojure-vim/vim-jack-in",
   {
     'tpope/vim-projectionist',
-    ft = { "clojure", "go" }
+    ft = { "clojure", "go", "ruby" }
   },
 
   {
