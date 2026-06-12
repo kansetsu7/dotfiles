@@ -12,6 +12,8 @@ rl5_reset=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 rl7d=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 rl7d_reset=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty')
 agent=$(echo "$input" | jq -r '.agent.name // empty')
+model=$(echo "$input" | jq -r '.model.display_name // empty')
+effort=$(echo "$input" | jq -r '.effort.level // empty')
 
 format_reset() {
   local ts=$1
@@ -26,8 +28,16 @@ format_reset() {
   fi
 }
 
-printf "\033[34m \uf07c %s\033[0m" "$dir"
-[ -n "$branch" ] && printf "\033[33m \ue725 %s\033[0m" "$branch"
+# Icons via octal escapes instead of literal glyphs: fixes rendering on macOS
+icon_dir=$(printf '\357\201\274')    # U+F07C  nf-fa-folder_open
+icon_branch=$(printf '\356\234\245') # U+E725  nf-dev-git_branch
+printf "\033[34m %s %s\033[0m" "$icon_dir" "$dir"
+[ -n "$branch" ] && printf "\033[33m %s %s\033[0m" "$icon_branch" "$branch"
+if [ -n "$model" ]; then
+  printf " \033[36m%s" "$model"
+  [ -n "$effort" ] && printf "(%s)" "$effort"
+  printf "\033[0m"
+fi
 # Context: red ≤10%, yellow ≤25%, green >25%
 if [ -n "$ctx" ]; then
   if [ "$ctx" -le 10 ]; then
