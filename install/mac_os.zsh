@@ -8,7 +8,7 @@ brew install jq yq
 
 echo 'Setup Development Perferences (Nvim, Zim...)...'
 
-folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "ruby")
+folders=("git" "tig" "nvim" "pry" "tmux" "tmuxinator" "ctags" "ruby" "lazydocker")
 
 for folder in "${folders[@]}"; do
   mkdir -p $HOME/.config/"$folder"
@@ -27,6 +27,11 @@ stow --verbose asdf \
   zsh \
   credentials \
   docker \
+  lazydocker \
+
+# lazydocker: pick the OS-specific config (its `up`/`upService` templates use
+# absolute paths that differ per OS — see lazydocker/.config/lazydocker/configs/).
+ln -sf configs/mac/config.yml $HOME/.config/lazydocker/config.yml
 
 # TODO: softlink lazygit config to $HOME/Library/Application\ Support/lazygit/config.yml
 

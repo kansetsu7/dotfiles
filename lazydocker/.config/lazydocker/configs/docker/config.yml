@@ -1,0 +1,27 @@
+gui:
+  returnImmediately: true
+
+# Ensure the shared Postgres 10 (extra/compose.yml) is up before any project
+# starts (amoeba/angel/cam need it). lazydocker runs templates via argv (no
+# shell), so the compose command is passed as arguments to ensure_pg10.sh,
+# which exec's it after starting pg10. The path is absolute and OS-specific
+# because templates don't expand ~/$HOME — see ../mac/config.yml for the mac
+# path. The active config is selected by the install script (symlinked to
+# ~/.config/lazydocker/config.yml).
+commandTemplates:
+  up:              '/root/.config/lazydocker/ensure_pg10.sh {{ .DockerCompose }} up -d'
+  upService:       '/root/.config/lazydocker/ensure_pg10.sh {{ .DockerCompose }} up -d {{ .Service.Name }}'
+  # `d`: down the project, then stop pg10 if no dependent (amoeba/angel/cam) is left running.
+  down:            '/root/.config/lazydocker/stop_pg10_if_idle.sh {{ .DockerCompose }} down'
+  downWithVolumes: '/root/.config/lazydocker/stop_pg10_if_idle.sh {{ .DockerCompose }} down --volumes'
+
+customCommands:
+  containers:
+    - name: "rails console >"
+      attach: true
+      command: 'docker exec -it {{ .Container.ID }} bundle exec rails c'
+      serviceNames: []
+    - name: "attach        >"
+      attach: true
+      command: 'docker attach --sig-proxy=false --detach-keys=ctrl-d {{ .Container.ID }}'
+      serviceNames: []

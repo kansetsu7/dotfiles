@@ -30,6 +30,10 @@ stow --verbose \
   claude \
   sql \
 
+# lazydocker: pick the OS-specific config (its `up`/`upService` templates use
+# absolute paths that differ per OS — see lazydocker/.config/lazydocker/configs/).
+ln -sf configs/docker/config.yml /root/.config/lazydocker/config.yml
+
 # https://github.com/tmux-plugins/tpm
 if [[ ! -d /root/.config/tmux/plugins/tpm ]]; then
   echo 'Setup Tmux Plugin Manager(TMP)...'
