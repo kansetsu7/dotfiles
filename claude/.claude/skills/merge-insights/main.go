@@ -79,12 +79,27 @@ var (
 	hotspotExclude   = regexp.MustCompile(`^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml)$`)
 	rapidFixExclude  = regexp.MustCompile(`^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml|config/system_config\.yml)$`)
 	bugTypeRe        = regexp.MustCompile(`\b(bug|patch)\b`)
+	bareDateRe       = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 )
 
 func main() {
 	since := "1 week ago"
+	until := ""
 	if len(os.Args) > 1 {
 		since = os.Args[1]
+	}
+	// Support a bounded window written as "<start> to <end>" (e.g.
+	// "2026-01-01 to 2026-05-31"). Both sides are passed to git log's
+	// --since/--until, which accept absolute dates and relative expressions.
+	if parts := strings.SplitN(since, " to ", 2); len(parts) == 2 {
+		since = strings.TrimSpace(parts[0])
+		until = strings.TrimSpace(parts[1])
+		// A bare end date (YYYY-MM-DD) is inclusive of that whole day, so
+		// extend it to end-of-day; git --until=<date> would otherwise stop
+		// at midnight and drop merges that landed on the final day.
+		if bareDateRe.MatchString(until) {
+			until += " 23:59:59"
+		}
 	}
 
 	token := os.Getenv("GITLAB_READONLY_TOKEN")
@@ -124,7 +139,7 @@ func main() {
 	glClient.projectID = projectID
 
 	// Collect merge commits
-	merges := collectMergeCommits(since)
+	merges := collectMergeCommits(since, until)
 	if len(merges) == 0 {
 		fmt.Println("---METADATA---")
 		fmt.Println("mode: short")
@@ -134,7 +149,7 @@ func main() {
 
 	// Determine mode
 	oldestDate := merges[len(merges)-1].Date
-	daysSpan := computeDaysSpan(oldestDate)
+	daysSpan := computeDaysSpan(oldestDate, until)
 	mode := "short"
 	if daysSpan > 14 {
 		mode = "long"
@@ -317,6 +332,9 @@ func main() {
 	fmt.Fprintf(w, "total: %d\n", len(records))
 	fmt.Fprintf(w, "days_span: %d\n", daysSpan)
 	fmt.Fprintf(w, "since: %s\n", since)
+	if until != "" {
+		fmt.Fprintf(w, "until: %s\n", until)
+	}
 	fmt.Fprintf(w, "project: %s (ID: %d)\n", projectPath, projectID)
 }
 
@@ -370,9 +388,13 @@ func (gl *GitLabClient) get(path string) (*http.Response, error) {
 
 // --- Merge commit collection ---
 
-func collectMergeCommits(since string) []MergeCommit {
-	out, err := exec.Command("git", "log", "master", "--merges", "--first-parent",
-		"--since="+since, "--format=%H|%ai|%s").Output()
+func collectMergeCommits(since, until string) []MergeCommit {
+	args := []string{"log", "master", "--merges", "--first-parent",
+		"--since=" + since, "--format=%H|%ai|%s"}
+	if until != "" {
+		args = append(args, "--until="+until)
+	}
+	out, err := exec.Command("git", args...).Output()
 	if err != nil {
 		return nil
 	}
@@ -390,13 +412,21 @@ func collectMergeCommits(since string) []MergeCommit {
 	return merges
 }
 
-func computeDaysSpan(oldestDateStr string) int {
+func computeDaysSpan(oldestDateStr, until string) int {
 	datePart := strings.Fields(oldestDateStr)[0]
 	t, err := time.Parse("2006-01-02", datePart)
 	if err != nil {
 		return 0
 	}
-	return int(time.Since(t).Hours() / 24)
+	// For a bounded window, measure to the window's end rather than to now
+	// so short historical ranges aren't misclassified as long.
+	end := time.Now()
+	if until != "" {
+		if u, err := time.Parse("2006-01-02", strings.Fields(until)[0]); err == nil {
+			end = u
+		}
+	}
+	return int(end.Sub(t).Hours() / 24)
 }
 
 // --- Phase 1: Concurrent collection per merge ---
