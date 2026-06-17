@@ -105,6 +105,7 @@ func main() {
 	token := os.Getenv("GITLAB_READONLY_TOKEN")
 	if token == "" {
 		fmt.Fprintln(os.Stderr, "ERROR: GITLAB_READONLY_TOKEN is not set")
+		fmt.Fprintln(os.Stderr, `  load it inline before running: eval "$(gpg --quiet --decrypt ~/.config/credentials/gitlab-readonly-token.env.gpg)"`)
 		os.Exit(1)
 	}
 
@@ -133,7 +134,10 @@ func main() {
 
 	projectID := glClient.resolveProjectID(projectPath)
 	if projectID == 0 {
-		fmt.Fprintf(os.Stderr, "ERROR: Could not resolve project ID for %s\n", projectPath)
+		fmt.Fprintf(os.Stderr, "ERROR: Could not resolve project ID for %q\n", projectPath)
+		if wd, err := os.Getwd(); err == nil {
+			fmt.Fprintf(os.Stderr, "  resolved from git remote 'origin' in %s — is this the repo you meant to analyze?\n", wd)
+		}
 		os.Exit(1)
 	}
 	glClient.projectID = projectID

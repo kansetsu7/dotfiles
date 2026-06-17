@@ -11,13 +11,26 @@ Analyze branches merged into master within a given time range (default: this wee
 
 - Optional: time range like "this week", "last 2 weeks", "since 2026-03-01", "last 3 months". Default: "1 week ago".
 
-## Step 1: Run gather script
+## Step 1: Build and run the gather script
 
 The gather script handles ALL data collection (git log, GitLab API, diff stats, hotspot counting, rapid-fix detection, weekly density, author summary) and outputs compact structured text.
 
+Each Bash call is a fresh shell — env vars and `cwd` do NOT persist between calls — so build and run are **two separate commands**, and the run command must decrypt the token inline.
+
+**1. Build the binary** (cd into the skill dir is fine here — the build needs no token and no project context):
+
 ```bash
-cd ~/.claude/skills/merge-insights && go build -o /tmp/merge-insights . && cd - > /dev/null && /tmp/merge-insights "<time_range>"
+( cd ~/.claude/skills/merge-insights && go build -o /tmp/merge-insights . )
 ```
+
+**2. Run it from the target project directory.** Do NOT `cd` anywhere in this command — the binary reads the GitLab project from `git remote get-url origin` in the current directory, which must be the repo you are analyzing (cd'ing into the skill dir resolves the wrong project). The read-only token is stored encrypted and must be decrypted inline in the same command. `>|` overrides zsh `noclobber` so the output file overwrites cleanly on re-runs:
+
+```bash
+eval "$(gpg --quiet --decrypt ~/.config/credentials/gitlab-readonly-token.env.gpg)" \
+  && /tmp/merge-insights "<time_range>" >| /tmp/merge-insights-output.txt
+```
+
+Then grep/read the sections you need from `/tmp/merge-insights-output.txt` rather than loading the whole file (the output can run to >1000 lines).
 
 The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, `---REVIEW-METRICS---`, `---SIZE-DISTRIBUTION---`, `---TEST-COVERAGE---`, `---DOC-CHANGES---`, `---PIPELINE-HEALTH---`, `---REVIEWERS---`, and `---METADATA---`.
 
