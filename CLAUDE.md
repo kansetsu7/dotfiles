@@ -121,3 +121,4 @@ When editing files in the left column, check if related files need updates:
 |---------------|------------|
 | `skills/mr-review/SKILL.md` | `commands/fix-plan.md`, `commands/code-review-fix.md` |
 | `commands/fix-plan.md` | `commands/code-review-fix.md` |
+| `skills/merge-insights/main.go` | `skills/doc-suggestions/SKILL.md` (shares the binary via its `--docs`/`--open` mode) |

@@ -34,6 +34,7 @@ type MRData struct {
 	Assignees        []string
 	PipelineRuns     int
 	PipelineFailures int
+	WebURL           string
 }
 
 type GitData struct {
@@ -83,10 +84,26 @@ var (
 )
 
 func main() {
+	// Flags: --docs selects the lean doc-suggestion output; --open sources
+	// open MRs instead of merges in a range. Both are inert for the default
+	// merge-insights path, which ignores docsMode/openMode entirely.
+	docsMode, openMode := false, false
+	var positional []string
+	for _, a := range os.Args[1:] {
+		switch a {
+		case "--docs":
+			docsMode = true
+		case "--open":
+			openMode = true
+		default:
+			positional = append(positional, a)
+		}
+	}
+
 	since := "1 week ago"
 	until := ""
-	if len(os.Args) > 1 {
-		since = os.Args[1]
+	if len(positional) > 0 {
+		since = positional[0]
 	}
 	// Support a bounded window written as "<start> to <end>" (e.g.
 	// "2026-01-01 to 2026-05-31"). Both sides are passed to git log's
@@ -141,6 +158,14 @@ func main() {
 		os.Exit(1)
 	}
 	glClient.projectID = projectID
+
+	// Doc-suggestion mode: lean per-MR records (incl. changed_files) for the
+	// doc-suggestions skill. Branches off before the full insights report so
+	// the default output path stays untouched.
+	if docsMode {
+		runDocsMode(glClient, openMode, since, until, projectPath, projectID, parallel)
+		return
+	}
 
 	// Collect merge commits
 	merges := collectMergeCommits(since, until)
@@ -464,6 +489,7 @@ func collectOneMerge(gl *GitLabClient, mc MergeCommit) *MergeRecord {
 			Description string `json:"description"`
 			CreatedAt   string `json:"created_at"`
 			MergedAt    string `json:"merged_at"`
+			WebURL      string `json:"web_url"`
 			Assignees   []struct {
 				Name string `json:"name"`
 			} `json:"assignees"`
@@ -480,6 +506,7 @@ func collectOneMerge(gl *GitLabClient, mc MergeCommit) *MergeRecord {
 			r.MRData.Description = desc
 			r.MRData.CreatedAt = parseGitLabTime(mr.CreatedAt)
 			r.MRData.MergedAt = parseGitLabTime(mr.MergedAt)
+			r.MRData.WebURL = mr.WebURL
 			for _, a := range mr.Assignees {
 				if a.Name != "" {
 					r.MRData.Assignees = append(r.MRData.Assignees, a.Name)
@@ -988,4 +1015,206 @@ func sortedKeys(m map[string]bool) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+// --- Doc-suggestion mode ---
+//
+// Emits a lean stream of ---MERGE--- records (each including a changed_files:
+// block) for the doc-suggestions skill, then a ---METADATA--- footer. The heavy
+// aggregate sections (hotspots, rapid-fix, etc.) are intentionally omitted — the
+// skill only needs per-MR files + context to reason about documentation gaps.
+
+func runDocsMode(gl *GitLabClient, openMode bool, since, until, projectPath string, projectID, parallel int) {
+	var records []*MergeRecord
+
+	if openMode {
+		records = collectOpenMRRecords(gl, parallel)
+	} else {
+		merges := collectMergeCommits(since, until)
+		results := make([]*MergeRecord, len(merges))
+		sem := make(chan struct{}, parallel)
+		var wg sync.WaitGroup
+		for i, m := range merges {
+			wg.Add(1)
+			go func(idx int, mc MergeCommit) {
+				defer wg.Done()
+				sem <- struct{}{}
+				defer func() { <-sem }()
+				results[idx] = collectOneMerge(gl, mc)
+			}(i, m)
+		}
+		wg.Wait()
+		for _, r := range results {
+			if r == nil {
+				continue
+			}
+			r.Type = classifyType(r.Branch, r.CommitMsgs, r.MRData.Title)
+			r.HasDocs = hasDocFiles(r.ChangedFiles)
+			records = append(records, r)
+		}
+	}
+
+	w := bufio.NewWriter(os.Stdout)
+	defer w.Flush()
+
+	for _, r := range records {
+		printDocRecord(w, r)
+	}
+
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---METADATA---")
+	mode := "docs-merged"
+	if openMode {
+		mode = "docs-open"
+	}
+	fmt.Fprintf(w, "mode: %s\n", mode)
+	fmt.Fprintf(w, "total: %d\n", len(records))
+	if !openMode {
+		fmt.Fprintf(w, "since: %s\n", since)
+		if until != "" {
+			fmt.Fprintf(w, "until: %s\n", until)
+		}
+	}
+	fmt.Fprintf(w, "project: %s (ID: %d)\n", projectPath, projectID)
+}
+
+// collectOpenMRRecords lists every open MR in the project (paginated) and
+// concurrently enriches each with its changed files.
+func collectOpenMRRecords(gl *GitLabClient, parallel int) []*MergeRecord {
+	var records []*MergeRecord
+
+	for page := 1; ; page++ {
+		resp, err := gl.get(fmt.Sprintf(
+			"/projects/%d/merge_requests?state=opened&per_page=100&page=%d&order_by=created_at&sort=desc",
+			gl.projectID, page))
+		if err != nil {
+			break
+		}
+		var mrs []struct {
+			IID          int    `json:"iid"`
+			Title        string `json:"title"`
+			Author       struct {
+				Name string `json:"name"`
+			} `json:"author"`
+			Description  string `json:"description"`
+			CreatedAt    string `json:"created_at"`
+			SourceBranch string `json:"source_branch"`
+			WebURL       string `json:"web_url"`
+		}
+		derr := json.NewDecoder(resp.Body).Decode(&mrs)
+		resp.Body.Close()
+		if derr != nil || len(mrs) == 0 {
+			break
+		}
+		for _, mr := range mrs {
+			r := &MergeRecord{Branch: mr.SourceBranch}
+			r.MRData.IID = mr.IID
+			r.MRData.Title = mr.Title
+			r.MRData.Author = mr.Author.Name
+			desc := strings.ReplaceAll(mr.Description, "\n", " ")
+			if len(desc) > 200 {
+				desc = desc[:200]
+			}
+			r.MRData.Description = desc
+			r.MRData.CreatedAt = parseGitLabTime(mr.CreatedAt)
+			r.MRData.WebURL = mr.WebURL
+			if !r.MRData.CreatedAt.IsZero() {
+				r.Date = r.MRData.CreatedAt.Format("2006-01-02")
+			}
+			records = append(records, r)
+		}
+		if len(mrs) < 100 {
+			break
+		}
+	}
+
+	// Enrich with changed files concurrently.
+	sem := make(chan struct{}, parallel)
+	var wg sync.WaitGroup
+	for _, r := range records {
+		wg.Add(1)
+		go func(rec *MergeRecord) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			rec.GitData.ChangedFiles = collectOpenMRChangedFiles(gl, rec.MRData.IID)
+			rec.Type = classifyType(rec.Branch, nil, rec.MRData.Title)
+			rec.HasDocs = hasDocFiles(rec.GitData.ChangedFiles)
+		}(r)
+	}
+	wg.Wait()
+	return records
+}
+
+// collectOpenMRChangedFiles returns the paths an open MR touches, via the
+// merge_requests/:iid/changes endpoint (returns all changes in one payload, no
+// pagination needed — preferred over /diffs for completeness on large MRs).
+func collectOpenMRChangedFiles(gl *GitLabClient, iid int) []string {
+	resp, err := gl.get(fmt.Sprintf("/projects/%d/merge_requests/%d/changes", gl.projectID, iid))
+	if err != nil {
+		return nil
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Changes []struct {
+			OldPath     string `json:"old_path"`
+			NewPath     string `json:"new_path"`
+			DeletedFile bool   `json:"deleted_file"`
+		} `json:"changes"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil
+	}
+	var files []string
+	for _, c := range result.Changes {
+		p := c.NewPath
+		if c.DeletedFile && c.OldPath != "" {
+			p = c.OldPath
+		}
+		if p != "" {
+			files = append(files, p)
+		}
+	}
+	return files
+}
+
+func printDocRecord(w *bufio.Writer, r *MergeRecord) {
+	iid := "?"
+	if r.MRData.IID > 0 {
+		iid = strconv.Itoa(r.MRData.IID)
+	}
+	title := r.Branch
+	if r.MRData.Title != "" {
+		title = r.MRData.Title
+	}
+	author := "unknown"
+	if r.MRData.Author != "" {
+		author = r.MRData.Author
+	}
+	hasDocs := "no"
+	if r.HasDocs {
+		hasDocs = "yes"
+	}
+
+	fmt.Fprintln(w, "---MERGE---")
+	if r.SHA12 != "" {
+		fmt.Fprintf(w, "sha: %s\n", r.SHA12)
+	}
+	fmt.Fprintf(w, "date: %s\n", r.Date)
+	fmt.Fprintf(w, "branch: %s\n", r.Branch)
+	fmt.Fprintf(w, "type: %s\n", r.Type)
+	fmt.Fprintf(w, "mr_iid: %s\n", iid)
+	fmt.Fprintf(w, "mr_title: %s\n", title)
+	fmt.Fprintf(w, "author: %s\n", author)
+	if r.MRData.WebURL != "" {
+		fmt.Fprintf(w, "web_url: %s\n", r.MRData.WebURL)
+	}
+	fmt.Fprintf(w, "has_docs: %s\n", hasDocs)
+	fmt.Fprintf(w, "files_changed: %d\n", len(r.ChangedFiles))
+	fmt.Fprintln(w, "changed_files:")
+	for _, f := range r.ChangedFiles {
+		fmt.Fprintln(w, f)
+	}
+	fmt.Fprintf(w, "mr_description_excerpt: %s\n", r.MRData.Description)
 }
