@@ -156,7 +156,28 @@ return {
   "clojure-vim/vim-jack-in",
   {
     'tpope/vim-projectionist',
-    ft = { "clojure", "go", "ruby" }
+    ft = { "clojure", "go" },
+    init = function()
+      -- Ruby `:A` is owned by vim-rails, whose buffer-local command is smarter
+      -- than projectionist's generic alternate. Loading projectionist on every
+      -- ruby buffer makes its `FileType *` detection overwrite that command and
+      -- break `:A` in Rails apps. So opt in per-project: only load projectionist
+      -- for ruby when the project ships a `.projections.json` and is not a Rails
+      -- app (e.g. nervcop).
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = "ruby",
+        callback = function(args)
+          local from = vim.api.nvim_buf_get_name(args.buf)
+          if from == "" then from = vim.fn.getcwd() end
+          local has_projections = #vim.fs.find(".projections.json", { upward = true, path = from }) > 0
+          local is_rails = #vim.fs.find("config/environment.rb", { upward = true, path = from }) > 0
+          if has_projections and not is_rails then
+            require("lazy").load({ plugins = { "vim-projectionist" } })
+            vim.api.nvim_exec_autocmds("FileType", { group = "projectionist", pattern = "ruby", modeline = false })
+          end
+        end,
+      })
+    end,
   },
 
   {
