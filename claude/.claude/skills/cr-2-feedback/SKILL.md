@@ -1,5 +1,5 @@
 ---
-name: process-reviewer-feedback
+name: cr-2-feedback
 description: Convert free-form reviewer notes to structured feedback format with interactive clarification.
 ---
 
@@ -20,7 +20,7 @@ Convert human reviewer's free-form notes into structured feedback format, clarif
    ```
    Error: `.claude/reviewer-notes.md` not found.
 
-   Run `/init-reviewer-notes` to create the template, then fill in your feedback.
+   Run `/cr-1-notes` to create the template, then fill in your feedback.
    ```
 
 ### Step 2: Analyze & Identify Issues
@@ -171,7 +171,7 @@ Display summary to reviewer:
 
 **Output:** `.claude/reviewer-feedback.md`
 
-**Next step:** Run `/mr-review` to generate AI review and merge with your feedback.
+**Next step:** Run `/cr-3-review` to generate AI review and merge with your feedback.
 ```
 
 ### Step 6: Capture Knowledge

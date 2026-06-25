@@ -52,7 +52,7 @@ Phase 3 (execute)  → reads fix-plan.md → applies fixes
 Why: Each phase gets full context budget. Prevents error cascading from
 attention drift. Enables human review between phases.
 
-Existing example: `code-review` → `/fix-plan` → `/code-review-fix`
+Existing example: `/cr-3-review` → `/cr-4-plan` → `/cr-5-fix`
 
 ### 2. Subagent Delegation
 
@@ -119,6 +119,6 @@ When editing files in the left column, check if related files need updates:
 
 | When you edit | Also check |
 |---------------|------------|
-| `skills/mr-review/SKILL.md` | `commands/fix-plan.md`, `commands/code-review-fix.md` |
-| `commands/fix-plan.md` | `commands/code-review-fix.md` |
+| `skills/cr-3-review/SKILL.md` | `commands/cr-4-plan.md`, `commands/cr-5-fix.md` |
+| `commands/cr-4-plan.md` | `commands/cr-5-fix.md` |
 | `skills/merge-insights/main.go` | `skills/doc-suggestions/SKILL.md` (shares the binary via its `--docs`/`--open` mode) |

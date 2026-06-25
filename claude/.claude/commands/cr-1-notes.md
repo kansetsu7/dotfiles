@@ -14,7 +14,7 @@ Create a template file for human reviewers to capture their feedback in free-for
 
 3. **Inform the user**
    - Tell them to fill in their feedback
-   - Remind them to run `/process-reviewer-feedback` when done
+   - Remind them to run `/cr-2-feedback` when done
 
 ## Template Content
 
@@ -49,6 +49,6 @@ Created `.claude/reviewer-notes.md`
 
 Next steps:
 1. Fill in your feedback in the file
-2. Run `/process-reviewer-feedback` to convert to structured format
-3. Run `/mr-review` to generate AI review and merge with your feedback
+2. Run `/cr-2-feedback` to convert to structured format
+3. Run `/cr-3-review` to generate AI review and merge with your feedback
 ```

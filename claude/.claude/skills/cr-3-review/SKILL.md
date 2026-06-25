@@ -1,5 +1,5 @@
 ---
-name: mr-review
+name: cr-3-review
 description: Perform a comprehensive code review workflow on the current branch changes. Gathers business context, analyzes diffs, and generates structured review output with prioritized issues.
 context: fork
 agent: general-purpose
@@ -10,7 +10,7 @@ Perform a comprehensive code review workflow on the current branch changes.
 ## Arguments
 
 - `$ARGUMENTS`: Base branch to compare against (default: `master`)
-  - Example: `/mr-review main` or `/mr-review develop`
+  - Example: `/cr-3-review main` or `/cr-3-review develop`
 
 ## Workflow Steps
 
@@ -41,7 +41,7 @@ Perform a comprehensive code review workflow on the current branch changes.
 
 1. Check for `.claude/reviewer-feedback.md`
 2. If exists:
-   - Parse all reviewer items (they have structured format from `/process-reviewer-feedback`)
+   - Parse all reviewer items (they have structured format from `/cr-2-feedback`)
    - Store items for merging in Step 3
    - Reviewer items take priority for overlapping concerns
 3. If not exists:

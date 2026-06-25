@@ -1,6 +1,6 @@
 ---
 triggers:
-- /fix-plan
+- /cr-4-plan
 ---
 
 Analyze the code review and produce a comprehensive fix plan.
@@ -141,7 +141,7 @@ Fix plan written to `.claude/fix-plan.md`
 <count> items need decision
 <count> items need design discussion
 
-Run `/code-review-fix` to execute the plan.
+Run `/cr-5-fix` to execute the plan.
 ```
 
 ## Important Notes
