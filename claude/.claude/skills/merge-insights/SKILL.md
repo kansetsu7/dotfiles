@@ -69,112 +69,93 @@ Using the structured data from the script, the LLM's job is:
 
 ## Step 4: Output
 
-Write the final report to `.claude/merge-insights-<slug>.md` where `<slug>` is a filesystem-safe version of the time range (e.g. "last 3 months" → `last-3-months`, "2026 Q1" → `2026-Q1`).
+Write the final report as a **self-contained HTML file** to `.claude/merge-insights-<slug>.html` where `<slug>` is a filesystem-safe version of the time range (e.g. "last 3 months" → `last-3-months`, "2026 Q1" → `2026-Q1`).
 
-After writing, tell the user the file path.
+Build it from the template at `templates/report.html` (relative to this skill directory):
+
+1. Read `templates/report.html` and keep its `<head>`/`<style>` **verbatim** — never inline different CSS or strip the stylesheet.
+2. Replace the header placeholders: `{{TITLE}}` (the time range), `{{PROJECT}}`, `{{RANGE}}` (resolved `since`/`until` from `---METADATA---`), `{{TOTAL}}` (MR count), `{{MODE}}` (short/long), and `{{GENERATED}}` (today's date).
+3. Replace `{{BODY}}` inside `<main>` with the report sections below, rendered as HTML using the template's classes.
+
+After writing, tell the user the file path and note it opens in a browser.
+
+### HTML conventions (classes are defined in the template)
+
+- **Section** — `<section><h2>Title <span class="count">(n)</span></h2> … </section>`
+- **Table** — wrap every `<table>` in `<div class="table-wrap">…</div>`; right-align numeric cells with `<td class="num">`. Header cells use `<th>`.
+- **Type badge** — `<span class="badge badge--bug">bug</span>` (variants: `feature`, `bug`, `patch`, `refactor`, `doc`, `other`)
+- **Concern tag** — `<span class="tag tag--danger">churn signal</span>` (variants: `ok`, `warn`, `danger`) — use `danger` for high risk, `warn` for caution, `ok` for healthy
+- **Branch / file paths** — wrap in `<code>…</code>`
+- **MR reference** — `<a href="WEB_URL">!IID</a>` when the MR's `web_url` is known, otherwise plain `!IID`
+- Always HTML-escape `&`, `<`, `>` in commit messages, titles, and descriptions.
+
+### Summary stat cards (top of `<main>`, always present)
+
+Open the body with a `<div class="stat-grid">` of `<div class="stat-card">` tiles for at-a-glance metrics, e.g. Total MRs, Avg time-to-merge, Test coverage %, Pipeline failure rate, plus mode-relevant ones (e.g. Bug ratio in long mode). Add `is-warn` / `is-danger` to a card's class when its value crosses a concern threshold (e.g. failure rate >15% → `is-danger`, test coverage low → `is-warn`):
+
+```html
+<div class="stat-grid">
+  <div class="stat-card"><div class="value">42</div><div class="label">Merged MRs</div></div>
+  <div class="stat-card is-danger"><div class="value">18%</div><div class="label">Pipeline failures</div></div>
+</div>
+```
 
 ### Part 1: Tech Lead Dashboard (always present)
 
-```
-## Key Highlights
-- Largest/riskiest changes (by diff size or domain impact)
-- New architectural patterns or infrastructure changes
-- Compliance/regulatory related changes
+One `<section>` per item below. Omit a section entirely where noted.
 
-## Rapid Fixes
-| Bug/Patch MR | Likely caused by | Files in common | Days apart | Type |
-|---|---|---|---|---|
-(omit section if none detected)
-
-## Hotspots
-| File/Module | Touched by MRs | Concern |
-|---|---|---|
-
-## Related MR Clusters
-- **<domain>**: !iid1, !iid2, !iid3 — <incremental rollout | churn signal | ...>
-
-## Risk Signals
-- Schema migrations: list any
-- Data patches: list any
-- Large diffs (>200 lines): list any
-
-## Author Distribution
-| Author | MRs | Areas |
-|---|---|---|
-
-## Review Quality
-- Avg time-to-merge: Xh | Avg cycle time: Xh
-- Slowest MRs: list top 3 by time-to-merge with brief reason if apparent
-(omit if no data available)
-
-## Reviewer Load
-| Assignee | MRs Reviewed | Concern |
-|---|---|---|
-(flag if one assignee handles >40% of MRs — bottleneck risk)
-(omit section if no assignee data)
-
-## MR Size Distribution
-| XS (<10) | S (10-50) | M (50-200) | L (200-500) | XL (500+) |
-|---|---|---|---|---|
-- Commentary: healthy if mostly XS-M; flag if >30% are L/XL
-
-## Test Coverage Signal
-- X/Y MRs (Z%) include test file changes
-- Flag feature MRs without tests by name
-(omit section if ratio is 100%)
-
-## Pipeline Health
-- Total runs: N | Failures: N | Failure rate: N%
-- Flag if failure rate >15%
-(omit section if no pipeline data)
-
-## Documentation Changes
-- X/Y MRs include doc/changelog changes
-(omit section if not meaningful — e.g., all bug fixes)
-```
+- **Key Highlights** — `<ul>`: largest/riskiest changes (by diff size or domain impact), new architectural/infra patterns, compliance/regulatory changes.
+- **Rapid Fixes** — table: Bug/Patch MR · Likely caused by · Files in common · Days apart · Type. *Omit section if none detected.*
+- **Hotspots** — table: File/Module · Touched by MRs · Concern (use a `tag`).
+- **Related MR Clusters** — `<ul>`: `<strong>domain</strong>: !iid1, !iid2 — <tag>` assessing incremental rollout vs churn signal.
+- **Risk Signals** — `<ul>`: schema migrations, data patches, large diffs (>200 lines) — list any.
+- **Author Distribution** — table: Author · MRs · Areas.
+- **Review Quality** — `<p>`: Avg time-to-merge Xh · Avg cycle time Xh; then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. *Omit if no data.*
+- **Reviewer Load** — table: Assignee · MRs Reviewed · Concern. Flag (`tag--danger`) any assignee handling >40% of MRs as bottleneck risk. *Omit section if no assignee data.*
+- **MR Size Distribution** — table with columns XS (<10) · S (10-50) · M (50-200) · L (200-500) · XL (500+), then a one-line commentary: healthy if mostly XS-M; flag if >30% are L/XL.
+- **Test Coverage Signal** — `<p>`: X/Y MRs (Z%) include test file changes; list feature MRs without tests by name. *Omit section if ratio is 100%.*
+- **Pipeline Health** — `<p>`: Total runs N · Failures N · Failure rate N%. Flag if failure rate >15%. *Omit section if no pipeline data.*
+- **Documentation Changes** — `<p>`: X/Y MRs include doc/changelog changes. *Omit section if not meaningful (e.g. all bug fixes).*
 
 ### Part 2: Per-Branch Details
 
-**Short mode** — full detail, grouped by date:
+**Short mode** — full detail as cards grouped by date. Each date is a `<div class="date-group">` with an `<h3>` date heading containing the cards:
 
+```html
+<div class="date-group">
+  <h3>2026-06-24</h3>
+  <div class="mr-card">
+    <h3><code>branch-name</code> <span class="badge badge--feature">feature</span> <a href="WEB_URL">!1234</a></h3>
+    <div class="mr-meta">Author: Name · Merged: 2026-06-24</div>
+    <p class="mr-summary">1-2 sentence summary of what changed and why.</p>
+    <ul><li>Key change 1</li><li>Key change 2</li></ul>
+  </div>
+</div>
 ```
-### N. `<branch-name>` (MR !<iid>)
-**Author**: <name> | **Merged**: <date>
-**Summary**: <1-2 sentence summary of what changed and why>
-- Key change 1
-- Key change 2
+
+**Long mode** — the per-month "All MRs" tables act as lookup references that readers usually scroll past to reach "Notable MRs", so **collapse them by default**. Group the listing by calendar month (one table per month, columns: # · Date · Branch · MR · Author · Type · Summary), and wrap **each** month's table in a collapsed `<details class="mr-fold">` whose `<summary>` shows the month and MR count. Do **not** add the `open` attribute — the reader clicks to expand the month they need.
+
+```html
+<section>
+  <h2>All MRs <span class="count">(by month — click to expand)</span></h2>
+  <details class="mr-fold">
+    <summary>2026-01 <span class="count">(12 MRs)</span></summary>
+    <div class="table-wrap"><table> … rows … </table></div>
+  </details>
+  <details class="mr-fold">
+    <summary>2026-02 <span class="count">(9 MRs)</span></summary>
+    <div class="table-wrap"><table> … rows … </table></div>
+  </details>
+</section>
 ```
 
-**Long mode** — compressed table, with full detail only for notable MRs:
-
-```
-## All MRs
-
-| # | Date | Branch | MR | Author | Type | Summary |
-|---|---|---|---|---|---|---|
-
-## Notable MRs (detail)
-(Only for MRs that are large >200 lines, risky, architectural, or flagged as rapid fixes)
-```
+Then add a **separate, always-visible** "Notable MRs" `<section>` with detail cards (the `mr-card` pattern) — never collapsed — only for MRs that are large (>200 lines), risky, architectural, or flagged as rapid fixes. This is the section readers come for, so it sits below the folded month tables in full view.
 
 ### Part 3: Trend Insights (long mode only)
 
-```
-## Module Churn Rate
-| Module | Total MRs | Features | Bugs/Patches | Bug Ratio |
-|---|---|---|---|---|
-(sorted by bug ratio descending — high ratio = potentially unstable)
-
-## Bug Density Over Time
-- Week 1: N features, M bugs
-- Week 2: ...
-(simple weekly breakdown to spot if bugs are increasing)
-
-## Repeat Offender Files
-| File | MR Count | Types |
-|---|---|---|
-(files appearing in 5+ MRs — candidates for refactoring)
-```
+- **Module Churn Rate** — table: Module · Total MRs · Features · Bugs/Patches · Bug Ratio, sorted by bug ratio descending (high ratio = potentially unstable).
+- **Bug Density Over Time** — `<ul>` weekly breakdown (Week → N features, M bugs) to spot if bugs are increasing.
+- **Repeat Offender Files** — table: File · MR Count · Types, for files appearing in 5+ MRs (refactoring candidates).
 
 ## Guidelines
 

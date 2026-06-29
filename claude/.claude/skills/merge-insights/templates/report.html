@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge Insights — {{TITLE}}</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --border: #e3e6ea;
+    --text: #1f2328;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --warn-bg: #fff7ed;  --warn-fg: #9a3412;  --warn-bd: #fdba74;
+    --danger-bg: #fef2f2; --danger-fg: #991b1b; --danger-bd: #fca5a5;
+    --ok-bg: #f0fdf4;    --ok-fg: #166534;    --ok-bd: #86efac;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  header.report-header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 28px; }
+  header.report-header h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.01em; }
+  header.report-header .meta { color: var(--muted); font-size: 13px; }
+  header.report-header .meta span { margin-right: 14px; }
+
+  /* Summary stat cards */
+  .stat-grid {
+    display: grid; gap: 14px; margin: 0 0 32px;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat-card .value { font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
+  .stat-card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+  .stat-card.is-warn .value { color: var(--warn-fg); }
+  .stat-card.is-danger .value { color: var(--danger-fg); }
+
+  section { margin: 0 0 30px; }
+  section > h2 {
+    font-size: 18px; margin: 0 0 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  section > h2 .count { color: var(--muted); font-weight: 400; font-size: 14px; }
+
+  p { margin: 8px 0; }
+  ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .muted { color: var(--muted); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 0.9em; }
+  code { background: #eef1f4; padding: 1px 5px; border-radius: 4px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: #f1f3f5; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: #44505c; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:hover { background: #f0f6ff; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Type badges */
+  .badge {
+    display: inline-block; padding: 1px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; line-height: 1.6; border: 1px solid transparent;
+  }
+  .badge--feature  { background: var(--ok-bg);     color: var(--ok-fg);     border-color: var(--ok-bd); }
+  .badge--bug      { background: var(--danger-bg); color: var(--danger-fg); border-color: var(--danger-bd); }
+  .badge--patch    { background: var(--warn-bg);   color: var(--warn-fg);   border-color: var(--warn-bd); }
+  .badge--refactor { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+  .badge--doc      { background: #faf5ff; color: #6b21a8; border-color: #e9d5ff; }
+  .badge--other    { background: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+
+  /* Concern tags */
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .tag--ok     { background: var(--ok-bg);     color: var(--ok-fg); }
+  .tag--warn   { background: var(--warn-bg);   color: var(--warn-fg); }
+  .tag--danger { background: var(--danger-bg); color: var(--danger-fg); }
+
+  /* Per-branch detail cards */
+  .date-group { margin: 0 0 22px; }
+  .date-group > h3 {
+    font-size: 14px; color: var(--muted); margin: 0 0 10px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .mr-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; margin: 0 0 12px;
+  }
+  .mr-card h3 { margin: 0 0 4px; font-size: 15px; }
+  .mr-card .mr-meta { color: var(--muted); font-size: 12.5px; margin-bottom: 8px; }
+  .mr-card .mr-summary { margin: 6px 0; }
+  .mr-card ul { margin: 6px 0 0; }
+
+  /* Collapsible monthly "All MRs" reference tables (long mode) */
+  details.mr-fold {
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+    margin: 0 0 10px; overflow: hidden;
+  }
+  details.mr-fold > summary {
+    cursor: pointer; padding: 11px 16px; font-weight: 600; list-style: none;
+    display: flex; align-items: center; gap: 8px; user-select: none;
+  }
+  details.mr-fold > summary::-webkit-details-marker { display: none; }
+  details.mr-fold > summary::before {
+    content: "\25B8"; color: var(--muted); font-size: 12px; transition: transform 0.15s;
+  }
+  details.mr-fold[open] > summary::before { transform: rotate(90deg); }
+  details.mr-fold > summary:hover { background: #f0f6ff; }
+  details.mr-fold > summary .count { color: var(--muted); font-weight: 400; font-size: 13px; }
+  details.mr-fold > .table-wrap { border: none; border-top: 1px solid var(--border); border-radius: 0; }
+
+  footer.report-footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="report-header">
+    <h1>Merge Insights — {{TITLE}}</h1>
+    <div class="meta">
+      <span><strong>Project:</strong> {{PROJECT}}</span>
+      <span><strong>Range:</strong> {{RANGE}}</span>
+      <span><strong>MRs:</strong> {{TOTAL}}</span>
+      <span><strong>Mode:</strong> {{MODE}}</span>
+    </div>
+  </header>
+
+  <!--
+    POPULATE THE BODY BELOW. Keep this template's <head>/<style> verbatim.
+    Replace {{TITLE}}, {{PROJECT}}, {{RANGE}}, {{TOTAL}}, {{MODE}} in the header above.
+
+    Build the report in this order (omit any section the SKILL says to omit when empty):
+      1. <div class="stat-grid"> … summary stat cards …
+      2. Part 1  — Tech Lead Dashboard sections
+      3. Part 2  — Per-Branch Details (cards in short mode, table in long mode)
+      4. Part 3  — Trend Insights (long mode only)
+
+    Element conventions (classes are defined in <style>):
+      • Section          <section><h2>Title <span class="count">(n)</span></h2> … </section>
+      • Table             wrap every <table> in <div class="table-wrap">…</div>;
+                          right-align numeric cells with <td class="num">
+      • Type badge        <span class="badge badge--bug">bug</span>
+                          (feature | bug | patch | refactor | doc | other)
+      • Concern tag       <span class="tag tag--danger">churn signal</span>
+                          (ok | warn | danger)
+      • Branch / file     wrap in <code>…</code>
+      • MR link           <a href="WEB_URL">!IID</a> when a web_url is known, else !IID
+      • Per-branch card   <div class="mr-card"> … </div> grouped under
+                          <div class="date-group"><h3>DATE</h3> … </div>
+      • Monthly MR table  (long mode) collapsed by default — wrap each month's
+                          reference table in
+                          <details class="mr-fold"><summary>MONTH <span class="count">(n MRs)</span></summary>
+                            <div class="table-wrap"><table>…</table></div></details>
+  -->
+
+  <main>
+    {{BODY}}
+  </main>
+
+  <footer class="report-footer">
+    Generated by the merge-insights skill · {{GENERATED}}
+  </footer>
+
+</div>
+</body>
+</html>
