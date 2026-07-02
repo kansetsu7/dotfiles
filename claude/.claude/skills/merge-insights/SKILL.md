@@ -69,7 +69,9 @@ Using the structured data from the script, the LLM's job is:
 
 ## Step 4: Output
 
-Write the final report as a **self-contained HTML file** to `.claude/merge-insights-<slug>.html` where `<slug>` is a filesystem-safe version of the time range (e.g. "last 3 months" → `last-3-months`, "2026 Q1" → `2026-Q1`).
+Write the final report as a **self-contained HTML file** to `/download/merge-insights-<slug>.html` where `<slug>` is a filesystem-safe version of the time range (e.g. "last 3 months" → `last-3-months`, "2026 Q1" → `2026-Q1`). Writing to `/download` (a mounted volume) keeps the report out of the analyzed project — do NOT leave a copy under the project's `.claude/`.
+
+The report is a single self-contained HTML file (inline CSS from the template), so it renders correctly from `/download` with no other assets.
 
 Build it from the template at `templates/report.html` (relative to this skill directory):
 
@@ -77,7 +79,7 @@ Build it from the template at `templates/report.html` (relative to this skill di
 2. Replace the header placeholders: `{{TITLE}}` (the time range), `{{PROJECT}}`, `{{RANGE}}` (resolved `since`/`until` from `---METADATA---`), `{{TOTAL}}` (MR count), `{{MODE}}` (short/long), and `{{GENERATED}}` (today's date).
 3. Replace `{{BODY}}` inside `<main>` with the report sections below, rendered as HTML using the template's classes.
 
-After writing, tell the user the file path and note it opens in a browser.
+After writing, tell the user the file path (`/download/merge-insights-<slug>.html`) and note it opens in a browser.
 
 ### HTML conventions (classes are defined in the template)
 
