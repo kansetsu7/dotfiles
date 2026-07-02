@@ -50,12 +50,16 @@ type GitData struct {
 type MergeRecord struct {
 	SHA12, FullSHA     string
 	Date, Branch, Type string
+	MergedFull         string // raw merge-commit timestamp "2026-03-15 14:30:45 +0800"
 	MRData
 	GitData
 	TTMHours   *int
 	CycleHours *int
 	HasTests   bool
 	HasDocs    bool
+	OffHours   bool   // merged on a weekend or a weekday after 18:00 (commit tz)
+	IsRevert   bool   // MR is a revert of an earlier change
+	RevertOf   string // quoted title of the reverted change, when detectable
 }
 
 type FileRecord struct {
@@ -78,10 +82,10 @@ var (
 	testFileRe  = regexp.MustCompile(`(^|/)spec/|_spec\.rb$|_test\.(rb|go|js|ts)$|(^|/)test/`)
 	docFileRe   = regexp.MustCompile(`(?i)changelog|readme|\.md$|(^|/)doc/`)
 
-	hotspotExclude   = regexp.MustCompile(`^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml)$`)
-	rapidFixExclude  = regexp.MustCompile(`^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml|config/system_config\.yml)$`)
-	bugTypeRe        = regexp.MustCompile(`\b(bug|patch)\b`)
-	bareDateRe       = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+	hotspotExclude  = regexp.MustCompile(`^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml)$`)
+	rapidFixExclude = regexp.MustCompile(`^(db/schema\.rb|db/structure\.sql|config/locales/.*\.yml|config/system_config\.yml)$`)
+	bugTypeRe       = regexp.MustCompile(`\b(bug|patch)\b`)
+	bareDateRe      = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
 )
 
 func main() {
@@ -185,33 +189,38 @@ func main() {
 		mode = "long"
 	}
 
-	// Phase 1: Concurrent collection
-	results := make([]*MergeRecord, len(merges))
-	sem := make(chan struct{}, parallel)
-	var wg sync.WaitGroup
-	for i, m := range merges {
-		wg.Add(1)
-		go func(idx int, mc MergeCommit) {
-			defer wg.Done()
-			sem <- struct{}{}
-			defer func() { <-sem }()
-			results[idx] = collectOneMerge(glClient, mc)
-		}(i, m)
-	}
-	wg.Wait()
+	// Phase 1+2: concurrent collection, classification, enrichment
+	records := collectAndClassify(glClient, merges, parallel)
 
-	// Phase 2: Classify and enrich
-	var records []*MergeRecord
-	for _, r := range results {
-		if r == nil {
-			continue
+	// Rework (first-time-quality) lookback window; overridable for teams whose
+	// fixes surface on a different cadence.
+	reworkWindowDays := 14
+	if v := os.Getenv("MERGE_INSIGHTS_REWORK_DAYS"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			reworkWindowDays = n
 		}
-		r.Type = classifyType(r.Branch, r.CommitMsgs, r.MRData.Title)
-		r.TTMHours = computeHours(r.MRData.CreatedAt, r.MRData.MergedAt)
-		r.CycleHours = computeHours(r.FirstCommitDate, r.MRData.MergedAt)
-		r.HasTests = hasTestFiles(r.ChangedFiles)
-		r.HasDocs = hasDocFiles(r.ChangedFiles)
-		records = append(records, r)
+	}
+
+	// Baseline: the immediately-preceding equal-length window. Comparing the
+	// analyzed range against it turns absolute metrics into signals ("18% —
+	// but that's up from 9% last period"). Best-effort: if the range can't be
+	// resolved to concrete bounds, the baseline is simply reported unavailable.
+	mainAgg := computeAggregates(records, reworkWindowDays)
+	var baseAgg Aggregates
+	baseAvailable := false
+	var baseSince, baseUntil string
+	if start, end, ok := resolveWindow(since, until); ok {
+		length := end.Sub(start)
+		bStart := start.Add(-length)
+		bEnd := start.Add(-time.Second) // exclusive of the main window's first second
+		baseSince = fmtTime(bStart)
+		baseUntil = fmtTime(bEnd)
+		bMerges := collectMergeCommits(baseSince, baseUntil)
+		if len(bMerges) > 0 {
+			bRecords := collectAndClassify(glClient, bMerges, parallel)
+			baseAgg = computeAggregates(bRecords, reworkWindowDays)
+		}
+		baseAvailable = true
 	}
 
 	// Phase 3: Output
@@ -376,6 +385,50 @@ func main() {
 	fmt.Fprintln(w, "---REVIEWERS---")
 	printCountMapRaw(w, reviewerCounts)
 
+	// --- SUMMARY / BASELINE ---
+	// SUMMARY = the analyzed window's headline scalars; BASELINE = the same
+	// scalars for the prior equal-length window. The report shows SUMMARY with a
+	// delta vs BASELINE so each number reads as a trend, not an isolated figure.
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---SUMMARY---")
+	emitAggregates(w, mainAgg, reworkWindowDays)
+
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---BASELINE---")
+	if baseAvailable {
+		fmt.Fprintln(w, "available: yes")
+		fmt.Fprintf(w, "since: %s\n", baseSince)
+		fmt.Fprintf(w, "until: %s\n", baseUntil)
+		emitAggregates(w, baseAgg, reworkWindowDays)
+	} else {
+		fmt.Fprintln(w, "available: no")
+	}
+
+	// --- REWORK (first-time-quality) ---
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---REWORK---")
+	pairs := reworkPairs(records, reworkWindowDays)
+	fmt.Fprintf(w, "rate: %d%% (%d/%d feature MRs re-fixed within %dd)\n",
+		mainAgg.ReworkRate, mainAgg.ReworkMisses, mainAgg.ReworkFeatureMRs, reworkWindowDays)
+	printReworkPairs(w, pairs)
+
+	// --- REVERTS ---
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---REVERTS---")
+	printReverts(w, records)
+
+	// --- TIMING ---
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---TIMING---")
+	printTiming(w, records, mainAgg)
+
+	// --- REVIEW-RISK ---
+	// Possible rubber-stamps: large diffs merged suspiciously fast. Derived from
+	// data already collected (no extra API); a proxy, not proof.
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "---REVIEW-RISK---")
+	printReviewRisk(w, records)
+
 	// --- METADATA ---
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "---METADATA---")
@@ -490,10 +543,11 @@ func collectOneMerge(gl *GitLabClient, mc MergeCommit) *MergeRecord {
 	branch := matches[1]
 
 	r := &MergeRecord{
-		SHA12:  mc.SHA[:12],
-		FullSHA: mc.SHA,
-		Date:   strings.Fields(mc.Date)[0],
-		Branch: branch,
+		SHA12:      mc.SHA[:12],
+		FullSHA:    mc.SHA,
+		Date:       strings.Fields(mc.Date)[0],
+		MergedFull: mc.Date,
+		Branch:     branch,
 	}
 
 	// GitLab MR API
@@ -503,9 +557,9 @@ func collectOneMerge(gl *GitLabClient, mc MergeCommit) *MergeRecord {
 	if err == nil {
 		defer resp.Body.Close()
 		var mrs []struct {
-			IID         int    `json:"iid"`
-			Title       string `json:"title"`
-			Author      struct {
+			IID    int    `json:"iid"`
+			Title  string `json:"title"`
+			Author struct {
 				Name string `json:"name"`
 			} `json:"author"`
 			Description string `json:"description"`
@@ -753,6 +807,10 @@ func printMergeRecord(w *bufio.Writer, r *MergeRecord) {
 	if r.HasDocs {
 		hasDocs = "yes"
 	}
+	offHours := "no"
+	if r.OffHours {
+		offHours = "yes"
+	}
 
 	fmt.Fprintln(w, "---MERGE---")
 	fmt.Fprintf(w, "sha: %s\n", r.SHA12)
@@ -770,6 +828,10 @@ func printMergeRecord(w *bufio.Writer, r *MergeRecord) {
 	fmt.Fprintf(w, "reviewers: %s\n", reviewers)
 	fmt.Fprintf(w, "has_tests: %s\n", hasTests)
 	fmt.Fprintf(w, "has_docs: %s\n", hasDocs)
+	fmt.Fprintf(w, "off_hours: %s\n", offHours)
+	if r.IsRevert {
+		fmt.Fprintf(w, "revert: yes (of %q)\n", r.RevertOf)
+	}
 	fmt.Fprintf(w, "pipeline_runs: %d\n", r.PipelineRuns)
 	fmt.Fprintf(w, "pipeline_failures: %d\n", r.PipelineFailures)
 	fmt.Fprintln(w, "commit_messages:")
@@ -1050,6 +1112,385 @@ func printSizeDistribution(w *bufio.Writer, sizes []int) {
 	fmt.Fprintf(w, "xl(500+):%d\n", xl)
 }
 
+// --- Collection helper (shared by the main path and the baseline pass) ---
+
+func collectAndClassify(gl *GitLabClient, merges []MergeCommit, parallel int) []*MergeRecord {
+	results := make([]*MergeRecord, len(merges))
+	sem := make(chan struct{}, parallel)
+	var wg sync.WaitGroup
+	for i, m := range merges {
+		wg.Add(1)
+		go func(idx int, mc MergeCommit) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			results[idx] = collectOneMerge(gl, mc)
+		}(i, m)
+	}
+	wg.Wait()
+
+	var records []*MergeRecord
+	for _, r := range results {
+		if r == nil {
+			continue
+		}
+		r.Type = classifyType(r.Branch, r.CommitMsgs, r.MRData.Title)
+		r.TTMHours = computeHours(r.MRData.CreatedAt, r.MRData.MergedAt)
+		r.CycleHours = computeHours(r.FirstCommitDate, r.MRData.MergedAt)
+		r.HasTests = hasTestFiles(r.ChangedFiles)
+		r.HasDocs = hasDocFiles(r.ChangedFiles)
+		r.OffHours = computeOffHours(r.MergedFull)
+		r.IsRevert, r.RevertOf = detectRevert(r.Branch, r.MRData.Title)
+		records = append(records, r)
+	}
+	return records
+}
+
+// computeOffHours flags a merge that landed on a weekend or on a weekday after
+// 18:00, evaluated in the commit's own timezone (the raw offset is preserved by
+// parseGitDate), so "after hours" means after hours for whoever merged it.
+func computeOffHours(raw string) bool {
+	t := parseGitDate(raw)
+	if t.IsZero() {
+		return false
+	}
+	switch t.Weekday() {
+	case time.Saturday, time.Sunday:
+		return true
+	}
+	return t.Hour() >= 18
+}
+
+// detectRevert recognizes reverts from the GitLab "Revert" affordance: the
+// generated branch is `revert-<sha>` and the title is `Revert "<original>"`.
+// The quoted original title, when present, is returned so the report can name
+// what was rolled back.
+func detectRevert(branch, title string) (bool, string) {
+	isRevert := strings.HasPrefix(strings.ToLower(title), "revert ") ||
+		strings.HasPrefix(strings.ToLower(title), "revert-") ||
+		strings.HasPrefix(branch, "revert-")
+	if !isRevert {
+		return false, ""
+	}
+	if i := strings.Index(title, "\""); i >= 0 {
+		if j := strings.Index(title[i+1:], "\""); j >= 0 {
+			return true, title[i+1 : i+1+j]
+		}
+	}
+	return true, ""
+}
+
+// --- Aggregates (headline scalars, computed for both the main and baseline windows) ---
+
+type Aggregates struct {
+	Total            int
+	BugCount         int // type=="bug" only (excludes patch), matching the Bug ratio convention
+	MedianTTM        int
+	MedianCycle      int
+	MedianSize       int
+	WithTests        int
+	TestRatio        int
+	MRsWithPipelines int
+	FinalFailed      int
+	FinalFailRate    int
+	ReworkFeatureMRs int
+	ReworkMisses     int
+	ReworkRate       int
+	OffHoursMerges   int
+	OffHoursRate     int
+	Reverts          int
+}
+
+func computeAggregates(records []*MergeRecord, windowDays int) Aggregates {
+	var a Aggregates
+	a.Total = len(records)
+	var ttm, cycle, sizes []int
+	featureMRs := 0
+	for _, r := range records {
+		if r.Type == "bug" {
+			a.BugCount++
+		}
+		if r.Type == "feature" {
+			featureMRs++
+		}
+		if r.TTMHours != nil {
+			ttm = append(ttm, *r.TTMHours)
+		}
+		if r.CycleHours != nil {
+			cycle = append(cycle, *r.CycleHours)
+		}
+		sizes = append(sizes, r.Insertions+r.Deletions)
+		if r.HasTests {
+			a.WithTests++
+		}
+		if r.PipelineRuns > 0 {
+			a.MRsWithPipelines++
+			if r.PipelineFinal == "failed" {
+				a.FinalFailed++
+			}
+		}
+		if r.OffHours {
+			a.OffHoursMerges++
+		}
+		if r.IsRevert {
+			a.Reverts++
+		}
+	}
+	a.MedianTTM = median(ttm)
+	a.MedianCycle = median(cycle)
+	a.MedianSize = median(sizes)
+	a.TestRatio = pct(a.WithTests, a.Total)
+	a.OffHoursRate = pct(a.OffHoursMerges, a.Total)
+	a.FinalFailRate = pct(a.FinalFailed, a.MRsWithPipelines)
+
+	// Rework: distinct feature MRs whose files a fix re-touched within the window.
+	missSet := map[string]bool{}
+	for _, p := range reworkPairs(records, windowDays) {
+		missSet[p.FeatureBranch] = true
+	}
+	a.ReworkFeatureMRs = featureMRs
+	a.ReworkMisses = len(missSet)
+	a.ReworkRate = pct(len(missSet), featureMRs)
+	return a
+}
+
+func emitAggregates(w *bufio.Writer, a Aggregates, windowDays int) {
+	fmt.Fprintf(w, "total: %d\n", a.Total)
+	fmt.Fprintf(w, "bug_count: %d\n", a.BugCount)
+	fmt.Fprintf(w, "bug_ratio: %d%%\n", pct(a.BugCount, a.Total))
+	fmt.Fprintf(w, "median_ttm_hours: %d\n", a.MedianTTM)
+	fmt.Fprintf(w, "median_cycle_hours: %d\n", a.MedianCycle)
+	fmt.Fprintf(w, "median_size_lines: %d\n", a.MedianSize)
+	fmt.Fprintf(w, "test_ratio: %d%%\n", a.TestRatio)
+	fmt.Fprintf(w, "final_failure_rate: %d%%\n", a.FinalFailRate)
+	fmt.Fprintf(w, "rework_rate: %d%% (%d/%d feature MRs within %dd)\n",
+		a.ReworkRate, a.ReworkMisses, a.ReworkFeatureMRs, windowDays)
+	fmt.Fprintf(w, "off_hours_rate: %d%% (%d/%d)\n", a.OffHoursRate, a.OffHoursMerges, a.Total)
+	fmt.Fprintf(w, "reverts: %d\n", a.Reverts)
+}
+
+func pct(n, d int) int {
+	if d == 0 {
+		return 0
+	}
+	return n * 100 / d
+}
+
+// --- Rework (first-time-quality) ---
+
+type ReworkPair struct {
+	File          string
+	FeatureBranch string
+	FeatureIID    int
+	FixBranch     string
+	FixIID        int
+	DaysApart     int
+}
+
+// reworkPairs finds files that shipped in a feature MR and were re-touched by a
+// bug/patch MR within windowDays — the code-level signal that a feature shipped
+// not-quite-right. Schema/locale churn is excluded (same excludes as rapid-fix)
+// since those aren't first-time-quality misses. Same boundary caveat as
+// rapid-fix: a feature merged just before the window is invisible here.
+func reworkPairs(records []*MergeRecord, windowDays int) []ReworkPair {
+	fixIndex := map[string][]*MergeRecord{}
+	for _, r := range records {
+		if !bugTypeRe.MatchString(r.Type) {
+			continue
+		}
+		for _, f := range r.ChangedFiles {
+			if rapidFixExclude.MatchString(f) {
+				continue
+			}
+			fixIndex[f] = append(fixIndex[f], r)
+		}
+	}
+
+	seen := map[string]bool{}
+	var pairs []ReworkPair
+	for _, r := range records {
+		if r.Type != "feature" {
+			continue
+		}
+		fDate := parseDate(r.Date)
+		if fDate.IsZero() {
+			continue
+		}
+		for _, f := range r.ChangedFiles {
+			if rapidFixExclude.MatchString(f) {
+				continue
+			}
+			for _, fix := range fixIndex[f] {
+				if fix.FullSHA == r.FullSHA {
+					continue
+				}
+				xDate := parseDate(fix.Date)
+				if xDate.IsZero() {
+					continue
+				}
+				days := int(xDate.Sub(fDate).Hours() / 24)
+				if days < 0 || days > windowDays {
+					continue
+				}
+				key := r.FullSHA + "|" + fix.FullSHA + "|" + f
+				if seen[key] {
+					continue
+				}
+				seen[key] = true
+				pairs = append(pairs, ReworkPair{
+					File: f, FeatureBranch: r.Branch, FeatureIID: r.MRData.IID,
+					FixBranch: fix.Branch, FixIID: fix.MRData.IID, DaysApart: days,
+				})
+			}
+		}
+	}
+	sort.Slice(pairs, func(i, j int) bool {
+		if pairs[i].DaysApart != pairs[j].DaysApart {
+			return pairs[i].DaysApart < pairs[j].DaysApart
+		}
+		return pairs[i].File < pairs[j].File
+	})
+	if len(pairs) > 40 {
+		pairs = pairs[:40]
+	}
+	return pairs
+}
+
+func printReworkPairs(w *bufio.Writer, pairs []ReworkPair) {
+	for _, p := range pairs {
+		fmt.Fprintf(w, "%s|%s !%s|%s !%s|%dd\n",
+			p.File, p.FeatureBranch, iidStr(p.FeatureIID),
+			p.FixBranch, iidStr(p.FixIID), p.DaysApart)
+	}
+}
+
+func printReverts(w *bufio.Writer, records []*MergeRecord) {
+	for _, r := range records {
+		if !r.IsRevert {
+			continue
+		}
+		of := r.RevertOf
+		if of == "" {
+			of = "?"
+		}
+		fmt.Fprintf(w, "%s !%s|%s|reverts: %q\n", r.Branch, iidStr(r.MRData.IID), r.Date, of)
+	}
+}
+
+func printTiming(w *bufio.Writer, records []*MergeRecord, a Aggregates) {
+	fmt.Fprintf(w, "off_hours_merges: %d\n", a.OffHoursMerges)
+	fmt.Fprintf(w, "off_hours_rate: %d%%\n", a.OffHoursRate)
+	fmt.Fprintln(w, "mrs:")
+	n := 0
+	for _, r := range records {
+		if !r.OffHours {
+			continue
+		}
+		if n >= 20 {
+			break
+		}
+		fmt.Fprintf(w, "  %s !%s|%s\n", r.Branch, iidStr(r.MRData.IID), r.MergedFull)
+		n++
+	}
+}
+
+// printReviewRisk lists large diffs that merged within an hour — a proxy for a
+// rubber-stamped review. Uses only already-collected fields; treat as a prompt
+// to look, not a verdict.
+func printReviewRisk(w *bufio.Writer, records []*MergeRecord) {
+	for _, r := range records {
+		lines := r.Insertions + r.Deletions
+		if lines <= 200 || r.TTMHours == nil || *r.TTMHours > 1 {
+			continue
+		}
+		reviewers := "?"
+		if len(r.MRData.Assignees) > 0 {
+			reviewers = strings.Join(r.MRData.Assignees, ",")
+		}
+		fmt.Fprintf(w, "%s !%s|%d lines|%dh|reviewers: %s\n",
+			r.Branch, iidStr(r.MRData.IID), lines, *r.TTMHours, reviewers)
+	}
+}
+
+func iidStr(iid int) string {
+	if iid > 0 {
+		return strconv.Itoa(iid)
+	}
+	return "?"
+}
+
+// --- Window resolution (for the baseline pass) ---
+
+// resolveWindow turns the analyzed range's since/until into concrete start/end
+// times so the immediately-preceding equal-length window can be derived. It
+// handles the documented argument forms (absolute dates, "since <date>", "this
+// week", "last N weeks/days/months", "N <unit> ago"). Unrecognized forms return
+// ok=false and the caller simply omits the baseline.
+func resolveWindow(since, until string) (start, end time.Time, ok bool) {
+	now := time.Now()
+	end = now
+	if until != "" {
+		if t, ok2 := parseFlexDate(until); ok2 {
+			end = t
+		}
+	}
+
+	s := strings.TrimSpace(strings.ToLower(since))
+	s = strings.TrimPrefix(s, "since ")
+
+	if t, ok2 := parseFlexDate(s); ok2 {
+		return t, end, true
+	}
+
+	switch s {
+	case "today":
+		return truncDay(now), end, true
+	case "yesterday":
+		return truncDay(now).AddDate(0, 0, -1), end, true
+	case "this week", "last week":
+		// Approximate a week window; exact weekday boundary isn't needed for a
+		// same-length baseline offset.
+		wk := truncDay(now).AddDate(0, 0, -7)
+		return wk, end, true
+	}
+
+	// "last N units", "past N units", "N units ago", "N units"
+	if m := regexp.MustCompile(`(\d+)\s+(day|week|month|year)s?`).FindStringSubmatch(s); m != nil {
+		n, _ := strconv.Atoi(m[1])
+		switch m[2] {
+		case "day":
+			return end.AddDate(0, 0, -n), end, true
+		case "week":
+			return end.AddDate(0, 0, -7*n), end, true
+		case "month":
+			return end.AddDate(0, -n, 0), end, true
+		case "year":
+			return end.AddDate(-n, 0, 0), end, true
+		}
+	}
+	return time.Time{}, time.Time{}, false
+}
+
+// parseFlexDate accepts "2006-01-02" or "2006-01-02 15:04:05" in local time.
+func parseFlexDate(s string) (time.Time, bool) {
+	s = strings.TrimSpace(s)
+	if t, err := time.ParseInLocation("2006-01-02 15:04:05", s, time.Local); err == nil {
+		return t, true
+	}
+	if t, err := time.ParseInLocation("2006-01-02", s, time.Local); err == nil {
+		return t, true
+	}
+	return time.Time{}, false
+}
+
+func truncDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
+func fmtTime(t time.Time) string {
+	return t.Format("2006-01-02 15:04:05")
+}
+
 // --- Utilities ---
 
 func parseDate(s string) time.Time {
@@ -1143,9 +1584,9 @@ func collectOpenMRRecords(gl *GitLabClient, parallel int) []*MergeRecord {
 			break
 		}
 		var mrs []struct {
-			IID          int    `json:"iid"`
-			Title        string `json:"title"`
-			Author       struct {
+			IID    int    `json:"iid"`
+			Title  string `json:"title"`
+			Author struct {
 				Name string `json:"name"`
 			} `json:"author"`
 			Description  string `json:"description"`

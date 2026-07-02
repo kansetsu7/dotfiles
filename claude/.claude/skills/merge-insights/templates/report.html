@@ -43,6 +43,10 @@
   .stat-card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
   .stat-card.is-warn .value { color: var(--warn-fg); }
   .stat-card.is-danger .value { color: var(--danger-fg); }
+  .stat-card .delta { display: block; font-size: 12px; font-weight: 600; margin-top: 4px; }
+  .stat-card .delta.good { color: var(--ok-fg); }
+  .stat-card .delta.bad  { color: var(--danger-fg); }
+  .stat-card .delta.flat { color: var(--muted); }
 
   section { margin: 0 0 30px; }
   section > h2 {
@@ -142,14 +146,16 @@
     Replace {{TITLE}}, {{PROJECT}}, {{RANGE}}, {{TOTAL}}, {{MODE}} in the header above.
 
     Build the report in this order (omit any section the SKILL says to omit when empty):
-      1. <div class="stat-grid"> … summary stat cards …
+      1. <div class="stat-grid"> … summary stat cards, each with a period-over-period delta …
       2. Collapsed "How MR types are classified" methodology note (verbatim from SKILL)
-      3. Part 1  — Tech Lead Dashboard sections
+      3. Part 1  — Tech Lead Dashboard sections (LEAD with "Needs Your Attention")
       4. Part 2  — Per-Branch Details (cards in short mode, table in long mode)
       5. Part 3  — Trend Insights (long mode only)
 
     Element conventions (classes are defined in <style>):
       • Section          <section><h2>Title <span class="count">(n)</span></h2> … </section>
+      • Stat-card delta   <div class="delta bad">▲ 9% vs prev (was 9%)</div> inside a stat-card,
+                          under .value/.label (sentiment: good | bad | flat)
       • Table             wrap every <table> in <div class="table-wrap">…</div>;
                           for a numeric column put class="num" on BOTH its <th>
                           and <td> so header and values right-align together

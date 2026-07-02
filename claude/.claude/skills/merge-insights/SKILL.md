@@ -32,11 +32,19 @@ eval "$(gpg --quiet --decrypt ~/.config/credentials/gitlab-readonly-token.env.gp
 
 Then grep/read the sections you need from `/tmp/merge-insights-output.txt` rather than loading the whole file (the output can run to >1000 lines).
 
-The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, `---REVIEW-METRICS---`, `---SIZE-DISTRIBUTION---`, `---TEST-COVERAGE---`, `---DOC-CHANGES---`, `---PIPELINE-HEALTH---`, `---REVIEWERS---`, and `---METADATA---`.
+The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, `---REVIEW-METRICS---`, `---SIZE-DISTRIBUTION---`, `---TEST-COVERAGE---`, `---DOC-CHANGES---`, `---PIPELINE-HEALTH---`, `---REVIEWERS---`, `---SUMMARY---`, `---BASELINE---`, `---REWORK---`, `---REVERTS---`, `---TIMING---`, `---REVIEW-RISK---`, and `---METADATA---`.
 
-Each `---MERGE---` record now includes: `time_to_merge_hours`, `cycle_time_hours`, `reviewers` (the MR assignee(s) — by team convention the reviewer is set as the assignee), `has_tests`, `has_docs`, `pipeline_runs`, `pipeline_failures`.
+Each `---MERGE---` record now includes: `time_to_merge_hours`, `cycle_time_hours`, `reviewers` (the MR assignee(s) — by team convention the reviewer is set as the assignee), `has_tests`, `has_docs`, `off_hours` (merged on a weekend or a weekday after 18:00), a `revert:` line **only when** the MR is a revert (with the reverted title in quotes), `pipeline_runs`, `pipeline_failures`.
 
 `---REVIEW-METRICS---` reports both `median_*_hours` and `avg_*_hours` for time-to-merge and cycle time — prefer the median. `---PIPELINE-HEALTH---` reports the per-MR final-pipeline metric (`mrs_with_pipelines`, `mrs_final_failed`, `final_failure_rate`) plus run-level context (`total_runs`, `total_failures`, `run_failure_rate`, counting all executions incl. retries).
+
+**Signal sections (drive Part 1 — read these first):**
+
+- `---SUMMARY---` and `---BASELINE---` — the **same scalar keys** for the analyzed window and the immediately-preceding equal-length window (`total`, `bug_ratio`, `median_ttm_hours`, `median_cycle_hours`, `median_size_lines`, `test_ratio`, `final_failure_rate`, `rework_rate`, `off_hours_rate`, `reverts`). Compute each stat card's delta as `SUMMARY − BASELINE`. `---BASELINE---` starts with `available: yes`/`no` — if `no`, omit deltas (the range couldn't be resolved to a prior window) and don't invent them.
+- `---REWORK---` — first-time-quality. A `rate:` line (feature MRs re-touched by a bug/patch within the window ÷ total feature MRs) then one `file|feature_branch !iid|fix_branch !iid|Nd` row per re-touch. This is the "shipped not-quite-right" signal.
+- `---REVERTS---` — one row per revert MR (`branch !iid|date|reverts: "title"`). The strongest "shipped broken" signal; surface prominently.
+- `---TIMING---` — `off_hours_merges`, `off_hours_rate`, then the off-hours MR list.
+- `---REVIEW-RISK---` — large diffs (>200 lines) merged in ≤1h: a **proxy** for rubber-stamped review (`branch !iid|N lines|Nh|reviewers: …`). Treat as "worth a look", not proof.
 
 The `---METADATA---` section includes `mode: short` or `mode: long` (short = up to 14 days, long = over 14 days).
 
@@ -46,6 +54,8 @@ From the gather output, identify notable MRs:
 - Large diffs (insertions > 200)
 - Flagged in rapid-fix section
 - Bug/patch branches touching hotspot files
+- Reverts (`---REVERTS---`) and the change they rolled back
+- Feature MRs at the head of a rework chain (`---REVERTS---`/`---REWORK---`), plus any MR in `---REVIEW-RISK---`
 
 For these only, read the full diff for business context:
 
@@ -68,6 +78,13 @@ Using the structured data from the script, the LLM's job is:
 7. **Evaluate test coverage signal** — highlight if ratio is low or if large feature MRs lack tests
 8. **Flag pipeline concerns** — high failure rate suggests flaky tests or CI issues
 9. **Note reviewer load imbalance** — if one reviewer handles disproportionate share, flag as bottleneck risk
+10. **Compute period-over-period deltas** — for each stat card, `SUMMARY − BASELINE`. A number is a *signal* only against its baseline; render ▲/▼ with direction-aware meaning (rising bug ratio, rework, failure rate, off-hours = bad → `is-warn`/`is-danger`; rising test ratio = good). Skip deltas if `---BASELINE---` says `available: no`.
+11. **Synthesize "Needs Your Attention"** — the highest-value step. After reading every section, pick the top 1–3 things a tech lead should act on this period, ranked by severity, each citing its evidence (specific MRs / files / metric + its delta). This is judgment, not a section dump — include only genuinely notable items; if the period is healthy, say so in one line rather than padding.
+12. **Cross-reference dimensions (the joins)** — do not leave metrics siloed; the insight is in the correlations. Cross-check reverts/rapid-fixes/rework against each source MR's `time_to_merge_hours`, `has_tests`, `reviewers`, and size. Report concrete joins ("3 of 4 reverts came from MRs merged in <4h"; "every rework chain this period lacked tests").
+13. **Interpret rework (first-time-quality)** — treat `rework_rate` as a headline health metric; call out the specific feature→fix chains and any recurring file or author pattern.
+14. **Surface reverts** — list each with what it rolled back and how soon after the original shipped; a revert is the strongest "shipped broken" signal.
+15. **Flag off-hours merge risk** — if `off_hours_rate` is elevated or rising vs baseline, note it and name the riskiest merges.
+16. **Flag possible rubber-stamps** — from `---REVIEW-RISK---`; frame as "worth a look" tied to the reviewer, not an accusation.
 
 ## Step 4: Output
 
@@ -95,14 +112,19 @@ After writing, tell the user the file path (`/download/merge-insights-<slug>.htm
 
 ### Summary stat cards (top of `<main>`, always present)
 
-Open the body with a `<div class="stat-grid">` of `<div class="stat-card">` tiles for at-a-glance metrics, e.g. Total MRs, Median time-to-merge, MRs with tests %, Final-pipeline failure rate, plus mode-relevant ones (e.g. Bug ratio in long mode). Card labels must not mislead: use "Median time-to-merge" (not "Avg"), "MRs with tests" (never "Test coverage" — this is not code-coverage %), and "Final-pipeline failure rate" (the per-MR `final_failure_rate`, not the run-level rate). "Bug ratio" counts type `bug` only (excludes `patch`); label it `Bug ratio (N/total)`. Add `is-warn` / `is-danger` to a card's class when its value crosses a concern threshold (e.g. final-pipeline failure rate >10% → `is-danger`, low test-touch rate → `is-warn`):
+Open the body with a `<div class="stat-grid">` of `<div class="stat-card">` tiles for at-a-glance metrics, e.g. Total MRs, Median time-to-merge, MRs with tests %, Final-pipeline failure rate, **First-time quality** (100 − `rework_rate`, or show `rework_rate` labelled "Rework rate"), plus mode-relevant ones (e.g. Bug ratio in long mode). Card labels must not mislead: use "Median time-to-merge" (not "Avg"), "MRs with tests" (never "Test coverage" — this is not code-coverage %), and "Final-pipeline failure rate" (the per-MR `final_failure_rate`, not the run-level rate). "Bug ratio" counts type `bug` only (excludes `patch`); label it `Bug ratio (N/total)`. Add `is-warn` / `is-danger` to a card's class when its value crosses a concern threshold (e.g. final-pipeline failure rate >10% → `is-danger`, low test-touch rate → `is-warn`, rework rate >20% → `is-warn`).
+
+**Deltas (period-over-period):** when `---BASELINE---` is `available: yes`, give each card a `<div class="delta …">` computed as `SUMMARY − BASELINE` for that metric. Set the sentiment class by whether the *change is good or bad*, not by its arrow direction: rising bug ratio / rework / final-failure / off-hours / median-TTM → `bad`; rising test ratio / first-time-quality → `good`; negligible change → `flat`. Use `%` for a move between two rates (e.g. `▲ 4%`) and `h`/`d` for time. The "vs prev" figure **is** the metric's value in `---BASELINE---` (the immediately-preceding equal-length window); show it explicitly as `(was Y%)` so the reader sees both endpoints. Omit the delta entirely when the baseline is unavailable. Example:
 
 ```html
 <div class="stat-grid">
-  <div class="stat-card"><div class="value">42</div><div class="label">Merged MRs</div></div>
-  <div class="stat-card is-danger"><div class="value">18%</div><div class="label">Pipeline failures</div></div>
+  <div class="stat-card"><div class="value">42</div><div class="label">Merged MRs</div><div class="delta flat">+3 vs prev</div></div>
+  <div class="stat-card is-danger"><div class="value">18%</div><div class="label">Final-pipeline failure rate</div><div class="delta bad">▲ 9% vs prev (was 9%)</div></div>
+  <div class="stat-card"><div class="value">84%</div><div class="label">First-time quality</div><div class="delta good">▲ 6% vs prev (was 78%)</div></div>
 </div>
 ```
+
+**"vs prev" explainer (render whenever the baseline is available):** immediately after the `stat-grid`'s closing `</div>`, add one muted line so `prev` is self-documenting — name both windows: `<p class="muted"><strong>"vs prev"</strong> compares this window (SINCE → UNTIL) against the immediately-preceding equal-length window, <strong>BASE_SINCE → BASE_UNTIL</strong>. A move on a percentage metric is shown in points (e.g. 7% → 11% = ▲ 4%).</p>` — take SINCE/UNTIL from `---METADATA---` and BASE_SINCE/BASE_UNTIL from `---BASELINE---` (`since`/`until`, at day granularity). Omit this line entirely when `---BASELINE---` is `available: no`.
 
 ### Classification methodology note (always present)
 
@@ -129,17 +151,22 @@ Type badges (`bug`, `feature`, …) are assigned by the gather binary's `classif
 
 One `<section>` per item below. Omit a section entirely where noted.
 
+- **Needs Your Attention** — **the lead section, always first.** A short ranked `<ul>` (1–3 items, most severe first) of what the tech lead should act on this period, synthesized across *all* other sections — each item states the concern, cites its evidence (specific MRs / files / a metric + its baseline delta), and where possible names a cross-dimension join (e.g. "2 reverts this period, both from XL MRs merged in <2h — see Speed & Review Risk"). This is judgment, not a dump: include only genuinely notable items. If the period is clean, render a single `<p>` saying so (e.g. "No standout risks this period — metrics in line with the prior window."). Use `tag--danger`/`tag--warn` inline to grade each item.
 - **Key Highlights** — `<ul>`: largest/riskiest changes (by diff size or domain impact), new architectural/infra patterns, compliance/regulatory changes.
+- **Reverts** — table: Revert MR · Rolled back (the quoted title) · Reverted on (date) · Days after original. One row per `---REVERTS---` entry; lead with the revert MR link. Fill "Days after original" only if you can match the rolled-back title to an MR in range (leave "—" otherwise — don't guess). A revert is the strongest "shipped broken" signal — never bury it. *Omit section if none.*
 - **Rapid Fixes** — table: Bug/Patch MR · Likely caused by · Files in common · Days apart · Type. *Omit section if none detected.*
+- **First-Time Quality** — `<p>` leading with the `rework_rate` (and its baseline delta): "X% of feature MRs (M/N) were re-touched by a fix within the window." Then a table of the specific chains from `---REWORK---`: File · Feature MR · Fix MR · Days apart. Flag (`tag--warn`) if the rate is high or rising vs baseline; call out any file that recurs. Below the table add this muted definition line **verbatim**: `<p class="muted">A "rework" is a file that shipped in a feature MR and was re-touched by a bug/patch MR within the lookback window (default 14 days) — a proxy for first-time-quality misses. Schema and locale files are excluded. A feature merged just before the window's start is not counted.</p>` *Omit section if no chains and rate is 0%.*
 - **Hotspots** — table: File/Module · Touched by MRs · Concern (use a `tag`).
 - **Related MR Clusters** — `<ul>`: `<strong>domain</strong>: !iid1, !iid2 — <tag>` assessing incremental rollout vs churn signal.
 - **Risk Signals** — `<ul>`: schema migrations, data patches, large diffs (>200 lines) — list any.
 - **Author Distribution** — table: Author · MRs · Areas.
 - **Review Quality** — `<p>`: lead with the **median** as the typical value — Median time-to-merge Xh · Median cycle time Xh (from `median_ttm_hours`/`median_cycle_hours`) — then give the mean in parentheses noting it is skewed upward by long-lived branches (e.g. `median 6d (mean 15d, skewed by a few long-lived branches)`). Base any bottleneck flag on the **median, not the mean**. Then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. Below the numbers, add a muted definitions line **verbatim** so the reader knows what each metric measures: `<p class="muted"><strong>Time-to-merge</strong>: hours from the MR being opened to merge (includes any draft/waiting time, not just active review). <strong>Cycle time</strong>: hours from the branch's first commit to merge (full development lifecycle, including coding before the MR was opened).</p>` *Omit section if no data.*
 - **Reviewer Load** — table: Reviewer · MRs Reviewed · Concern. Flag (`tag--danger`) any reviewer handling >40% of MRs as bottleneck risk. *Omit section if no data.* (This uses the MR **assignee** field — by team convention the reviewer is set as the assignee, so assignee counts are a valid reviewer-load signal; this is intentional, not a bug.)
+- **Speed & Review Risk** — from `---REVIEW-RISK---`: table of large diffs (>200 lines) merged in ≤1h — MR · Lines · Time-to-merge · Reviewer. Frame (`tag--warn`) as *possible* rubber-stamps worth a look, tied to the reviewer — a proxy from TTM, **not** proof of a bad review. Cross-reference with Reverts/Rework: if a fast-merged MR later got reverted or re-fixed, say so explicitly. Below the table add this muted line **verbatim**: `<p class="muted">A proxy for rubber-stamped review: a large diff merged within an hour of opening. It flags where to look, not a verdict — a fast merge can be a pre-reviewed or trivial-but-large change.</p>` *Omit section if none.*
 - **MR Size Distribution** — table with columns XS (<10) · S (10-50) · M (50-200) · L (200-500) · XL (500+); cells are MR counts and each MR is bucketed by **total lines changed (insertions + deletions)** from the `---SIZE-DISTRIBUTION---` section. Then a one-line commentary: healthy if mostly XS-M; flag if >30% are L/XL. Below the table add this muted definition line **verbatim**: `<p class="muted">Each MR is bucketed by total lines changed (insertions + deletions); cells are MR counts. Ranges are lines-changed thresholds (upper bound exclusive, e.g. S = 10–49).</p>`
 - **Test Coverage Signal** — `<p>`: X/Y MRs (Z%) include test file changes; list feature MRs without tests by name. Word it as "MRs with tests", never "test coverage" (this is not code-coverage %). *Omit section if ratio is 100%.*
 - **Pipeline Health** — `<p>`: lead with the per-MR final-pipeline metric — `mrs_final_failed`/`mrs_with_pipelines` MRs (final_failure_rate%) merged with a failing final pipeline; flag (`tag--danger`) only if that rate is high (>10%). Then mention run-level context in parentheses: total_runs N, run_failure_rate% across all executions incl. retries — and note a high run rate alone is normal iteration, not a red flag. *Omit section if no pipeline data.*
+- **Merge Timing** — `<p>`: from `---TIMING---`, `off_hours_merges`/total (off_hours_rate%) landed off-hours (weekend or a weekday after 18:00, in the merger's timezone), with the baseline delta. Off-hours merges correlate with incidents, so flag (`tag--warn`) an elevated or rising rate and name the riskiest ones (especially any that overlap Reverts/Rework/Review-Risk). Add this muted line **verbatim**: `<p class="muted">Off-hours = merged on a weekend, or on a weekday after 18:00, evaluated in the merge commit's own timezone. A correlate of incident risk, not a rule against it.</p>` *Omit section if the rate is 0%.*
 - **Documentation Changes** — `<p>`: X/Y MRs include doc/changelog changes. *Omit section if not meaningful (e.g. all bug fixes).*
 
 ### Part 2: Per-Branch Details
