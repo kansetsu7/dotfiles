@@ -34,7 +34,9 @@ Then grep/read the sections you need from `/tmp/merge-insights-output.txt` rathe
 
 The script outputs sections delimited by `---MERGE---`, `---HOTSPOTS---`, `---RAPID-FIXES---`, `---WEEKLY-DENSITY---`, `---AUTHORS---`, `---REVIEW-METRICS---`, `---SIZE-DISTRIBUTION---`, `---TEST-COVERAGE---`, `---DOC-CHANGES---`, `---PIPELINE-HEALTH---`, `---REVIEWERS---`, and `---METADATA---`.
 
-Each `---MERGE---` record now includes: `time_to_merge_hours`, `cycle_time_hours`, `reviewers`, `has_tests`, `has_docs`, `pipeline_runs`, `pipeline_failures`.
+Each `---MERGE---` record now includes: `time_to_merge_hours`, `cycle_time_hours`, `reviewers` (the MR assignee(s) — by team convention the reviewer is set as the assignee), `has_tests`, `has_docs`, `pipeline_runs`, `pipeline_failures`.
+
+`---REVIEW-METRICS---` reports both `median_*_hours` and `avg_*_hours` for time-to-merge and cycle time — prefer the median. `---PIPELINE-HEALTH---` reports the per-MR final-pipeline metric (`mrs_with_pipelines`, `mrs_final_failed`, `final_failure_rate`) plus run-level context (`total_runs`, `total_failures`, `run_failure_rate`, counting all executions incl. retries).
 
 The `---METADATA---` section includes `mode: short` or `mode: long` (short = up to 14 days, long = over 14 days).
 
@@ -93,7 +95,7 @@ After writing, tell the user the file path (`/download/merge-insights-<slug>.htm
 
 ### Summary stat cards (top of `<main>`, always present)
 
-Open the body with a `<div class="stat-grid">` of `<div class="stat-card">` tiles for at-a-glance metrics, e.g. Total MRs, Avg time-to-merge, Test coverage %, Pipeline failure rate, plus mode-relevant ones (e.g. Bug ratio in long mode). Add `is-warn` / `is-danger` to a card's class when its value crosses a concern threshold (e.g. failure rate >15% → `is-danger`, test coverage low → `is-warn`):
+Open the body with a `<div class="stat-grid">` of `<div class="stat-card">` tiles for at-a-glance metrics, e.g. Total MRs, Median time-to-merge, MRs with tests %, Final-pipeline failure rate, plus mode-relevant ones (e.g. Bug ratio in long mode). Card labels must not mislead: use "Median time-to-merge" (not "Avg"), "MRs with tests" (never "Test coverage" — this is not code-coverage %), and "Final-pipeline failure rate" (the per-MR `final_failure_rate`, not the run-level rate). "Bug ratio" counts type `bug` only (excludes `patch`); label it `Bug ratio (N/total)`. Add `is-warn` / `is-danger` to a card's class when its value crosses a concern threshold (e.g. final-pipeline failure rate >10% → `is-danger`, low test-touch rate → `is-warn`):
 
 ```html
 <div class="stat-grid">
@@ -133,11 +135,11 @@ One `<section>` per item below. Omit a section entirely where noted.
 - **Related MR Clusters** — `<ul>`: `<strong>domain</strong>: !iid1, !iid2 — <tag>` assessing incremental rollout vs churn signal.
 - **Risk Signals** — `<ul>`: schema migrations, data patches, large diffs (>200 lines) — list any.
 - **Author Distribution** — table: Author · MRs · Areas.
-- **Review Quality** — `<p>`: Avg time-to-merge Xh · Avg cycle time Xh; then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. Below the numbers, add a muted definitions line **verbatim** so the reader knows what each metric measures: `<p class="muted"><strong>Time-to-merge</strong>: hours from the MR being opened to merge (review/approval latency). <strong>Cycle time</strong>: hours from the branch's first commit to merge (full development lifecycle, including coding before the MR was opened).</p>` *Omit section if no data.*
-- **Reviewer Load** — table: Assignee · MRs Reviewed · Concern. Flag (`tag--danger`) any assignee handling >40% of MRs as bottleneck risk. *Omit section if no assignee data.*
+- **Review Quality** — `<p>`: lead with the **median** as the typical value — Median time-to-merge Xh · Median cycle time Xh (from `median_ttm_hours`/`median_cycle_hours`) — then give the mean in parentheses noting it is skewed upward by long-lived branches (e.g. `median 6d (mean 15d, skewed by a few long-lived branches)`). Base any bottleneck flag on the **median, not the mean**. Then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. Below the numbers, add a muted definitions line **verbatim** so the reader knows what each metric measures: `<p class="muted"><strong>Time-to-merge</strong>: hours from the MR being opened to merge (includes any draft/waiting time, not just active review). <strong>Cycle time</strong>: hours from the branch's first commit to merge (full development lifecycle, including coding before the MR was opened).</p>` *Omit section if no data.*
+- **Reviewer Load** — table: Reviewer · MRs Reviewed · Concern. Flag (`tag--danger`) any reviewer handling >40% of MRs as bottleneck risk. *Omit section if no data.* (This uses the MR **assignee** field — by team convention the reviewer is set as the assignee, so assignee counts are a valid reviewer-load signal; this is intentional, not a bug.)
 - **MR Size Distribution** — table with columns XS (<10) · S (10-50) · M (50-200) · L (200-500) · XL (500+); cells are MR counts and each MR is bucketed by **total lines changed (insertions + deletions)** from the `---SIZE-DISTRIBUTION---` section. Then a one-line commentary: healthy if mostly XS-M; flag if >30% are L/XL. Below the table add this muted definition line **verbatim**: `<p class="muted">Each MR is bucketed by total lines changed (insertions + deletions); cells are MR counts. Ranges are lines-changed thresholds (upper bound exclusive, e.g. S = 10–49).</p>`
-- **Test Coverage Signal** — `<p>`: X/Y MRs (Z%) include test file changes; list feature MRs without tests by name. *Omit section if ratio is 100%.*
-- **Pipeline Health** — `<p>`: Total runs N · Failures N · Failure rate N%. Flag if failure rate >15%. *Omit section if no pipeline data.*
+- **Test Coverage Signal** — `<p>`: X/Y MRs (Z%) include test file changes; list feature MRs without tests by name. Word it as "MRs with tests", never "test coverage" (this is not code-coverage %). *Omit section if ratio is 100%.*
+- **Pipeline Health** — `<p>`: lead with the per-MR final-pipeline metric — `mrs_final_failed`/`mrs_with_pipelines` MRs (final_failure_rate%) merged with a failing final pipeline; flag (`tag--danger`) only if that rate is high (>10%). Then mention run-level context in parentheses: total_runs N, run_failure_rate% across all executions incl. retries — and note a high run rate alone is normal iteration, not a red flag. *Omit section if no pipeline data.*
 - **Documentation Changes** — `<p>`: X/Y MRs include doc/changelog changes. *Omit section if not meaningful (e.g. all bug fixes).*
 
 ### Part 2: Per-Branch Details
@@ -176,7 +178,7 @@ Then add a **separate, always-visible** "Notable MRs" `<section>` with detail ca
 
 ### Part 3: Trend Insights (long mode only)
 
-- **Module Churn Rate** — table: Module · Total MRs · Features · Bugs/Patches · Bug Ratio, sorted by bug ratio descending (high ratio = potentially unstable).
+- **Module Churn Rate** — table: Module · Total MRs · Features · Bugs · Bug Ratio, sorted by bug ratio descending (high ratio = potentially unstable). "Bugs" and "Bug Ratio" count type `bug` only (exclude `patch`), consistent with the Bug ratio stat card.
 - **Bug Density Over Time** — `<ul>` weekly breakdown (Week → N features, M bugs) to spot if bugs are increasing.
 - **Repeat Offender Files** — table: File · MR Count · Types, for files appearing in 5+ MRs (refactoring candidates).
 

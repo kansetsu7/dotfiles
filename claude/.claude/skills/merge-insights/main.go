@@ -34,6 +34,7 @@ type MRData struct {
 	Assignees        []string
 	PipelineRuns     int
 	PipelineFailures int
+	PipelineFinal    string // status of the most recent pipeline for this MR
 	WebURL           string
 }
 
@@ -228,6 +229,7 @@ func main() {
 	withTests, withoutTests := 0, 0
 	withDocs, withoutDocs := 0, 0
 	totalPipelineRuns, totalPipelineFailures := 0, 0
+	mrsWithPipelines, mrsFinalFailed := 0, 0
 	reviewerCounts := map[string]int{}
 	typeMap := map[string]string{} // fullSHA -> type
 
@@ -277,6 +279,12 @@ func main() {
 
 		totalPipelineRuns += r.PipelineRuns
 		totalPipelineFailures += r.PipelineFailures
+		if r.PipelineRuns > 0 {
+			mrsWithPipelines++
+			if r.PipelineFinal == "failed" {
+				mrsFinalFailed++
+			}
+		}
 
 		for _, a := range r.MRData.Assignees {
 			if a != "" {
@@ -344,13 +352,24 @@ func main() {
 	// --- PIPELINE-HEALTH ---
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "---PIPELINE-HEALTH---")
-	failRate := 0
+	// Headline health = share of MRs whose FINAL (most recent) pipeline failed.
+	// This reflects MRs that merged with red CI, rather than counting every
+	// intermediate/retry run (which fails routinely during normal iteration).
+	finalFailRate := 0
+	if mrsWithPipelines > 0 {
+		finalFailRate = mrsFinalFailed * 100 / mrsWithPipelines
+	}
+	fmt.Fprintf(w, "mrs_with_pipelines:%d\n", mrsWithPipelines)
+	fmt.Fprintf(w, "mrs_final_failed:%d\n", mrsFinalFailed)
+	fmt.Fprintf(w, "final_failure_rate:%d%%\n", finalFailRate)
+	// Run-level counts (all executions incl. retries) kept for context only.
+	runFailRate := 0
 	if totalPipelineRuns > 0 {
-		failRate = totalPipelineFailures * 100 / totalPipelineRuns
+		runFailRate = totalPipelineFailures * 100 / totalPipelineRuns
 	}
 	fmt.Fprintf(w, "total_runs:%d\n", totalPipelineRuns)
 	fmt.Fprintf(w, "total_failures:%d\n", totalPipelineFailures)
-	fmt.Fprintf(w, "failure_rate:%d%%\n", failRate)
+	fmt.Fprintf(w, "run_failure_rate:%d%%\n", runFailRate)
 
 	// --- REVIEWERS ---
 	fmt.Fprintln(w)
@@ -525,13 +544,20 @@ func collectOneMerge(gl *GitLabClient, mc MergeCommit) *MergeRecord {
 		if err == nil {
 			defer resp.Body.Close()
 			var pipelines []struct {
+				ID     int    `json:"id"`
 				Status string `json:"status"`
 			}
 			if err := json.NewDecoder(resp.Body).Decode(&pipelines); err == nil {
 				r.MRData.PipelineRuns = len(pipelines)
+				maxID := -1
 				for _, p := range pipelines {
 					if p.Status == "failed" {
 						r.MRData.PipelineFailures++
+					}
+					// Track the most recent pipeline (highest id) as the final one.
+					if p.ID > maxID {
+						maxID = p.ID
+						r.MRData.PipelineFinal = p.Status
 					}
 				}
 			}
@@ -961,21 +987,44 @@ func printReviewMetrics(w *bufio.Writer, ttm, cycle []struct {
 	if len(ttm) > 0 {
 		fmt.Fprintln(w, "time_to_merge:")
 		sum := 0
+		hours := make([]int, 0, len(ttm))
 		for _, e := range ttm {
 			fmt.Fprintf(w, "  %s|%dh\n", e.Branch, e.Hours)
 			sum += e.Hours
+			hours = append(hours, e.Hours)
 		}
+		// Median is the typical value; the mean is reported too but is skewed
+		// upward by a few long-lived branches, so prefer the median in prose.
+		fmt.Fprintf(w, "median_ttm_hours: %d\n", median(hours))
 		fmt.Fprintf(w, "avg_ttm_hours: %d\n", sum/len(ttm))
 	}
 	if len(cycle) > 0 {
 		fmt.Fprintln(w, "cycle_time:")
 		sum := 0
+		hours := make([]int, 0, len(cycle))
 		for _, e := range cycle {
 			fmt.Fprintf(w, "  %s|%dh\n", e.Branch, e.Hours)
 			sum += e.Hours
+			hours = append(hours, e.Hours)
 		}
+		fmt.Fprintf(w, "median_cycle_hours: %d\n", median(hours))
 		fmt.Fprintf(w, "avg_cycle_hours: %d\n", sum/len(cycle))
 	}
+}
+
+// median returns the median of a non-empty slice (average of the two middle
+// values for even length). Sorts a copy so the caller's order is preserved.
+func median(v []int) int {
+	if len(v) == 0 {
+		return 0
+	}
+	s := append([]int(nil), v...)
+	sort.Ints(s)
+	n := len(s)
+	if n%2 == 1 {
+		return s[n/2]
+	}
+	return (s[n/2-1] + s[n/2]) / 2
 }
 
 func printSizeDistribution(w *bufio.Writer, sizes []int) {
