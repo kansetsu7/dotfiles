@@ -68,7 +68,7 @@
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:nth-child(even) { background: #fafbfc; }
   tbody tr:hover { background: #f0f6ff; }
-  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
   /* Type badges */
   .badge {
@@ -151,7 +151,8 @@
     Element conventions (classes are defined in <style>):
       • Section          <section><h2>Title <span class="count">(n)</span></h2> … </section>
       • Table             wrap every <table> in <div class="table-wrap">…</div>;
-                          right-align numeric cells with <td class="num">
+                          for a numeric column put class="num" on BOTH its <th>
+                          and <td> so header and values right-align together
       • Type badge        <span class="badge badge--bug">bug</span>
                           (feature | bug | patch | refactor | doc | other)
       • Concern tag       <span class="tag tag--danger">churn signal</span>

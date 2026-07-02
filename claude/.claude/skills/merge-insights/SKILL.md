@@ -84,7 +84,7 @@ After writing, tell the user the file path (`/download/merge-insights-<slug>.htm
 ### HTML conventions (classes are defined in the template)
 
 - **Section** — `<section><h2>Title <span class="count">(n)</span></h2> … </section>`
-- **Table** — wrap every `<table>` in `<div class="table-wrap">…</div>`; right-align numeric cells with `<td class="num">`. Header cells use `<th>`.
+- **Table** — wrap every `<table>` in `<div class="table-wrap">…</div>`. For a numeric column, put `class="num"` on **both** its `<th>` and its `<td>` cells so the header right-aligns with its values (e.g. `<th class="num">` + `<td class="num">`); a `class="num"` header over plain `<td>` values, or vice-versa, will misalign. Text columns use plain `<th>`/`<td>`.
 - **Type badge** — `<span class="badge badge--bug">bug</span>` (variants: `feature`, `bug`, `patch`, `refactor`, `doc`, `other`)
 - **Concern tag** — `<span class="tag tag--danger">churn signal</span>` (variants: `ok`, `warn`, `danger`) — use `danger` for high risk, `warn` for caution, `ok` for healthy
 - **Branch / file paths** — wrap in `<code>…</code>`
@@ -111,7 +111,7 @@ Type badges (`bug`, `feature`, …) are assigned by the gather binary's `classif
   <summary>How MR types are classified <span class="count">(methodology)</span></summary>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>#</th><th>Rule (checked in order)</th><th>Type</th></tr></thead>
+      <thead><tr><th class="num">#</th><th>Rule (checked in order)</th><th>Type</th></tr></thead>
       <tbody>
         <tr><td class="num">1</td><td>Branch name has a non-<code>feature</code> prefix — <code>bug/</code>, <code>patch/</code>, <code>refactor/</code>, <code>doc/</code>. <strong>Trusted by name.</strong></td><td><span class="badge badge--bug">bug</span> <span class="badge badge--patch">patch</span> <span class="badge badge--refactor">refactor</span> <span class="badge badge--doc">doc</span></td></tr>
         <tr><td class="num">2</td><td><code>feature/</code> or unprefixed branch whose commit messages or MR title match a fix signal — <code>fix</code>/<code>fixes</code>/<code>fixed</code>, <code>bug</code>, <code>revert</code>, <code>repair</code>, <code>correct</code>/<code>corrected</code>/<code>correction</code>, or <code>patch(ed) data|record|amount|balance</code>. <strong>Detected by content, not branch name.</strong></td><td><span class="badge badge--bug">bug</span></td></tr>
@@ -135,7 +135,7 @@ One `<section>` per item below. Omit a section entirely where noted.
 - **Author Distribution** — table: Author · MRs · Areas.
 - **Review Quality** — `<p>`: Avg time-to-merge Xh · Avg cycle time Xh; then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. Below the numbers, add a muted definitions line **verbatim** so the reader knows what each metric measures: `<p class="muted"><strong>Time-to-merge</strong>: hours from the MR being opened to merge (review/approval latency). <strong>Cycle time</strong>: hours from the branch's first commit to merge (full development lifecycle, including coding before the MR was opened).</p>` *Omit section if no data.*
 - **Reviewer Load** — table: Assignee · MRs Reviewed · Concern. Flag (`tag--danger`) any assignee handling >40% of MRs as bottleneck risk. *Omit section if no assignee data.*
-- **MR Size Distribution** — table with columns XS (<10) · S (10-50) · M (50-200) · L (200-500) · XL (500+), then a one-line commentary: healthy if mostly XS-M; flag if >30% are L/XL.
+- **MR Size Distribution** — table with columns XS (<10) · S (10-50) · M (50-200) · L (200-500) · XL (500+); cells are MR counts and each MR is bucketed by **total lines changed (insertions + deletions)** from the `---SIZE-DISTRIBUTION---` section. Then a one-line commentary: healthy if mostly XS-M; flag if >30% are L/XL. Below the table add this muted definition line **verbatim**: `<p class="muted">Each MR is bucketed by total lines changed (insertions + deletions); cells are MR counts. Ranges are lines-changed thresholds (upper bound exclusive, e.g. S = 10–49).</p>`
 - **Test Coverage Signal** — `<p>`: X/Y MRs (Z%) include test file changes; list feature MRs without tests by name. *Omit section if ratio is 100%.*
 - **Pipeline Health** — `<p>`: Total runs N · Failures N · Failure rate N%. Flag if failure rate >15%. *Omit section if no pipeline data.*
 - **Documentation Changes** — `<p>`: X/Y MRs include doc/changelog changes. *Omit section if not meaningful (e.g. all bug fixes).*

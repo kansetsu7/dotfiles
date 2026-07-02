@@ -259,7 +259,10 @@ func main() {
 			}{r.Branch, *r.CycleHours})
 		}
 
-		sizes = append(sizes, r.Insertions)
+		// Size by total lines changed (insertions + deletions), matching the
+		// common PR-size convention (GitHub diffstat, Prow size/* labels) so a
+		// large rewrite or deletion-heavy change isn't undercounted.
+		sizes = append(sizes, r.Insertions+r.Deletions)
 
 		if r.HasTests {
 			withTests++
