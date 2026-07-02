@@ -102,6 +102,27 @@ Open the body with a `<div class="stat-grid">` of `<div class="stat-card">` tile
 </div>
 ```
 
+### Classification methodology note (always present)
+
+Type badges (`bug`, `feature`, …) are assigned by the gather binary's `classifyType`, not the LLM, so the reader can't tell how a type was decided. Immediately **after** the stat cards, add a collapsed methodology block that documents the rule. The rule is fixed in the binary — paste this block **verbatim** (do not paraphrase; if `classifyType` in `main.go` changes, update this block to match):
+
+```html
+<details class="mr-fold">
+  <summary>How MR types are classified <span class="count">(methodology)</span></summary>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Rule (checked in order)</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Branch name has a non-<code>feature</code> prefix — <code>bug/</code>, <code>patch/</code>, <code>refactor/</code>, <code>doc/</code>. <strong>Trusted by name.</strong></td><td><span class="badge badge--bug">bug</span> <span class="badge badge--patch">patch</span> <span class="badge badge--refactor">refactor</span> <span class="badge badge--doc">doc</span></td></tr>
+        <tr><td class="num">2</td><td><code>feature/</code> or unprefixed branch whose commit messages or MR title match a fix signal — <code>fix</code>/<code>fixes</code>/<code>fixed</code>, <code>bug</code>, <code>revert</code>, <code>repair</code>, <code>correct</code>/<code>corrected</code>/<code>correction</code>, or <code>patch(ed) data|record|amount|balance</code>. <strong>Detected by content, not branch name.</strong></td><td><span class="badge badge--bug">bug</span></td></tr>
+        <tr><td class="num">3</td><td><code>feature/</code> prefix, no fix signal.</td><td><span class="badge badge--feature">feature</span></td></tr>
+        <tr><td class="num">4</td><td>No recognized prefix, no fix signal.</td><td><span class="badge badge--other">other</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</details>
+```
+
 ### Part 1: Tech Lead Dashboard (always present)
 
 One `<section>` per item below. Omit a section entirely where noted.
@@ -112,7 +133,7 @@ One `<section>` per item below. Omit a section entirely where noted.
 - **Related MR Clusters** — `<ul>`: `<strong>domain</strong>: !iid1, !iid2 — <tag>` assessing incremental rollout vs churn signal.
 - **Risk Signals** — `<ul>`: schema migrations, data patches, large diffs (>200 lines) — list any.
 - **Author Distribution** — table: Author · MRs · Areas.
-- **Review Quality** — `<p>`: Avg time-to-merge Xh · Avg cycle time Xh; then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. *Omit if no data.*
+- **Review Quality** — `<p>`: Avg time-to-merge Xh · Avg cycle time Xh; then a short list of the slowest top-3 MRs by time-to-merge with a brief reason if apparent. Below the numbers, add a muted definitions line **verbatim** so the reader knows what each metric measures: `<p class="muted"><strong>Time-to-merge</strong>: hours from the MR being opened to merge (review/approval latency). <strong>Cycle time</strong>: hours from the branch's first commit to merge (full development lifecycle, including coding before the MR was opened).</p>` *Omit section if no data.*
 - **Reviewer Load** — table: Assignee · MRs Reviewed · Concern. Flag (`tag--danger`) any assignee handling >40% of MRs as bottleneck risk. *Omit section if no assignee data.*
 - **MR Size Distribution** — table with columns XS (<10) · S (10-50) · M (50-200) · L (200-500) · XL (500+), then a one-line commentary: healthy if mostly XS-M; flag if >30% are L/XL.
 - **Test Coverage Signal** — `<p>`: X/Y MRs (Z%) include test file changes; list feature MRs without tests by name. *Omit section if ratio is 100%.*
