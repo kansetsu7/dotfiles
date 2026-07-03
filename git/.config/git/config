@@ -64,3 +64,5 @@
 
 [branch]
   autosetuprebase = always
+[safe]
+	directory = /root/.dotfiles
