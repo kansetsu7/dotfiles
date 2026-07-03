@@ -1,5 +1,6 @@
 ---
 description: Generate a summary for the current branch changes
+argument-hint: "[base-branch]"
 allowed-tools: Bash(git:*)
 ---
 

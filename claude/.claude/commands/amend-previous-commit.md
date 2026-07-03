@@ -1,6 +1,6 @@
 ---
-triggers:
-- /amend
+description: Amend staged changes to the previous commit and update the commit message.
+argument-hint: "[--force]"
 ---
 
 Amend staged changes to the previous commit and update the commit message.

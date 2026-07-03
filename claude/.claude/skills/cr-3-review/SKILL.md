@@ -84,7 +84,7 @@ Before reviewing, search for code made dead by this MR's changes:
 
 ### Step 5: Code Review & Merge
 
-Apply the review criteria defined in `~/.claude/skills/code-review-criteria.md`.
+Apply the review criteria defined in `~/.claude/skills/code-review-criteria/SKILL.md`.
 
 **Merging with reviewer feedback** (if `.claude/reviewer-feedback.md` exists):
 

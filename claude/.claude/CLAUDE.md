@@ -21,11 +21,6 @@ When Bash is needed for shell-only ops, prefer `fd`, `rg`, `ast-grep`, `jq`, `yq
 
 Use agents to run tests.
 
-## Knowledge Capture
-
-Use the `knowledge-capture` skill when domain knowledge surfaces (or on
-`/learn`); captured to `~/.claude/knowledge/` organized by domain.
-
 ## Plan Mode
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
 - At the end of each plan, give me a list of unresolved questions to answer, if any.

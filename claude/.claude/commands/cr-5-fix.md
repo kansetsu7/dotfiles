@@ -1,6 +1,5 @@
 ---
-triggers:
-- /cr-5-fix
+description: Execute fixes from the fix plan, working through each group in order.
 ---
 
 Execute fixes from the fix plan, working through each group in order.

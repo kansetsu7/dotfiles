@@ -1,6 +1,5 @@
 ---
-triggers:
-- /cr-4-plan
+description: Analyze the code review and produce a comprehensive fix plan.
 ---
 
 Analyze the code review and produce a comprehensive fix plan.

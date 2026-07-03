@@ -1,4 +1,6 @@
-Create a template file for human reviewers to write free-form feedback before AI code review.
+---
+description: Create a template file for human reviewers to write free-form feedback before AI code review.
+---
 
 # Initialize Reviewer Notes
 

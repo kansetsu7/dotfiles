@@ -174,41 +174,6 @@ Display summary to reviewer:
 **Next step:** Run `/cr-3-review` to generate AI review and merge with your feedback.
 ```
 
-### Step 6: Capture Knowledge
-
-Check for new knowledge to capture from the review session.
-
-**Sources to check:**
-1. **Context section** in `reviewer-notes.md` - background info, business logic, domain explanations
-2. **Discussion outcomes** - clarifications, investigations, and answers provided during Steps 3-3a
-3. **Domain terms or abbreviations** - any terminology explained during the session
-
-**When to trigger:**
-- Context section has non-placeholder content (not just the template example)
-- User provided explanations during clarification that reveal business logic
-- Investigations uncovered undocumented patterns or behaviors
-
-**Action:**
-Delegate to the `knowledge-capture` agent with a summary of potential knowledge:
-
-```
-Capture knowledge from code review session:
-
-Context from reviewer-notes.md:
-<content from Context section>
-
-Clarifications from discussion:
-<summary of explanations provided during Q&A>
-
-Investigation findings:
-<key discoveries from Step 3a investigations>
-```
-
-**Skip if:**
-- Context section is empty or contains only template placeholders
-- No substantive clarifications were needed
-- All information is already documented
-
 ## Output Files
 
 - `.claude/reviewer-feedback.md` - Structured feedback (NOT committed)
