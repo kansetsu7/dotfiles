@@ -30,7 +30,7 @@ local options = {
   sidescrolloff  = 5,
   encoding       = "utf8",
   mouse          = "",
-  clipboard      = 'unnamed',
+  clipboard      = 'unnamedplus',
   wildignore = "*/.git/*,log/**,node_modules/**,target/**,*.rbc",
   -- list = true,
 }

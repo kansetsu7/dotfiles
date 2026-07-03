@@ -1,6 +1,11 @@
 gui:
   sidePanelWidth: 0.25
   mouseEvents: false
+os:
+  # Copy via OSC 52 instead of xclip/xsel (not installed in the container).
+  # tmux (set-clipboard on) intercepts this and forwards it to the host terminal.
+  copyToClipboardCmd: >
+    printf "\033]52;c;%s\a" "$(printf '%s' {{text}} | base64 -w 0)" > /dev/tty
 git:
   paging:
     colorArg: always
