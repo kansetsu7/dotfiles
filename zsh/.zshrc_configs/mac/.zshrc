@@ -18,3 +18,36 @@ cl()  { CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 claude }
 cr()  { CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 claude --resume }
 cf()  { CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 claude -r "$1" --fork-session }
 cy()  { CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 claude --dangerously-skip-permissions }
+
+# Install/update the Claudian Obsidian plugin from a GitHub release tag.
+# Usage: obplugin 2.0.27
+obplugin() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: obplugin <release-tag>" >&2
+    return 1
+  fi
+
+  local base="https://github.com/YishenTu/claudian/releases/download/$1"
+
+  # Reuse the `ob` alias for the vault path; eval to expand ~ and unescape spaces.
+  local vault
+  eval "vault=${aliases[ob]}"
+  local dest="$vault/.obsidian/plugins/Claudian"
+
+  local tmp
+  tmp="$(mktemp -d)" || return 1
+
+  local f
+  for f in main.js manifest.json styles.css; do
+    echo "Downloading $f..."
+    if ! curl -fL --progress-bar -o "$tmp/$f" "$base/$f"; then
+      echo "Failed to download $f" >&2
+      rm -rf "$tmp"
+      return 1
+    fi
+  done
+
+  mkdir -p "$dest" || { rm -rf "$tmp"; return 1; }
+  mv "$tmp"/* "$dest/" && rm -rf "$tmp"
+  echo "Installed Claudian plugin files to $dest"
+}
