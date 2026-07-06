@@ -27,6 +27,11 @@ Use agents to run tests.
 
 ## Commit Style
 
+**Scope**: The commit message must describe ONLY what is actually staged.
+Before writing the message, check `git diff --cached --stat` and never
+mention files or changes excluded from the commit (e.g. `.claude/` files
+kept local by request).
+
 Default to the 'Background', 'Problem', 'Approach' structure.
 Use a concise subject line only for truly trivial changes (typos, formatting,
 dependency bumps) where there is no meaningful context to explain.
