@@ -64,6 +64,7 @@ return {
         "clojure",
         "csv",
         "diff",
+        "embedded_template",
         "git_config",
         "gitcommit",
         "gitignore",

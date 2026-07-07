@@ -238,6 +238,30 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 vim.api.nvim_create_autocmd("FileType", {
+  pattern = "eruby",
+  callback = function(event)
+    -- Insert bare `binding.pry` when the new line lands inside a multi-line
+    -- <% %> block; otherwise wrap it in its own ERB tag.
+    vim.keymap.set("n", "<leader>p", function()
+      local row = vim.api.nvim_win_get_cursor(0)[1] - 1
+      local ok, node = pcall(vim.treesitter.get_node, { ignore_injections = true })
+      while ok and node do
+        local type = node:type()
+        if type == "directive" or type == "output_directive" then
+          local _, _, end_row = node:range()
+          if end_row > row then
+            return "obinding.pry<ESC>^"
+          end
+          break
+        end
+        node = node:parent()
+      end
+      return "o<% binding.pry %><ESC>^"
+    end, { buffer = event.buf, silent = true, expr = true })
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
   pattern = "slim",
   callback = function(event)
     set_debug_keymap(event, "o- binding.pry<ESC>^")
