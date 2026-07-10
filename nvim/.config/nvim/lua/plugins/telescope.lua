@@ -3,7 +3,7 @@ return {
   { "nvim-telescope/telescope-ui-select.nvim" },
   {
     "nvim-telescope/telescope.nvim",
-    tag = '0.1.8',
+    branch = "master", -- 427b576 as of 2026-07-10 (previously tag 0.1.8); pin with commit = "..." if issues arise
     config = function()
       local actions = require("telescope.actions")
       local tele = require("telescope")
@@ -123,7 +123,11 @@ return {
             previewer = true,
           },
           lsp_references = {
-            theme = "dropdown"
+            theme = "dropdown",
+            layout_config = {
+              width = 0.8,
+              height = 0.8,
+            },
           },
           -- Default configuration for builtin pickers goes here:
           -- picker_name = {
