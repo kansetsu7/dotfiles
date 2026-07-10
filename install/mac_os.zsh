@@ -5,6 +5,7 @@ echo 'Install developer tools in general'
 brew install stow asdf fzf nvim git tig tmux httpie htop bat zoxide eza ripgrep wget gnu-sed gnu-time fd duf docker coreutils diff-so-fancy git-delta pandoc
 brew install jesseduffield/lazydocker/lazydocker
 brew install jq yq
+brew install socat pngpaste  # clipboard image bridge into docker dev
 
 echo 'Setup Development Perferences (Nvim, Zim...)...'
 

@@ -18,6 +18,7 @@ done
 cd /root/.dotfiles  # should match with dotfiles volume in compose.yml
 
 stow --verbose \
+  bin \
   git \
   nvim \
   readline \

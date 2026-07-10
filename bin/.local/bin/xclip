@@ -1,0 +1,27 @@
+#!/bin/sh
+# Fake xclip: bridges clipboard reads to the mac via socat listeners
+# started by `sync_docker_image_clipboard` (zsh/.zshrc_configs/mac/.zshrc_helper).
+#
+# Claude Code's Ctrl+V image paste probes the clipboard with:
+#   xclip -selection clipboard -t TARGETS -o    -> list available types
+#   xclip -selection clipboard -t image/png -o  -> raw image bytes
+#
+# Text copy/paste doesn't go through here (OSC 52 handles it); ports
+# 8377/8378 are the legacy text bridge, kept in case it's revived.
+HOST="${DOCKER_HOST_IP:-host.docker.internal}"
+
+# -d (never read stdin) instead of -N: an immediate FIN half-close gets
+# escalated to a full teardown by colima's user-mode proxy, discarding the
+# mac's reply. nc exits when the mac side closes after sending.
+case " $* " in
+  *" -t TARGETS "*) exec nc -d "$HOST" 8379 ;;
+  *" -t image/"*)   exec nc -d "$HOST" 8380 ;;
+esac
+
+if echo "$@" | grep -q "\\-o"; then
+  exec nc -d "$HOST" 8378
+else
+  # legacy text copy: stdin must be forwarded and EOF signalled — note the
+  # colima proxy kills the reply on FIN, so this path needs rework if revived
+  exec nc -N "$HOST" 8377
+fi

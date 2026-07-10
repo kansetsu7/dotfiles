@@ -8,6 +8,24 @@ dump_db() {
   fi
 }
 
+# bridge mac clipboard images into docker dev (Claude Code Ctrl+V paste) {{{
+# Text sync is handled by OSC 52 (nvim/tmux/lazygit), but images can't ride
+# OSC 52 — the container's fake `xclip` (bin/.local/bin/xclip) fetches them
+# from these listeners instead. Requires: brew install socat pngpaste
+socat_started() {
+  lsof -i :"$1" 2>/dev/null | grep -q socat
+}
+
+sync_docker_image_clipboard() {
+  # 8379: report clipboard image type (mimics `xclip -t TARGETS -o`)
+  if ! socat_started 8379; then
+    socat TCP-LISTEN:8379,reuseaddr,fork SYSTEM:'pngpaste - >/dev/null 2>&1 && echo image/png' &!
+  fi
+  # 8380: stream clipboard image as PNG (mimics `xclip -t image/png -o`)
+  if ! socat_started 8380; then
+    socat TCP-LISTEN:8380,reuseaddr,fork EXEC:'pngpaste -' &!
+  fi
+}
 # }}}
 
 # 重啟 puma/unicorn（非 daemon 模式，用於 pry debug）
