@@ -450,8 +450,5 @@ export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 export PATH="$HOME/.local/bin:$PATH"
 
-# Czkawka GUI requires this for icon themes
-export XDG_DATA_DIRS="/opt/homebrew/share:$XDG_DATA_DIRS"
-
 # Disable core dumps (prevents 'core' files from crashing programs like delta)
 ulimit -c 0
