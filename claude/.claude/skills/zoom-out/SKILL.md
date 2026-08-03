@@ -21,8 +21,12 @@ Get the change under discussion (a plan, an approach, a diff, an ADR/MR).
 Then detect the mode — it decides which lenses run:
 
 - **Does this change SELECT something** — a library, framework, tool, pattern,
-  or one design approach over alternatives? → run the **universal spine (§1)**
-  *and* the **selection lenses (§2)**.
+  control/mitigation, or one design approach over alternatives? → run the
+  **universal spine (§1)** *and* the **selection lenses (§2)**. Note that
+  implementing *one* mechanism is a selection even when no comparison was ever
+  written down — building a CSRF token pipeline picks it over `SameSite`
+  cookies, Origin checks, and custom-header+CORS. An unstated selection is the
+  one most worth running §2 on.
 - **Is it business/domain logic** with no option-selection (a calculation, a
   rule, a workflow change)? → run the **universal spine (§1)** only, and skip
   §2. Do not manufacture a selection that isn't there.
@@ -67,12 +71,34 @@ change against the *restated* goal, not the local task.
 
 ## 2. Selection lenses — only when the change picks a tool/approach (§0)
 
-6. **Criterion vs proxy** — What am I actually optimizing, and is my
+6. **Enumerate the option space before ranking it** — the lenses below
+   pressure-test the *axis*; they assume the options are already on the table.
+   Usually they aren't. Two sources the diff will never show you:
+   - **What the platform already gives you free.** A cookie attribute, a
+     framework default, a DB constraint, a config flag. If a one-line control
+     covers most of the risk, a hand-built pipeline is a symptom-level fix with
+     a maintenance tail (see §1.1). Name it even if you still build the bigger
+     thing.
+   - **Prior art.** What did well-known frameworks converge on for this exact
+     problem, and *why that one*? Their choice usually encodes a failure mode
+     someone already hit — Rails masks the CSRF token per-request, Django pairs
+     a double-submit cookie with an Origin check. Absence is informative too:
+     if nobody does what you're doing, find out what they know.
+7. **Complementary vs alternative** — before ranking, ask whether these are
+   competing options at all. Defense-in-depth controls are **layers with
+   different failure modes**, not candidates: `SameSite` misses old browsers,
+   sibling-subdomain takeover, and same-site-but-untrusted origins; a token
+   misses nothing there but costs a pipeline; an Origin check misses stripped
+   headers. If the options are layers, "which one" is the wrong question and a
+   ranking is the wrong output — produce a **coverage matrix** (option × the
+   gap it leaves) and pick the set, naming what the set still doesn't cover.
+   Only run 8–9 on options that genuinely compete.
+8. **Criterion vs proxy** — What am I actually optimizing, and is my
    comparison axis the real driver or just the *countable* one? Feature count
    is countable; extensibility / cost-of-change is the driver. Test: rank the
    options by the stated axis, then ask "would I choose the winner to *live
    with for two years*?" If not, the axis is a proxy — find the real one.
-7. **Snapshot vs derivative** — Am I comparing static properties when a
+9. **Snapshot vs derivative** — Am I comparing static properties when a
    dynamic one dominates? The killer question: **"what happens when we need
    something this option doesn't do?"** Cheap-to-extend beats feature-rich-
    but-rigid, because extensibility governs every future state while a feature
@@ -105,8 +131,10 @@ Concise, and grounded in the actual change:
 3. **Coverage gaps** — the concrete places the solution must also reach
    (other `site_code`s, call sites, downstream) that the diff misses.
 4. **The owner's objection** to pre-empt (from §1.4), in one line.
-5. **Selection verdict** (if §2 ran) — the criterion-first comparison and
-   whether it reorders the ranking.
+5. **Selection verdict** (if §2 ran) — the options that were never on the
+   table (platform-provided, prior art); whether they compete or layer; then
+   either the coverage matrix and chosen set, or the criterion-first comparison
+   and whether it reorders the ranking.
 6. **ADR suggestion** (from §3).
 
 ## Mindset (state briefly, don't lecture)
@@ -114,6 +142,9 @@ Concise, and grounded in the actual change:
 - The frame is inherited unless you interrogate it. Senior/staff/CTO judgment
   most often adds value at the frame, not the analysis — which is why a review
   can accept every line of your reasoning and still redirect the whole thing.
+- The **option set** is a frame too, and the easiest one to inherit without
+  noticing: you can run a flawless comparison over three options and never see
+  the fourth that the platform hands you for free. Enumerate before you rank.
 - "More features" is a snapshot; "easy to extend" is a derivative that governs
   all future snapshots. Prefer the derivative. Same for premises: the real
   production load beats the convenient stand-in, always.

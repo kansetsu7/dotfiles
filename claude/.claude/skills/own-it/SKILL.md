@@ -1,6 +1,6 @@
 ---
 name: own-it
-description: Gauge how well the user actually understands a change they're delivering or reviewing, and enforce the depth its blast radius demands. Runs on a real target (current diff, a commit, or an MR under review). Use before sending an MR, before approving someone else's, or whenever the user says they "understand it but couldn't describe the mechanism", feels unsure how deep to go, or asks to own-it / depth-check a change.
+description: Gauge how well the user actually understands a change they're delivering or reviewing, and enforce the depth its blast radius demands. Runs on a real target (current diff, a commit, or an MR under review). For security-class changes it also tests the threat model the change exists to counter — the attack, its preconditions, and which link the change cuts. Use before sending an MR, before approving someone else's, or whenever the user says they "understand it but couldn't describe the mechanism", feels unsure how deep to go, or asks to own-it / depth-check a change.
 ---
 
 # Own It
@@ -25,7 +25,38 @@ callers — do not gauge understanding from the commit message alone; a great
 message can be written (or AI-generated) without the understanding
 transferring.
 
-## 1. Split every notable decision into two columns
+## 1. Threat model first (security-class changes only)
+
+Skip this section when the change isn't defending against an adversary. Run it
+for authn/authz, crypto, session handling, injection, CSRF/CORS, secrets, rate
+limiting.
+
+The attack lives **outside the diff**, so the Called/Chose pass below can never
+surface it — a change can be correct line by line and still defend nothing.
+Make the user regenerate the attack before you look at the code:
+
+- **Walk it end-to-end** — attacker's setup → victim's action → what reaches
+  your endpoint → what the attacker gains. Concrete actors and requests, not a
+  category name. "CSRF" is a label; "attacker's page auto-submits a form to
+  `/transfer` while the victim's session is live" is the mechanism.
+- **Name the necessary preconditions** — every link that must hold for the
+  attack to work *at all*. (Classic CSRF needs the browser to auto-attach
+  ambient credentials, **and** needs the endpoint to accept a request the
+  attacker's origin can cause the browser to issue.)
+- **Point at the link this change cuts** — and why it can't be restored. A
+  defense the user can't map to a specific precondition is cargo cult, however
+  clean the code is.
+- **Check the precondition actually holds here** — verify against the codebase,
+  don't assume. If an endpoint authenticates by `Authorization` header rather
+  than a cookie, classic CSRF can't reach it; a token there is dead weight, and
+  worse, it can mask which endpoints *are* cookie-authenticated and unprotected.
+
+Whatever the user can't regenerate here joins the study list, same as a code
+gap. Route the *alternative controls* question — is there a cheaper or
+complementary defense, what do other frameworks do — to `zoom-out` §2. That's
+option-space, not depth.
+
+## 2. Split every notable decision into two columns
 
 - **Called** — library/framework primitives the change invokes
   (`hmac.New`, `pbkdf2.Key`, an ORM scope, a framework callback). The user
@@ -41,7 +72,7 @@ State the split back to the user as a short list. The insight to surface:
 they are composition bugs, not primitive bugs.** (Decrypt-before-verify is a
 Chose bug; AES itself is fine.)
 
-## 2. Assign a tier to each area (blast radius, not size)
+## 3. Assign a tier to each area (blast radius, not size)
 
 1. **Re-derive & defend** — auth, crypto, money, data deletion/migration,
    anything the user authored in these domains, **and any shared primitive or
@@ -56,7 +87,7 @@ Call out when a change sits in tier 1 for *two* reasons at once (e.g. authored
 crypto **and** a shared primitive the rest of a migration will build on) —
 that removes any doubt about whether it's worth the time.
 
-## 3. Regenerate, don't recognize — the self-test
+## 4. Regenerate, don't recognize — the self-test
 
 Recognition (reading the diff and nodding) passes on code the user could never
 have written. The real test is reproduction. Generate **4–8 questions grounded
@@ -85,7 +116,7 @@ invariant, don't assert it. If a safe-by-accident invariant isn't stated in
 the code, flag it: it should be a comment or a switch to the unconditionally
 safe call.
 
-## 4. Lead-hat pass (do this even in deliver mode)
+## 5. Lead-hat pass (do this even in deliver mode)
 
 The depth rules above are universal — every developer owes them on their own
 code. What the lead role *adds* is accountability across people and time:
@@ -94,14 +125,17 @@ code. What the lead role *adds* is accountability across people and time:
   others will reuse? If so it's tier 1 regardless of how it reads, because the
   radius includes code not yet written. Is this the pattern you want copied?
 - **Disclosure** — is there an honest note of what was and wasn't verified?
-  (See §5.) Modeling this yourself is a lead act: it makes it *cheap* for
+  (See §6.) Modeling this yourself is a lead act: it makes it *cheap* for
   juniors to admit gaps instead of shipping them silently.
 - **Tier calibration** — flag the fuzzy boundary calls (is this feature flag
   on a payment path tier 1?) so the *decision* is explicit, not accidental.
 
-## 5. Output
+## 6. Output
 
 Produce, concisely:
+0. **Threat model** (if §1 ran) — the attack in the user's own words, its
+   preconditions, the link this change cuts, and any endpoint where the
+   precondition holds but the defense doesn't reach.
 1. **Called / Chose** split.
 2. **Tier per area**, with the tier-1 items named.
 3. **Self-test results** — what the user answered solidly vs the study list
@@ -124,6 +158,9 @@ Produce, concisely:
 - "I understand it but couldn't describe the mechanism" = recognition without
   regeneration = a real gap, not impostor syndrome. It's also two hours of
   study, not a career — say so.
+- On security code, "the tests pass and the library is correct" proves nothing
+  about whether you stopped the attack. Correct code aimed at a precondition
+  that doesn't hold is still zero defense.
 - Silently shipping tier-1 code you can't explain is the only actual failure.
   Admitting the gap out loud is the fix, and coming from the lead it sets the
   norm for everyone who reports to you.
