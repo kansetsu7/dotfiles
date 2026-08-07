@@ -160,7 +160,10 @@ switch_to_tmp_branch() {
       ;;
   esac
 
-  gco "andre/$branch_name"
+  # Use `git checkout`, not the `gco` alias: this file is sourced from
+  # .zshenv, where Zim's git aliases don't exist yet, so a non-interactive
+  # `zsh -c switch_to_tmp_branch` (e.g. from lazygit) would fail on `gco`.
+  git checkout "andre/$branch_name"
   git rebase master
 }
 

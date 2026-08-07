@@ -2,10 +2,16 @@ gui:
   sidePanelWidth: 0.25
   mouseEvents: false
 os:
-  # Copy via OSC 52 instead of xclip/xsel (not installed in the container).
-  # tmux (set-clipboard on) intercepts this and forwards it to the host terminal.
-  copyToClipboardCmd: >
-    printf "\033]52;c;%s\a" "$(printf '%s' {{text}} | base64 -w 0)" > /dev/tty
+  # In the container there is no xclip/xsel, so copy via OSC 52 — tmux
+  # (set-clipboard on) intercepts it and forwards it to the host terminal.
+  # On macOS lazygit can reach the real clipboard, so skip the OSC 52 detour
+  # and its dependencies (tmux passthrough, terminal clipboard permission).
+  copyToClipboardCmd: |
+    if [ -e /.dockerenv ]; then
+      printf "\033]52;c;%s\a" "$(printf '%s' {{text}} | base64 -w 0)" > /dev/tty
+    else
+      printf '%s' {{text}} | pbcopy
+    fi
 git:
   paging:
     colorArg: always
@@ -27,7 +33,7 @@ customCommands:
     description: 'Return to original branch (strip -fork suffix)'
   - key: 'S'
     context: 'localBranches'
-    command: 'zsh -ic switch_to_tmp_branch'
+    command: 'zsh -c switch_to_tmp_branch'
     description: 'Switch to personal tmp branch and rebase'
   - key: 'D'
     context: 'localBranches'
@@ -35,5 +41,5 @@ customCommands:
       - type: 'confirm'
         title: 'Delete branch'
         body: 'Switch to tmp branch and delete {{.SelectedLocalBranch.Name}} ?'
-    command: 'zsh -ic switch_to_tmp_branch && git branch -D {{.SelectedLocalBranch.Name}}'
+    command: 'zsh -c switch_to_tmp_branch && git branch -D {{.SelectedLocalBranch.Name}}'
     description: 'Switch to tmp branch and delete selected branch'
