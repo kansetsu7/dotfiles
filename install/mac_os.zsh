@@ -6,6 +6,7 @@ brew install stow asdf fzf nvim git tig tmux httpie htop bat zoxide eza ripgrep 
 brew install jesseduffield/lazydocker/lazydocker
 brew install jq yq
 brew install socat pngpaste  # clipboard image bridge into docker dev
+brew install go  # builds the merge-insights/doc-suggestions skill binary
 
 echo 'Setup Development Perferences (Nvim, Zim...)...'
 
@@ -29,6 +30,7 @@ stow --verbose asdf \
   credentials \
   docker \
   lazydocker \
+  claude \
 
 # lazydocker: pick the OS-specific config (its `up`/`upService` templates use
 # absolute paths that differ per OS — see lazydocker/.config/lazydocker/configs/).
@@ -53,6 +55,13 @@ fi
 
 # https://github.com/junegunn/fzf#using-homebrew
 $(brew --prefix)/opt/fzf/install --key-bindings --completion --no-update-rc
+
+# GitLab MCP, registered at *user* scope. The stowed ~/.mcp.json is project
+# scope: Claude Code finds it by walking up from the project dir, so it covers
+# projects under $HOME but not ones outside it. User scope covers every project,
+# but lives in ~/.claude.json, which isn't stow-managed — hence this step.
+claude mcp get gitlab > /dev/null 2>&1 || \
+  claude mcp add-json -s user gitlab "{\"command\":\"$HOME/.dotfiles/claude/.claude/scripts/gitlab-mcp.sh\"}"
 
 # tmux-color256
 # https://gpanders.com/blog/the-definitive-guide-to-using-tmux-256color-on-macos/

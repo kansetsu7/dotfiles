@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "gitlab": {
-      "command": "/root/.dotfiles/claude/.claude/scripts/gitlab-mcp.sh"
+      "command": "${HOME}/.dotfiles/claude/.claude/scripts/gitlab-mcp.sh"
     }
   }
 }

@@ -49,5 +49,12 @@ ZDOTDIR=/root source /root/.zshrc
 # install
 npm install -g --prefix=/root/npm-global @anthropic-ai/claude-code@latest @google/gemini-cli
 
+# GitLab MCP, registered at *user* scope. The stowed ~/.mcp.json is project
+# scope: Claude Code finds it by walking up from the project dir, so /root/.mcp.json
+# never applies to repos under /project. User scope covers every project, but
+# lives in ~/.claude.json, which isn't stow-managed — hence this step.
+claude mcp get gitlab > /dev/null 2>&1 || \
+  claude mcp add-json -s user gitlab "{\"command\":\"$HOME/.dotfiles/claude/.claude/scripts/gitlab-mcp.sh\"}"
+
 echo "Then You are all set!"
 
