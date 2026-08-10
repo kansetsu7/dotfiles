@@ -1,5 +1,6 @@
 ---
 name: doc-suggestions
+disable-model-invocation: true
 description: For each open MR (or merged MRs in a time range), suggest what documentation the MR should add — categorized by the Diátaxis framework (Tutorial / How-to / Reference / Explanation) — grounded in the project's docs/README.md. Explicitly flags MRs that warrant an ADR but lack one.
 ---
 

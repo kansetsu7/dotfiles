@@ -1,5 +1,6 @@
 ---
 name: renew-vpn-otp
+disable-model-invocation: true
 description: Renew the VPN OTP password by writing it into `~/.config/credentials/vpn_otp.env`, encrypting with GPG, verifying, and committing the updated `.gpg` file.
 ---
 

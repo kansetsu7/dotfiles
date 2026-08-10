@@ -4,6 +4,7 @@
   "defaultModel": "opus",
   "defaultThinkingLevel": "high",
   "theme": "dark",
+  "enableSkillCommands": true,
   "tuiMode": "fullscreen",
   "packages": [
     "npm:@gotgenes/pi-anthropic-auth"

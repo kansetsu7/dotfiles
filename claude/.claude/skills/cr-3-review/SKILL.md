@@ -1,5 +1,6 @@
 ---
 name: cr-3-review
+disable-model-invocation: true
 description: Perform a comprehensive code review workflow on the current branch changes. Gathers business context, analyzes diffs, and generates structured review output with prioritized issues.
 context: fork
 agent: general-purpose

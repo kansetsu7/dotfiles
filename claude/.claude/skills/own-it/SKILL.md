@@ -1,5 +1,6 @@
 ---
 name: own-it
+disable-model-invocation: true
 description: Gauge how well the user actually understands a change they're delivering or reviewing, and enforce the depth its blast radius demands. Runs on a real target (current diff, a commit, or an MR under review). For security-class changes it also tests the threat model the change exists to counter — the attack, its preconditions, and which link the change cuts. Use before sending an MR, before approving someone else's, or whenever the user says they "understand it but couldn't describe the mechanism", feels unsure how deep to go, or asks to own-it / depth-check a change.
 ---
 

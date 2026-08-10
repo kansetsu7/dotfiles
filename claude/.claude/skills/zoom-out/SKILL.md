@@ -1,5 +1,6 @@
 ---
 name: zoom-out
+disable-model-invocation: true
 description: Interrogate the FRAME of a change before or around building it — the real problem, the real premise, the whole blast radius, and (only when the change selects a tool/library/approach) the decision criterion. Reviews a related ADR if one exists and offers a criterion-first rewrite. Sibling to own-it — own-it drills DOWN into a mechanism's depth; zoom-out steps UP to the frame. Use at design time, when choosing an approach, when writing or reviewing an ADR, or whenever the user senses they're "too in the weeds", "only focused on the local part", wants a higher point of view, or asks to zoom-out / sanity-check the whole solution. Runs on business-only changes too, not just tool selection.
 ---
 

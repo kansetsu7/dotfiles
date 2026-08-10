@@ -1,5 +1,6 @@
 ---
 name: cr-2-feedback
+disable-model-invocation: true
 description: Convert free-form reviewer notes to structured feedback format with interactive clarification.
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: code-review-criteria
+disable-model-invocation: true
 description: Code review criteria and checklist for comprehensive reviews. Referenced by the code-review skill.
 ---
 

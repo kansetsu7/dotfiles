@@ -1,5 +1,6 @@
 ---
 name: merge-insights
+disable-model-invocation: true
 description: Analyze branches merged into master with summaries, hotspot analysis, rapid-fix detection, review metrics, pipeline health, and time-aware trend insights. Adapts output depth based on short vs long time range.
 ---
 
