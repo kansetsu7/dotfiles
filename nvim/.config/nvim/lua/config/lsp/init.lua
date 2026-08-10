@@ -77,8 +77,10 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 -- Mason setup (still needed for installing LSP servers)
 require("mason").setup()
+-- gopls is deliberately absent: it comes from the Go toolchain (`go install
+-- golang.org/x/tools/gopls@latest`), matching CI. See lsp/gopls.lua.
 require("mason-lspconfig").setup {
-  ensure_installed = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint", "gopls" }
+  ensure_installed = { "jsonls", "lua_ls", "clojure_lsp", "tailwindcss", "eslint" }
 }
 
 -- Add cmp_nvim_lsp capabilities to all servers
@@ -93,6 +95,37 @@ for _, server in ipairs(servers) do
     capabilities = capabilities,
   })
 end
+
+-- Pin gopls to the Go toolchain's binary. Mason prepends its own bin/ to PATH,
+-- so a bare "gopls" resolves to Mason's copy, whose registry version lags well
+-- behind the `go install golang.org/x/tools/gopls@latest` that CI runs. A stale
+-- gopls both misses newer modernize analyzers and mis-typechecks code written
+-- for a newer Go toolchain, which makes nvim go silent on the very diagnostics
+-- that fail the pipeline.
+local function go_bin(name)
+  local dirs = {}
+  local gobin = vim.env.GOBIN
+  if gobin and gobin ~= "" then
+    table.insert(dirs, gobin)
+  end
+  local gopath = vim.env.GOPATH
+  if not gopath or gopath == "" then
+    gopath = vim.fs.joinpath(vim.env.HOME or "~", "go")
+  end
+  for entry in vim.gsplit(gopath, ":", { trimempty = true }) do
+    table.insert(dirs, vim.fs.joinpath(entry, "bin"))
+  end
+
+  for _, dir in ipairs(dirs) do
+    local path = vim.fs.joinpath(dir, name)
+    if vim.uv.fs_stat(path) then
+      return path
+    end
+  end
+  return name -- fall back to PATH
+end
+
+vim.lsp.config("gopls", { cmd = { go_bin("gopls") } })
 
 -- Enable all servers
 vim.lsp.enable(servers)

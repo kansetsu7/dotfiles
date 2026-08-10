@@ -56,5 +56,11 @@ npm install -g --prefix=/root/npm-global @anthropic-ai/claude-code@latest @googl
 claude mcp get gitlab > /dev/null 2>&1 || \
   claude mcp add-json -s user gitlab "{\"command\":\"$HOME/.dotfiles/claude/.claude/scripts/gitlab-mcp.sh\"}"
 
+# Go tooling. nvim runs this gopls rather than Mason's (see
+# nvim/.config/nvim/lua/config/lsp/init.lua) so the editor reports the same
+# diagnostics as CI, which installs `gopls@latest` too. Re-run to refresh it:
+# a gopls older than the project's Go toolchain mis-typechecks and goes quiet.
+go install golang.org/x/tools/gopls@latest
+
 echo "Then You are all set!"
 

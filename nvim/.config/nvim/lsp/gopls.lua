@@ -1,3 +1,7 @@
+-- `cmd` is NOT set here: nvim-lspconfig also ships an `lsp/gopls.lua`, and
+-- nvim merges the rtp copies with the plugin's applied last, so anything it
+-- also defines (cmd, root_dir, filetypes) wins over this file. The gopls
+-- binary is pinned in lua/config/lsp/init.lua instead.
 return {
   settings = {
     gopls = {
