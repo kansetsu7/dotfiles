@@ -28,6 +28,7 @@ stow --verbose asdf \
   tmux \
   zsh \
   credentials \
+  lazygit \
   docker \
   lazydocker \
   claude \
