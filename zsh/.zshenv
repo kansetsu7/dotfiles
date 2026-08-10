@@ -7,6 +7,9 @@
 : ${ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim}
 # }}} End configuration added by Zim install
 
+# pi coding agent settings
+export PI_CACHE_RETENTION=long
+
 source ~/.zshrc_helper
 
 alias krpu='rpu kill'
