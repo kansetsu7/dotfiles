@@ -2,20 +2,39 @@
 
 ## Environment
 
-This is a dotfiles repo used inside a dockerized dev environment.
+These dotfiles are used in **two environments**. Apply the environment-specific
+notes only when they match the machine you're actually on.
+
+- **Symlink manager**: GNU Stow (both environments)
+
+### macOS (host)
+
+- Local development machine — no container persistence concerns.
+- npm global installs go to the default Homebrew/npm prefix; **no
+  `--prefix` override needed**.
+
+### Dockerized dev environment
 
 - **Dockerized dev repo**: `/project/vm/docker-dev/`
 - **Dockerfile**: `/project/vm/docker-dev/src/build/edit/e3/Dockerfile`
 - **Compose file**: `/project/vm/docker-dev/edit/e3/compose.yml`
 - **Base image**: Alpine Linux 3.23
-- **Symlink manager**: GNU Stow
 
-### Important Notes
+#### Important Notes (container only)
 
-- Packages installed at runtime will **not persist** after container restart
-- To persist packages, add them to the Dockerfile
+- `/root` is a persistent named volume (`e3-home:/root` in `compose.yml`), so
+  **anything written under `/root` survives container restarts** (e.g.
+  `/root/npm-global`, `/root/.pi/agent/npm`). pi plugins installed via
+  `pi install npm:<pkg>` persist automatically for this reason.
+- Installs landing **outside** `/root` do **not** persist — e.g. `apk add`
+  (`/usr/...`), or npm global installs that default to `/usr/local`. Add these
+  to the Dockerfile to persist them.
+- **npm global installs**: use `--prefix=/root/npm-global` so they land on the
+  persistent `/root` volume instead of `/usr/local`
+  (e.g. `npm install -g --prefix=/root/npm-global <pkg>`).
 - Go tools are installed to `/cache/go/bin` (may be a mounted volume)
-- When suggesting package installations, remind about Dockerfile updates
+- When suggesting package installs that land outside `/root`, remind about
+  Dockerfile updates
 
 ## Structure
 

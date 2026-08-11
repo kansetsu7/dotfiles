@@ -28,6 +28,10 @@ skill for a structured problem-solving workflow instead of retrying blindly.
 - **No unsolicited comments** — don't add explanatory code comments unless
   asked or the code is genuinely non-obvious.
 - **Prefer `fd`, `rg`, `ast-grep`, `jq`, `yq`** for shell-only operations.
+- **In the dockerized dev env only**, use `--prefix=/root/npm-global` for npm
+  global installs so they persist on the `/root` volume across container
+  restarts (e.g. `npm install -g --prefix=/root/npm-global <pkg>`). On macOS
+  the default npm prefix is fine — no override needed.
 
 ## Commit style
 
