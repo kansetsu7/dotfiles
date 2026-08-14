@@ -28,10 +28,23 @@ const check = (name, cond) => {
 };
 
 /** Fresh extension instance + mocks. `answers` are consumed per ui.input(). */
-async function setup({ answers = [], entries = [], name, hasUI = true } = {}) {
+async function setup({
+	answers = [],
+	entries = [],
+	name,
+	hasUI = true,
+	choices = [],
+} = {}) {
 	const mod = await jiti.import(ENTRY, { default: true });
 	const h = {};
-	const state = { name, prompts: [], notices: [], status: undefined };
+	const state = {
+		name,
+		prompts: [],
+		notices: [],
+		status: undefined,
+		selects: [],
+		editorText: "",
+	};
 	const pi = {
 		on: (event, fn) => {
 			h[event] = fn;
@@ -49,6 +62,13 @@ async function setup({ answers = [], entries = [], name, hasUI = true } = {}) {
 			input: async (title, placeholder) => {
 				state.prompts.push({ title, placeholder });
 				return answers.shift();
+			},
+			select: async (title, options) => {
+				state.selects.push({ title, options });
+				return choices.shift();
+			},
+			setEditorText: (text) => {
+				state.editorText = text;
 			},
 			notify: (msg, type) => state.notices.push({ msg, type }),
 			setStatus: (_key, text) => {
@@ -131,6 +151,33 @@ async function setup({ answers = [], entries = [], name, hasUI = true } = {}) {
 	check("gate: status cleared", s2.status === undefined);
 }
 
+// 4b. escaping, then switching session, drops the block (it belonged to the
+//     session we left) — `/resume` must not inherit it.
+{
+	const { h, ctx, state } = await setup({ answers: [undefined] });
+	await h.session_start({ type: "session_start", reason: "new" }, ctx);
+	check("switch: blocked before resuming", /unnamed/.test(state.status ?? ""));
+
+	state.name = "Yesterday's work";
+	await h.session_start({ type: "session_start", reason: "resume" }, ctx);
+	check("switch: status cleared on resume", state.status === undefined);
+
+	const res = await h.input(
+		{ type: "input", text: "carry on", source: "interactive" },
+		ctx,
+	);
+	check("switch: resumed session not blocked", res === undefined);
+
+	// but a reload re-enters the same unnamed session, so the block stays
+	const { h: h2, ctx: c2, state: s2 } = await setup({ answers: [undefined] });
+	await h2.session_start({ type: "session_start", reason: "new" }, c2);
+	await h2.session_start(
+		{ type: "session_start", reason: "reload" },
+		c2,
+	);
+	check("switch: reload keeps the block", /unnamed/.test(s2.status ?? ""));
+}
+
 // 5. /name via session_info_changed clears the block
 {
 	const { h, ctx, state } = await setup({ answers: [undefined] });
@@ -159,20 +206,89 @@ async function setup({ answers = [], entries = [], name, hasUI = true } = {}) {
 	check("already named: no prompt", s3.prompts.length === 0 && s3.name === "Kept");
 }
 
-// 7. startup opt-in: only for an empty session
+// 7. startup (default reason): only for an empty session
 {
-	process.env.PI_FORCE_SESSION_NAME_REASONS = "startup,new,fork";
 	const { h, ctx, state } = await setup({ answers: ["Fresh start"], entries: [] });
 	await h.session_start({ type: "session_start", reason: "startup" }, ctx);
-	check("startup opt-in: prompts on empty session", state.name === "Fresh start");
+	check("startup: prompts on empty session", state.name === "Fresh start");
+
+	// pi writes model_change / thinking_level_change before extensions bind,
+	// so a fresh session is never entry-free — it is still "empty".
+	const { h: hb, ctx: cb, state: sb } = await setup({
+		answers: ["Fresh again"],
+		entries: [{ type: "model_change" }, { type: "thinking_level_change" }],
+	});
+	await hb.session_start({ type: "session_start", reason: "startup" }, cb);
+	check("startup: bookkeeping entries still count as empty", sb.name === "Fresh again");
 
 	const { h: h2, ctx: c2, state: s2 } = await setup({
 		answers: ["nope"],
-		entries: [{ type: "message" }],
+		entries: [{ type: "model_change" }, { type: "message" }],
 	});
 	await h2.session_start({ type: "session_start", reason: "startup" }, c2);
-	check("startup opt-in: skips continued session", s2.prompts.length === 0);
+	check("startup: skips continued session", s2.prompts.length === 0);
+
+	process.env.PI_FORCE_SESSION_NAME_REASONS = "new,fork";
+	const { h: h3, ctx: c3, state: s3 } = await setup({ answers: ["x"], entries: [] });
+	await h3.session_start({ type: "session_start", reason: "startup" }, c3);
+	check("startup: opt-out via REASONS", s3.prompts.length === 0);
 	delete process.env.PI_FORCE_SESSION_NAME_REASONS;
+}
+
+// 7b. startup picker: new vs resume
+{
+	const { h, ctx, state } = await setup({
+		choices: ["New session"],
+		answers: ["Named after picking"],
+	});
+	await h.session_start({ type: "session_start", reason: "startup" }, ctx);
+	check("picker: offers both options", state.selects[0]?.options.length === 2);
+	check("picker: new leads to the name prompt", state.name === "Named after picking");
+
+	// resume hands off to the built-in /resume; extensions cannot switch
+	// sessions from an event handler.
+	const { h: h2, ctx: c2, state: s2 } = await setup({
+		choices: ["Resume a previous session"],
+		answers: [undefined], // escapes the later gate prompt
+	});
+	await h2.session_start({ type: "session_start", reason: "startup" }, c2);
+	check("picker: resume prefills /resume", s2.editorText === "/resume");
+	check("picker: resume skips the name prompt", s2.prompts.length === 0);
+	check("picker: resume passes the slash command", 
+		(await h2.input({ type: "input", text: "/resume", source: "interactive" }, c2)) ===
+			undefined);
+
+	// abandoning the resume and typing instead still demands a name
+	const blocked = await h2.input(
+		{ type: "input", text: "actually, do this", source: "interactive" },
+		c2,
+	);
+	check(
+		"picker: abandoned resume re-prompts and blocks",
+		s2.prompts.length === 1 && blocked?.action === "handled",
+	);
+
+	// escaping the picker is not an opt-out
+	const { h: h3, ctx: c3, state: s3 } = await setup({
+		choices: [undefined],
+		answers: ["Escaped picker"],
+	});
+	await h3.session_start({ type: "session_start", reason: "startup" }, c3);
+	check("picker: escape falls through to naming", s3.name === "Escaped picker");
+
+	// /new already states the intent, so no picker there
+	const { h: h4, ctx: c4, state: s4 } = await setup({ answers: ["Straight to name"] });
+	await h4.session_start({ type: "session_start", reason: "new" }, c4);
+	check("picker: /new skips the picker", s4.selects.length === 0);
+
+	process.env.PI_FORCE_SESSION_NAME_PICKER = "off";
+	const { h: h5, ctx: c5, state: s5 } = await setup({ answers: ["No picker"] });
+	await h5.session_start({ type: "session_start", reason: "startup" }, c5);
+	check(
+		"picker: opt-out asks for a name directly",
+		s5.selects.length === 0 && s5.name === "No picker",
+	);
+	delete process.env.PI_FORCE_SESSION_NAME_PICKER;
 }
 
 // 8. kill switch

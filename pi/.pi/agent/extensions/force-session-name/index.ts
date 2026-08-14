@@ -10,6 +10,10 @@
  *  - `session_start` (reason `new` / `fork`, optionally `startup`) opens a
  *    blocking input dialog. pi starts the TUI before firing `session_start`
  *    specifically so extensions can use dialogs here.
+ *  - A bare `pi` launch first asks new-vs-resume, because at that point you
+ *    have not chosen either yet. Resuming hands off to the built-in `/resume`:
+ *    event handlers only get an `ExtensionContext`, and `switchSession()` lives
+ *    on `ExtensionCommandContext`, so the editor is prefilled instead.
  *  - Escaping the dialog does not silently win: the session is marked pending,
  *    a footer warning is shown, and the next interactive message re-prompts and
  *    is blocked until a name exists. Slash commands stay usable so `/name`,
@@ -19,10 +23,11 @@
  *
  * Config (env):
  *   PI_FORCE_SESSION_NAME=off        disable entirely
- *   PI_FORCE_SESSION_NAME_REASONS    default "new,fork" (also: startup, resume)
+ *   PI_FORCE_SESSION_NAME_REASONS    default "startup,new,fork" (also: reload, resume)
  *   PI_FORCE_SESSION_NAME_MIN_LEN    default 3
  *   PI_FORCE_SESSION_NAME_MAX_PROMPTS default 3 re-asks per trigger
  *   PI_FORCE_SESSION_NAME_BLOCK=off  warn only, never block input
+ *   PI_FORCE_SESSION_NAME_PICKER=off skip new/resume choice, ask for a name
  */
 
 import type {
@@ -34,8 +39,10 @@ import type {
 type Reason = SessionStartEvent["reason"];
 
 const STATUS_KEY = "force-session-name";
-const DEFAULT_REASONS: Reason[] = ["new", "fork"];
+const DEFAULT_REASONS: Reason[] = ["startup", "new", "fork"];
 const ALL_REASONS: Reason[] = ["startup", "reload", "new", "resume", "fork"];
+// Everything except `reload`, which re-enters the *same* session in place.
+const SWITCH_REASONS = new Set<Reason>(["startup", "new", "resume", "fork"]);
 
 const OFF = new Set(["0", "off", "false", "no"]);
 const isOff = (v: string | undefined): boolean =>
@@ -46,6 +53,7 @@ const csv = (v: string | undefined): string[] =>
 	(v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
 const ENABLED = !isOff(process.env.PI_FORCE_SESSION_NAME);
+const PICKER = !isOff(process.env.PI_FORCE_SESSION_NAME_PICKER);
 const BLOCK_INPUT = !isOff(process.env.PI_FORCE_SESSION_NAME_BLOCK);
 const MIN_LEN = Math.max(1, num(process.env.PI_FORCE_SESSION_NAME_MIN_LEN, 3));
 const MAX_PROMPTS = Math.max(1, num(process.env.PI_FORCE_SESSION_NAME_MAX_PROMPTS, 3));
@@ -64,6 +72,20 @@ const LABEL: Record<Reason, string> = {
 	resume: "resumed",
 	fork: "forked",
 };
+
+// A brand-new session is not entry-free: pi records `model_change` /
+// `thinking_level_change` before extensions bind (settings pin defaultModel and
+// defaultThinkingLevel). Only conversation entries mean "work already here".
+const CONVERSATION_ENTRIES = new Set([
+	"message",
+	"custom_message",
+	"compaction",
+	"branch_summary",
+]);
+
+const CHOICE_NEW = "New session";
+const CHOICE_RESUME = "Resume a previous session";
+const RESUME_COMMAND = "/resume";
 
 const normalize = (raw: string): string =>
 	raw.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
@@ -108,6 +130,20 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 		return undefined;
 	}
 
+	/**
+	 * Bare `pi` has not committed to a session yet, so offer the choice.
+	 * Escaping is not an opt-out — it falls through to the name gate.
+	 */
+	async function chooseStartupAction(
+		ctx: ExtensionContext,
+	): Promise<"new" | "resume"> {
+		const choice = await ctx.ui.select("Start a session", [
+			CHOICE_NEW,
+			CHOICE_RESUME,
+		]);
+		return choice === CHOICE_RESUME ? "resume" : "new";
+	}
+
 	async function ensureNamed(ctx: ExtensionContext, reason: Reason): Promise<void> {
 		if (prompting) return;
 		prompting = true;
@@ -137,19 +173,51 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 	pi.on("session_start", async (event, ctx) => {
 		// Dialogs need a UI; print/json modes have none.
 		if (!ctx.hasUI) return;
+
+		// `pending` describes the session we are leaving. Escaping the prompt and
+		// then `/resume`-ing a named session must not carry the block over, so
+		// clear it on any real session switch and let the checks below re-arm it.
+		if (pending && SWITCH_REASONS.has(event.reason)) setPending(ctx, false);
+
 		if (!REASONS.has(event.reason)) return;
 
 		// `startup` also covers `pi -c` / `--session`; only treat an empty
 		// session as genuinely new so continuing work is not interrupted.
-		if (
-			(event.reason === "startup" || event.reason === "reload") &&
-			ctx.sessionManager.getEntries().length > 0
-		) {
-			return;
+		if (event.reason === "startup" || event.reason === "reload") {
+			const hasHistory = ctx.sessionManager
+				.getEntries()
+				.some((entry) => CONVERSATION_ENTRIES.has(entry.type));
+			if (hasHistory) return;
 		}
 
 		// A fork inherits the parent's name, so an existing name proves nothing.
 		if (event.reason !== "fork" && pi.getSessionName()) return;
+
+		// `/new` and `/fork` already state the intent; only a bare launch asks.
+		if (PICKER && event.reason === "startup") {
+			if (prompting) return;
+			prompting = true;
+			let action: "new" | "resume";
+			try {
+				action = await chooseStartupAction(ctx);
+			} finally {
+				prompting = false;
+			}
+			if (action === "resume") {
+				// Only command handlers get ctx.switchSession(), so defer to the
+				// built-in picker instead of reimplementing session switching.
+				ctx.ui.setEditorText(RESUME_COMMAND);
+				ctx.ui.notify(
+					`Press Enter to run ${RESUME_COMMAND} and pick a session.`,
+					"info",
+				);
+				// Arm the gate anyway: if the resume is abandoned and a message is
+				// typed instead, this session still needs a name. Actually resuming
+				// clears it via the session switch.
+				setPending(ctx, true);
+				return;
+			}
+		}
 
 		await ensureNamed(ctx, event.reason);
 	});
