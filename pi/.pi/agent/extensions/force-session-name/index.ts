@@ -7,17 +7,24 @@
  * experiments ends up with N identical rows.
  *
  * How:
- *  - `session_start` (reason `new` / `fork`, optionally `startup`) opens a
- *    blocking input dialog. pi starts the TUI before firing `session_start`
- *    specifically so extensions can use dialogs here.
- *  - A bare `pi` launch first asks new-vs-resume, because at that point you
- *    have not chosen either yet. Resuming hands off to the built-in `/resume`:
- *    event handlers only get an `ExtensionContext`, and `switchSession()` lives
- *    on `ExtensionCommandContext`, so the editor is prefilled instead.
- *  - Escaping the dialog does not silently win: the session is marked pending,
- *    a footer warning is shown, and the next interactive message re-prompts and
- *    is blocked until a name exists. Slash commands stay usable so `/name`,
- *    `/resume`, `/quit` etc. still work.
+ *  - `/new` and `/fork` prompt from `session_before_switch` /
+ *    `session_before_fork`, i.e. *before* the current session is torn down, so
+ *    escaping returns `{ cancel: true }` and leaves you where you were instead
+ *    of stranding you in an unnamed session.
+ *  - The accepted name lives at module scope until `session_start` fires: the
+ *    replacement session runtime does not exist yet while the `before` handler
+ *    runs. pi caches the extension factory, so module scope survives a switch
+ *    while per-session state (`pending`) does not.
+ *  - A bare `pi` launch has no `before` event to hook, so `session_start` still
+ *    prompts there, and first asks new-vs-resume — but only when there is
+ *    actually something to resume. Resuming hands off to the built-in
+ *    `/resume`: event handlers only get an `ExtensionContext`, and
+ *    `switchSession()` lives on `ExtensionCommandContext`, so the editor is
+ *    prefilled instead.
+ *  - Escaping *that* prompt does not silently win: the session is marked
+ *    pending, a footer warning is shown, and the next interactive message
+ *    re-prompts and is blocked until a name exists. Slash commands stay usable
+ *    so `/name`, `/resume`, `/quit` etc. still work.
  *  - Forks always prompt even though `getSessionName()` is non-empty, because
  *    that name came from the parent branch.
  *
@@ -26,14 +33,15 @@
  *   PI_FORCE_SESSION_NAME_REASONS    default "startup,new,fork" (also: reload, resume)
  *   PI_FORCE_SESSION_NAME_MIN_LEN    default 3
  *   PI_FORCE_SESSION_NAME_MAX_PROMPTS default 3 re-asks per trigger
- *   PI_FORCE_SESSION_NAME_BLOCK=off  warn only, never block input
+ *   PI_FORCE_SESSION_NAME_BLOCK=off  warn only: never cancel a switch or block input
  *   PI_FORCE_SESSION_NAME_PICKER=off skip new/resume choice, ask for a name
  */
 
-import type {
-	ExtensionAPI,
-	ExtensionContext,
-	SessionStartEvent,
+import {
+	SessionManager,
+	type ExtensionAPI,
+	type ExtensionContext,
+	type SessionStartEvent,
 } from "@earendil-works/pi-coding-agent";
 
 type Reason = SessionStartEvent["reason"];
@@ -90,6 +98,23 @@ const RESUME_COMMAND = "/resume";
 const normalize = (raw: string): string =>
 	raw.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
 
+// The replacement session runtime (and with it a fresh extension instance) is
+// only created after `session_before_*` returns, so the accepted name has to
+// outlive this instance. pi caches the extension factory per cwd, so module
+// scope is shared across sessions in one process.
+let pendingNewName: string | undefined;
+let pendingForkName: string | undefined;
+// Whether a `before` handler already prompted for the session that is about to
+// start. Without this, declining under BLOCK=off (which lets the switch happen
+// anyway) would be asked a second time by `session_start`.
+let askedBeforeSwitch = false;
+
+const clearPendingNames = (): void => {
+	pendingNewName = undefined;
+	pendingForkName = undefined;
+	askedBeforeSwitch = false;
+};
+
 export default function forceSessionName(pi: ExtensionAPI): void {
 	if (!ENABLED) return;
 
@@ -131,17 +156,61 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 	}
 
 	/**
+	 * Offering "Resume" with nothing to resume dumps the user in an empty
+	 * picker, so check first. On error, assume there is: hiding a real session
+	 * is worse than an empty list.
+	 */
+	async function hasResumableSession(ctx: ExtensionContext): Promise<boolean> {
+		try {
+			const currentFile = ctx.sessionManager.getSessionFile();
+			const currentId = ctx.sessionManager.getSessionId();
+			const sessions = await SessionManager.list(
+				ctx.cwd,
+				ctx.sessionManager.getSessionDir(),
+			);
+			return sessions.some(
+				(session) =>
+					session.path !== currentFile &&
+					session.id !== currentId &&
+					session.messageCount > 0,
+			);
+		} catch {
+			return true;
+		}
+	}
+
+	/**
 	 * Bare `pi` has not committed to a session yet, so offer the choice.
 	 * Escaping is not an opt-out — it falls through to the name gate.
 	 */
 	async function chooseStartupAction(
 		ctx: ExtensionContext,
 	): Promise<"new" | "resume"> {
+		if (!(await hasResumableSession(ctx))) return "new";
 		const choice = await ctx.ui.select("Start a session", [
 			CHOICE_NEW,
 			CHOICE_RESUME,
 		]);
 		return choice === CHOICE_RESUME ? "resume" : "new";
+	}
+
+	/**
+	 * Ask before the session actually changes. Returns the name to apply once
+	 * the new session starts, or `undefined` to abort the switch/fork.
+	 */
+	async function askBeforeSwitch(
+		ctx: ExtensionContext,
+		reason: Reason,
+	): Promise<string | undefined> {
+		const inherited = pi.getSessionName();
+		const suggestion =
+			reason === "fork" && inherited ? `${inherited} (fork)` : undefined;
+		prompting = true;
+		try {
+			return await askForName(ctx, reason, suggestion);
+		} finally {
+			prompting = false;
+		}
 	}
 
 	async function ensureNamed(ctx: ExtensionContext, reason: Reason): Promise<void> {
@@ -170,6 +239,54 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 		}
 	}
 
+	// `/new`: ask while the current session is still alive, so escaping can
+	// cancel the switch instead of leaving an unnamed session behind.
+	pi.on("session_before_switch", async (event, ctx) => {
+		if (!ctx.hasUI) return;
+
+		// Any switch attempt starts clean; a name from an abandoned attempt must
+		// not leak into this one.
+		clearPendingNames();
+		if (event.reason !== "new" || !REASONS.has("new")) return;
+
+		const name = await askBeforeSwitch(ctx, "new");
+		askedBeforeSwitch = true;
+		if (name) {
+			pendingNewName = name;
+			return;
+		}
+
+		if (!BLOCK_INPUT) {
+			ctx.ui.notify("Session left unnamed. Set one with /name <name>.", "warning");
+			return;
+		}
+		ctx.ui.notify("New session cancelled — a name is required.", "warning");
+		return { cancel: true };
+	});
+
+	// Same for forks, which have their own pre-event. Cancelling here means the
+	// fork is never created, rather than created and then nagged about.
+	pi.on("session_before_fork", async (_event, ctx) => {
+		if (!ctx.hasUI) return;
+
+		clearPendingNames();
+		if (!REASONS.has("fork")) return;
+
+		const name = await askBeforeSwitch(ctx, "fork");
+		askedBeforeSwitch = true;
+		if (name) {
+			pendingForkName = name;
+			return;
+		}
+
+		if (!BLOCK_INPUT) {
+			ctx.ui.notify("Fork left unnamed. Set one with /name <name>.", "warning");
+			return;
+		}
+		ctx.ui.notify("Fork cancelled — a name is required.", "warning");
+		return { cancel: true };
+	});
+
 	pi.on("session_start", async (event, ctx) => {
 		// Dialogs need a UI; print/json modes have none.
 		if (!ctx.hasUI) return;
@@ -178,6 +295,26 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 		// then `/resume`-ing a named session must not carry the block over, so
 		// clear it on any real session switch and let the checks below re-arm it.
 		if (pending && SWITCH_REASONS.has(event.reason)) setPending(ctx, false);
+
+		// Apply the name captured before the switch — this is the first moment the
+		// target session exists.
+		if (event.reason === "new" || event.reason === "fork") {
+			const name = event.reason === "new" ? pendingNewName : pendingForkName;
+			const asked = askedBeforeSwitch;
+			clearPendingNames();
+			if (name) {
+				pi.setSessionName(name);
+				ctx.ui.notify(`Session named: ${name}`, "info");
+				return;
+			}
+			// Already asked and declined (only reachable with BLOCK off, which lets
+			// the switch through) — do not ask again.
+			if (asked) return;
+			// Otherwise the pre-switch prompt never ran (headless switch, or a host
+			// that skipped the event): fall through to the in-session gate.
+		} else {
+			clearPendingNames();
+		}
 
 		if (!REASONS.has(event.reason)) return;
 
