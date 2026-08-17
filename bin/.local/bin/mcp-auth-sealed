@@ -1,0 +1,84 @@
+#!/bin/sh
+# Run an mcp-remote proxy with its OAuth token store encrypted at rest.
+#
+#   mcp-auth-sealed <vault-name> <command> [args...]
+#
+# mcp-remote (geelen/mcp-remote) has no notion of encryption: it writes
+# <hash>_tokens.json — refresh_token and access_token as bare strings — into
+# MCP_REMOTE_CONFIG_DIR, which lands on the persistent /root volume. Asana's
+# V2 MCP server requires OAuth and refuses personal access tokens, so the
+# token file cannot be replaced by a single `!gpg -dq` env var the way
+# ASANA_CLIENT_SECRET is in pi/.pi/agent/mcp.json.
+#
+# Instead this wrapper points MCP_REMOTE_CONFIG_DIR at tmpfs (/dev/shm: RAM
+# only, wiped on container restart) and keeps the durable copy as one gpg file
+# under ~/.local/state (persistent /root volume, deliberately NOT the stowed
+# ~/.config/credentials, which is a symlink into the dotfiles repo — the vault
+# is rewritten on every token refresh and would dirty git):
+#
+#   start -> unseal $VAULT into $RUNTIME (only when $RUNTIME has no tokens)
+#   exit  -> re-seal $RUNTIME into $VAULT (only when the tokens changed)
+#
+# Caveat: at-rest protection only. While the proxy runs the tokens sit
+# decrypted in /dev/shm, readable by any process of the same uid.
+set -eu
+
+VAULT_NAME=${1:?usage: mcp-auth-sealed <vault-name> <command> [args...]}
+shift
+
+recipient=${MCP_AUTH_GPG_RECIPIENT:-kansetsu4@gmail.com}
+vault_dir=${MCP_AUTH_VAULT_DIR:-$HOME/.local/state/mcp-auth}
+vault=$vault_dir/$VAULT_NAME.tar.gpg
+runtime=${MCP_AUTH_RUNTIME_DIR:-/dev/shm/mcp-auth-$VAULT_NAME}
+
+mkdir -p "$vault_dir"
+chmod 700 "$vault_dir"
+mkdir -p "$runtime"
+chmod 700 "$runtime"
+export MCP_REMOTE_CONFIG_DIR="$runtime"
+
+# Token state only; lock.json holds a pid and debug.log holds request traces,
+# both are per-run garbage that would just churn the vault.
+tokens_digest() {
+  find "$runtime" -name '*_tokens.json' -o -name '*_client_info.json' |
+    sort | xargs -r cat 2>/dev/null | md5sum
+}
+
+warm() {
+  for f in "$runtime"/*/*_tokens.json; do
+    [ -f "$f" ] && return 0
+  done
+  return 1
+}
+
+unseal() {
+  [ -f "$vault" ] || return 0
+  warm && return 0
+  gpg --quiet --batch --decrypt "$vault" | tar -xf - -C "$runtime"
+}
+
+seal() {
+  tar -cf - --exclude='*_lock.json' --exclude='*_debug.log' -C "$runtime" . |
+    gpg --quiet --batch --yes --encrypt --recipient "$recipient" -o "$vault.$$"
+  chmod 600 "$vault.$$"
+  mv "$vault.$$" "$vault"
+}
+
+cleanup() {
+  [ "$(tokens_digest)" = "$before" ] || seal
+  rm -f "$vault.$$"
+}
+
+unseal
+before=$(tokens_digest)
+
+# No exec: the EXIT trap has to survive the proxy so refreshed tokens get
+# re-sealed. A foreground child also keeps stdio intact — backgrounding it
+# would hand mcp-remote /dev/null as stdin and break the stdio transport.
+trap cleanup EXIT
+trap 'exit 143' TERM
+trap 'exit 130' INT
+
+status=0
+"$@" || status=$?
+exit "$status"

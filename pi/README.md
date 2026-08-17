@@ -45,6 +45,28 @@ tracker). The pi file therefore states those behaviors explicitly (never
 commit unless asked, verify with `bash`, `plan.md` as the task list) and drops
 Claude-only assumptions ("use agents to run tests", built-in Plan Mode).
 
+### MCP credentials (mcp.json)
+
+`pi/.pi/agent/mcp.json` runs the Asana V2 MCP server through `mcp-remote`
+(port 3334 is forwarded in the edit container for the OAuth callback).
+Two secrets are involved, handled differently:
+
+- **client secret** — `ASANA_CLIENT_SECRET` uses pi's `!command` env syntax to
+  `gpg -dq` it from `~/.config/credentials/` at spawn time, so it never sits in
+  the repo.
+- **OAuth tokens** — `mcp-remote` insists on writing `<hash>_tokens.json`
+  (refresh + access token, bare strings) to `MCP_REMOTE_CONFIG_DIR`, and Asana
+  V2 refuses personal access tokens, so there is nothing to swap for a `!gpg`
+  env var. The server is therefore launched via
+  `bin/.local/bin/mcp-auth-sealed`, which keeps that directory on tmpfs
+  (`/dev/shm`) and persists it as a single gpg file
+  (`~/.local/state/mcp-auth/asana.tar.gpg`) — unsealed on start, re-sealed on
+  exit only when the tokens changed. Nothing decrypted ever reaches the
+  `/root` volume, and a container restart no longer forces a re-auth.
+  The vault lives under `~/.local/state` rather than the stowed
+  `~/.config/credentials` on purpose: that directory is a symlink into this
+  repo, and a file rewritten on every token refresh would dirty git.
+
 ## NOT ported (no native pi equivalent)
 
 - **hooks** (`check-credential-leak.sh`, `check-file-dependencies.sh`) — pi has

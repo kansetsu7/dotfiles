@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "asana": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "exec \"$HOME/.local/bin/mcp-auth-sealed\" asana npx -y mcp-remote https://mcp.asana.com/v2/mcp 3334 --static-oauth-client-info \"{\\\"client_id\\\": \\\"$ASANA_CLIENT_ID\\\", \\\"client_secret\\\": \\\"$ASANA_CLIENT_SECRET\\\"}\""
+      ],
+      "env": {
+        "ASANA_CLIENT_ID": "1217523615853912",
+        "ASANA_CLIENT_SECRET": "!gpg -dq $HOME/.config/credentials/asana-client-secret.env.gpg"
+      },
+      "lifecycle": "lazy"
+    }
+  }
+}
