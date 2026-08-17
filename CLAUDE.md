@@ -143,3 +143,5 @@ When editing files in the left column, check if related files need updates:
 | `skills/merge-insights/main.go` | `skills/doc-suggestions/SKILL.md` (shares the binary via its `--docs`/`--open` mode) |
 | `scripts/detect-branch-base.sh` (output keys / `METHOD` values) | `commands/mr-summary.md` (reads the keys and branches on `METHOD`/`CONFIDENCE`) |
 | `skills/merge-insights/main.go` (`classifyType` / classification regexes) | `skills/merge-insights/SKILL.md` (the verbatim "How MR types are classified" methodology block must match the code) |
+| `pi/.pi/agent/extensions/*/index.ts` (behaviour or env vars) | the sibling `README.md` (behaviour table + config table) and `test.mjs` |
+| `pi/.pi/agent/extensions/force-session-name/` (name/location) | `pi/.pi/agent/extensions/session-header/README.md` (links to it as its companion) |

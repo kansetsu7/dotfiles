@@ -87,3 +87,9 @@ export PI_FORCE_SESSION_NAME_REASONS=new,fork
 
 Nothing to do — `~/.pi/agent/extensions` is stowed from
 `pi/.pi/agent/extensions`, and `*/index.ts` there is auto-discovered.
+
+
+## See also
+
+[`session-header`](../session-header) displays the resulting name while you
+work — this extension only makes sure one exists.
