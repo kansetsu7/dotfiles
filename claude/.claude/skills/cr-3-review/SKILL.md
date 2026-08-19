@@ -43,17 +43,21 @@ Perform a comprehensive code review workflow on the current branch changes.
 1. Check for `.claude/reviewer-feedback.md`
 2. If exists:
    - Parse all reviewer items (they have structured format from `/cr-2-feedback`)
-   - Store items for merging in Step 3
+   - Store items for merging in Step 6
    - Reviewer items take priority for overlapping concerns
 3. If not exists:
    - Continue with AI-only review (no reviewer feedback to merge)
 
-### Step 3: Get the Diff
+### Step 3: Get the Diff and Commit Messages
 
 1. Determine base branch: Use `$ARGUMENTS` if provided, otherwise `master`
 2. Run `git diff <base-branch>...HEAD` to get all changes on this branch
-3. If empty, try `git diff HEAD~1` for the latest commit
-4. **If still no diff found, STOP and report error:**
+3. Run `git log <base-branch>..HEAD --format='%H%n%B%n---'` to get the **full commit
+   message bodies** (not `--oneline`). Commit bodies frequently carry the decision and
+   the reasoning behind it — that is context the diff alone does not show. Keep this
+   for Step 5 (documentation) and Step 6 (review).
+4. If empty, try `git diff HEAD~1` for the latest commit
+5. **If still no diff found, STOP and report error:**
    ```
    Error: No changes found to review.
    - No diff between current branch and <base-branch>
@@ -79,13 +83,51 @@ Before reviewing, search for code made dead by this MR's changes:
    - Methods with **zero remaining callers** in non-test code
    - Note the confidence level: **high** (no callers found) vs **medium** (only dynamic/ambiguous callers like `send(:method_name)`)
 
-4. **Keep this list** for use in Step 5 (review) and Step 6 (conflict detection).
+4. **Keep this list** for use in Step 6 (review) and Step 7 (conflict detection).
 
 **Scope:** Only analyze methods/functions in files touched by the MR. Do not scan the entire codebase for pre-existing dead code.
 
-### Step 5: Code Review & Merge
+### Step 5: Documentation Analysis
 
-Apply the review criteria defined in `~/.claude/skills/code-review-criteria/SKILL.md`.
+Run both checks; each produces findings that are merged into Step 6's output using the
+`### 10. Documentation` criteria (including its severity guidance and `[docs]` prefix).
+
+**A. Do changed docs follow the repo's rules?**
+
+Only if the diff touches documentation (`docs/**`, `*.md`, ADRs, changelogs):
+
+1. Read the project's `docs/README.md` and skim the `docs/` tree with Glob to learn the
+   real layout (which Diátaxis type lives where, ADR location and template, naming and
+   index conventions, when docs are mandatory).
+2. Review each changed/added doc against that policy: right location, right doc type and
+   register, conventions followed, index/TOC updated, accurate against this MR's code.
+3. Also flag docs the MR should have updated but didn't — search `docs/` for mentions of
+   behavior, paths, flags, or endpoints this MR changed.
+4. If `docs/README.md` is absent, use generic Diátaxis and note that no project doc
+   policy was found.
+
+**B. Is anything in this branch worth documenting?**
+
+Always, even when no doc file changed:
+
+1. Re-read the commit messages from Step 3 and `.claude/context.md` (if present),
+   looking for **decisions and their rationale**: why an approach was chosen, what was
+   rejected, trade-offs, constraints, gotchas. Rationale that exists only in a commit
+   message is effectively lost — it belongs in `docs/`.
+2. From the diff, identify newly introduced or altered **interface surface** (endpoint,
+   config key, env var, CLI flag, schema, public API) and **operational procedures**.
+3. For each, decide the Diátaxis type, the concrete target path per the project's own
+   structure, and 1–2 lines of what to write. Raise an **ADR** finding when the change
+   makes a decision future maintainers would need the reasoning for and no ADR exists.
+4. Skip mechanical refactors, test-only changes, and dependency bumps.
+
+Related skill: `doc-suggestions` does this across many MRs at once; this step is the
+branch-local equivalent and shares its policy-from-`docs/README.md` grounding.
+
+### Step 6: Code Review & Merge
+
+Apply the review criteria defined in `~/.claude/skills/code-review-criteria/SKILL.md`,
+folding in the documentation findings from Step 5.
 
 **Merging with reviewer feedback** (if `.claude/reviewer-feedback.md` exists):
 
@@ -176,7 +218,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 
 ## 🔗 Issue Relationships
 
-<!-- Added by Step 6 - see that step for format -->
+<!-- Added by Step 7 - see that step for format -->
 
 ---
 
@@ -189,7 +231,7 @@ Write the review directly to `.claude/code-review.md` using this structure:
 <One sentence summary of the most important observation>
 ```
 
-### Step 6: Dependency, Conflict & Dead Code Conflict Analysis
+### Step 7: Dependency, Conflict & Dead Code Conflict Analysis
 
 After generating findings, analyze relationships between issues:
 
@@ -197,7 +239,7 @@ After generating findings, analyze relationships between issues:
 2. **Cascading fixes**: Fixing one issue may resolve another
 3. **Conflicting solutions**: Fixes that contradict or interfere with each other
 4. **Merge candidates**: Issues that should be addressed together
-5. **Dead code conflicts**: Cross-reference all findings against the dead code list from Step 4. If any finding (reviewer or AI) suggests changes to code identified as dead, flag it.
+5. **Dead code conflicts**: Cross-reference all findings against the dead code list from Step 4 (dead code analysis). If any finding (reviewer or AI) suggests changes to code identified as dead, flag it.
 
 **Add this section to `.claude/code-review.md` before Verdict:**
 
@@ -235,7 +277,7 @@ If no relationships found, add:
 No dependencies or conflicts detected between findings.
 ```
 
-### Step 7: Apply Source-Based Field Defaults
+### Step 8: Apply Source-Based Field Defaults
 
 After writing the review file, re-read `.claude/code-review.md` and apply defaults based on each item's Source:
 
@@ -244,7 +286,7 @@ After writing the review file, re-read `.claude/code-review.md` and apply defaul
 
 Update the file in-place with these defaults applied.
 
-### Step 8: Commit Review
+### Step 9: Commit Review
 
 1. Stage the review file:
    ```

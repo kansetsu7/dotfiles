@@ -139,6 +139,7 @@ When editing files in the left column, check if related files need updates:
 | When you edit | Also check |
 |---------------|------------|
 | `skills/cr-3-review/SKILL.md` | `commands/cr-4-plan.md`, `commands/cr-5-fix.md` |
+| `skills/code-review-criteria/SKILL.md` (§10 Documentation) | `skills/cr-3-review/SKILL.md` (Step 5 documentation analysis), `skills/doc-suggestions/SKILL.md` (both ground doc rules in the project's `docs/README.md` + Diátaxis/ADR) |
 | `commands/cr-4-plan.md` | `commands/cr-5-fix.md` |
 | `skills/merge-insights/main.go` | `skills/doc-suggestions/SKILL.md` (shares the binary via its `--docs`/`--open` mode) |
 | `scripts/detect-branch-base.sh` (output keys / `METHOD` values) | `commands/mr-summary.md` (reads the keys and branches on `METHOD`/`CONFIDENCE`) |

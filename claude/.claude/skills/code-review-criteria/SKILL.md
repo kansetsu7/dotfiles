@@ -105,6 +105,60 @@ uncertainty rather than suppressing the finding.
 - Missing database indexes for foreign keys
 - Unsafe `send` or `constantize` with user input
 
+### 10. Documentation
+
+Two directions — check both.
+
+**A. Changed docs must follow the repo's own rules.**
+
+If the MR touches `docs/`, `README.md`, ADRs, or any other documentation, read the
+project's `docs/README.md` first and review the doc changes against it:
+
+- Placed in the location the project's structure dictates (Diátaxis type → real path)
+- Written in the right register for that type: Tutorial (learning), How-to (task),
+  Reference (dry facts), Explanation/ADR (the *why*) — no mixing types in one doc
+- Follows stated conventions: naming, front-matter, index/TOC registration, ADR
+  template and status field, language, heading depth
+- Indexes updated — a new doc that no `README`/TOC links to is invisible
+- Accurate against the code in the same MR (paths, flags, endpoints, defaults)
+- Not duplicating an existing doc that should have been edited instead
+- Stale docs describing behavior this MR changed but which were not updated
+
+If `docs/README.md` is absent, fall back to generic Diátaxis and say so in the finding.
+
+**B. Undocumented decisions — is anything here worth writing down?**
+
+Judge by what the change *introduces or alters*, not by diff size. Read the branch's
+**commit messages**, not just the diff: rationale, trade-offs, and rejected
+alternatives are often explained in a commit body and nowhere else. That text is the
+raw material for a doc — if it only lives in `git log`, it is effectively lost.
+
+Flag as documentation-worthy:
+
+- New or changed interface surface: endpoint, config key, env var, CLI flag, schema
+  → **Reference**
+- New operational procedure or capability someone will have to perform → **How-to**
+- Onboarding-worthy new feature or flow → **Tutorial**
+- Non-obvious rationale, trade-off, or constraint explained in a commit message or MR
+  description but absent from `docs/` → **Explanation**
+- Significant decision future maintainers need the reasoning for — architecture,
+  cross-cutting pattern, new infra/service, data-model design, security/compliance
+  approach, technology choice, breaking change → **ADR** (name the target path)
+
+Don't over-recommend: mechanical refactors, test-only changes, and dependency bumps
+usually need no docs.
+
+**Severity guidance for doc findings:**
+
+- 🔴 blocking — docs contradict shipped behavior, or the repo's rules explicitly
+  require a doc for this kind of change and it is missing
+- 🟡 important — user-facing interface change with no Reference update; a decision
+  whose rationale exists only in a commit message
+- 🟢 nit — wrong section, missing TOC entry, register/style drift
+- 💡 suggestion — an ADR worth having, but the project doesn't mandate one
+
+Prefix such findings with `[docs]` in the title so they're easy to triage.
+
 ## Output Format
 
 ### 1. Taste Rating
