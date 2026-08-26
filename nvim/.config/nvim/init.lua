@@ -14,5 +14,9 @@ if is_docker then
   require("config.docker.lsp.init")
 end
 
+-- `<!-- %s -->` does not comment out ERB (the template is evaluated before the
+-- HTML is parsed), so eruby gets its own ERB-safe toggle instead.
 local ft = require('Comment.ft')
-ft.eruby = '<!-- %s -->'
+ft.eruby = '<%# %s %>'
+
+require("config.erb-comment").setup()
