@@ -1,5 +1,6 @@
 ---
 name: claude-docs-consultant
+disable-model-invocation: true
 description: Consult official Claude Code documentation from docs.claude.com using selective fetching. Use this skill when working on Claude Code hooks, skills, subagents, MCP servers, or any Claude Code feature that requires referencing official documentation for accurate implementation. Fetches only the specific documentation needed rather than loading all docs upfront.
 ---
 
