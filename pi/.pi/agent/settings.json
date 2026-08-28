@@ -17,5 +17,6 @@
   "prompts": [
     "~/.claude/commands"
   ],
-  "doubleEscapeAction": "tree"
+  "doubleEscapeAction": "tree",
+  "hideThinkingBlock": false
 }
