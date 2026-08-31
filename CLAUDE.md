@@ -148,3 +148,4 @@ When editing files in the left column, check if related files need updates:
 | `pi/.pi/agent/extensions/force-session-name/` (name/location) | `pi/.pi/agent/extensions/session-header/README.md` (links to it as its companion) |
 | `skills/pi-extension-audit/audit.sh` (sections / output labels) | `skills/pi-extension-audit/SKILL.md` (the output table in Step 1 names each section) |
 | `skills/pi-extension-audit/SKILL.md` | `commands/pi-audit.md` (thin trigger that delegates to it) |
+| `pi-hist/main.go` (keybindings / flags) | `pi-hist/README.md` (the keys table and usage block must match) |
