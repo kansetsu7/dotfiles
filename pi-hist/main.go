@@ -54,6 +54,9 @@ var (
 	matchStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("0")).Background(lipgloss.Color("220"))
 	roleStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("111"))
 	headerStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("245"))
+	warnStyle   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("0")).Background(lipgloss.Color("203"))
+	errStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("203"))
+	okStyle     = lipgloss.NewStyle().Foreground(lipgloss.Color("114"))
 )
 
 type result struct {
@@ -74,6 +77,12 @@ type model struct {
 	height   int
 	chosen   *Session
 	roots    []string
+
+	// pending holds the session awaiting delete confirmation. Deleting a
+	// transcript is irreversible and it is the only record of that work, so
+	// removal is always gated behind an explicit keystroke.
+	pending *Session
+	status  string // transient result line, cleared on the next keypress
 }
 
 func initialModel(all []Session, query string, nervOnly bool) model {
@@ -116,6 +125,42 @@ func (m *model) recompute() {
 	}
 	m.offset = 0
 	m.syncPreview()
+}
+
+// ensureVisible scrolls the list so the cursor stays on screen.
+func (m *model) ensureVisible() {
+	rows := m.visibleRows()
+	if m.cursor < m.offset {
+		m.offset = m.cursor
+	}
+	if m.cursor >= m.offset+rows {
+		m.offset = m.cursor - rows + 1
+	}
+	if m.offset > 0 && m.offset+rows > len(m.results) {
+		m.offset = max(0, len(m.results)-rows)
+	}
+}
+
+// deleteSession removes a transcript from disk and drops it from the loaded
+// set. The cursor is held in place rather than reset, so a run of unwanted
+// sessions can be cleared without re-navigating after each one.
+func (m *model) deleteSession(s Session) {
+	if err := os.Remove(s.Path); err != nil {
+		m.status = errStyle.Render(fmt.Sprintf("could not delete %s: %v", s.Name, err))
+		return
+	}
+	for i, x := range m.all {
+		if x.Path == s.Path {
+			m.all = append(m.all[:i], m.all[i+1:]...)
+			break
+		}
+	}
+	cursor := m.cursor
+	m.recompute()
+	m.cursor = clamp(cursor, 0, max(0, len(m.results)-1))
+	m.ensureVisible()
+	m.syncPreview()
+	m.status = okStyle.Render(fmt.Sprintf("deleted %s", s.Name))
 }
 
 func (m *model) visibleRows() int {
@@ -178,6 +223,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyPressMsg:
+		// While a delete is pending, every key is consumed by the prompt so
+		// nothing leaks into the search input and only "y" can destroy a file.
+		if m.pending != nil {
+			s := *m.pending
+			m.pending = nil
+			if t.String() == "y" {
+				m.deleteSession(s)
+			} else {
+				m.status = dimStyle.Render("delete cancelled")
+			}
+			return m, nil
+		}
+		m.status = ""
+
 		switch t.String() {
 		case "ctrl+c", "esc":
 			return m, tea.Quit
@@ -198,6 +257,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "pgdown":
 			m.preview.ScrollDown(m.visibleRows() / 2)
+			return m, nil
+		case "ctrl+d":
+			if len(m.results) > 0 {
+				s := m.results[m.cursor].Session
+				m.pending = &s
+			}
 			return m, nil
 		case "tab":
 			m.nervOnly = !m.nervOnly
@@ -221,14 +286,7 @@ func (m *model) move(d int) {
 		return
 	}
 	m.cursor = clamp(m.cursor+d, 0, len(m.results)-1)
-	// keep the cursor inside the visible window
-	rows := m.visibleRows()
-	if m.cursor < m.offset {
-		m.offset = m.cursor
-	}
-	if m.cursor >= m.offset+rows {
-		m.offset = m.cursor - rows + 1
-	}
+	m.ensureVisible()
 	m.syncPreview()
 }
 
@@ -248,7 +306,16 @@ func (m model) View() tea.View {
 
 	body := lipgloss.JoinHorizontal(lipgloss.Top, m.listView(), "  ", m.preview.View())
 
-	footer := dimStyle.Render("↑↓ select · pgup/pgdn scroll · tab scope · ⏎ resume in worktree · esc quit")
+	var footer string
+	switch {
+	case m.pending != nil:
+		footer = warnStyle.Render(fmt.Sprintf(" delete %q (%s)? ", m.pending.Name, m.pending.Tree)) +
+			dimStyle.Render("  y = delete permanently · any other key = cancel")
+	case m.status != "":
+		footer = m.status
+	default:
+		footer = dimStyle.Render("↑↓ select · tab scope · ^d delete · ⏎ resume in worktree · esc quit")
+	}
 
 	v := tea.NewView(strings.Join([]string{title, m.input.View(), body, footer}, "\n"))
 	v.AltScreen = true

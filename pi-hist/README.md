@@ -41,12 +41,33 @@ pi-hist -a              # all sessions, not just Nerv worktrees
 | `↑` `↓` / `^p` `^n` | move selection |
 | `pgup` `pgdn` | scroll the preview pane |
 | `tab` | toggle scope: Nerv worktrees ↔ all sessions |
+| `^d` | delete the selected transcript (asks first) |
 | `⏎` | chdir to the session's worktree and resume it in pi |
 | `esc` `^c` | quit |
 
 Only **user and assistant** messages are searched. Tool output is discarded at
 parse time: it is the bulk of a transcript (file dumps, diffs, grep results)
 and searching it buries the conversation you are looking for.
+
+### Deleting
+
+`^d` asks before removing anything:
+
+```
+delete "killme" (nerv_hk)?   y = delete permanently · any other key = cancel
+```
+
+Only `y` deletes; every other key cancels. The prompt **swallows all input**
+while it is up, so a stray keystroke cannot leak into the search box and
+silently change which session sits under the cursor while you think you are
+answering the prompt.
+
+The transcript is removed with `os.Remove` — it does not go to a trash
+directory, and it is the only record of that session. The cursor stays put
+afterwards so a run of unwanted sessions can be cleared without re-navigating.
+
+The binding is `^d` rather than a bare `d` because the search input is always
+focused: a bare `d` is indistinguishable from typing `d` into the query.
 
 ### What `Enter` does, precisely
 
@@ -115,6 +136,11 @@ cd ~/.dotfiles/pi-hist && go test ./...
 Covers worktree boundary matching (including the mac layout), transcript
 parsing, the exclusion of tool output, and model behaviour driven through
 `Update` — filtering, scope toggling, selection, and the empty-result path.
+
+Deletion is covered against the real filesystem: that `^d` alone removes
+nothing, that only `y` destroys a file, that cancelling leaves it intact, that
+the prompt swallows keystrokes rather than leaking them into the query, and
+that deleting the last row leaves the cursor valid.
 Selection is asserted to carry the recorded **cwd**, not just the transcript
 path, since resuming in the wrong worktree is the failure this tool exists to
 avoid.
@@ -130,4 +156,10 @@ everything is read eagerly at startup.
 The `Enter` path is not unit-tested — `syscall.Exec` replaces the test binary.
 It was verified manually by putting a fake `pi` on `PATH` under a pty and
 confirming it received the right cwd and `--session` argument, along with both
-error paths.
+error paths. The delete flow was likewise driven end-to-end under a pty.
+
+## Known gap
+
+Search matches **message text only**, not session names. Typing the name shown
+in the list (`payment-return-review`) finds nothing unless those words also
+appear in the conversation.

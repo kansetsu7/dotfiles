@@ -194,6 +194,8 @@ func key(s string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyEnter}
 	case "down":
 		return tea.KeyPressMsg{Code: tea.KeyDown}
+	case "ctrl+d":
+		return tea.KeyPressMsg{Code: 'd', Mod: tea.ModCtrl}
 	}
 	return tea.KeyPressMsg{Code: rune(s[0]), Text: s}
 }
@@ -292,6 +294,152 @@ func TestViewRendersWithoutPanic(t *testing.T) {
 	}
 	if !v.AltScreen {
 		t.Error("expected alt screen")
+	}
+}
+
+// --- delete ------------------------------------------------------------------
+
+// newTestModelAt is newTestModel but exposes the fixture root, so delete tests
+// can assert against the filesystem.
+func newTestModelAt(t *testing.T) (tea.Model, string) {
+	t.Helper()
+	withEnv(t, map[string]string{"PROJECT_PATH": "/proj", "NERV_PREFIX": "nerv_"})
+	root := fixtureRoot(t)
+	sessions, err := LoadSessions(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var m tea.Model = initialModel(sessions, "", true)
+	m, _ = m.Update(tea.WindowSizeMsg{Width: 120, Height: 30})
+	return m, root
+}
+
+func TestDeleteRequiresConfirmation(t *testing.T) {
+	m, _ := newTestModelAt(t)
+	before := len(m.(model).results)
+	target := m.(model).results[0].Session.Path
+
+	m, _ = m.Update(key("ctrl+d"))
+	if m.(model).pending == nil {
+		t.Fatal("ctrl+d should arm a confirmation")
+	}
+	// nothing removed yet
+	if _, err := os.Stat(target); err != nil {
+		t.Fatalf("file deleted before confirmation: %v", err)
+	}
+	if got := len(m.(model).results); got != before {
+		t.Errorf("result count changed before confirmation: %d -> %d", before, got)
+	}
+}
+
+func TestDeleteConfirmedRemovesFile(t *testing.T) {
+	m, _ := newTestModelAt(t)
+	before := len(m.(model).results)
+	target := m.(model).results[0].Session.Path
+
+	m, _ = m.Update(key("ctrl+d"))
+	m, _ = m.Update(key("y"))
+
+	if _, err := os.Stat(target); !os.IsNotExist(err) {
+		t.Errorf("transcript still on disk: %v", err)
+	}
+	mm := m.(model)
+	if got := len(mm.results); got != before-1 {
+		t.Errorf("results = %d, want %d", got, before-1)
+	}
+	if mm.pending != nil {
+		t.Error("confirmation should be cleared after deleting")
+	}
+	for _, s := range mm.all {
+		if s.Path == target {
+			t.Error("deleted session still present in the loaded set")
+		}
+	}
+}
+
+func TestDeleteCancelledKeepsFile(t *testing.T) {
+	m, _ := newTestModelAt(t)
+	before := len(m.(model).results)
+	target := m.(model).results[0].Session.Path
+
+	m, _ = m.Update(key("ctrl+d"))
+	m, _ = m.Update(key("n"))
+
+	if _, err := os.Stat(target); err != nil {
+		t.Errorf("cancelling deleted the file anyway: %v", err)
+	}
+	if got := len(m.(model).results); got != before {
+		t.Errorf("results = %d, want %d", got, before)
+	}
+	if m.(model).pending != nil {
+		t.Error("confirmation should be cleared after cancelling")
+	}
+}
+
+// The search input is always focused, so the confirmation must swallow every
+// key: a stray "n" that reached the input would silently change the result set
+// under the cursor while the user believed they were answering a prompt.
+func TestConfirmationSwallowsKeys(t *testing.T) {
+	m, _ := newTestModelAt(t)
+	m, _ = m.Update(key("ctrl+d"))
+	m, _ = m.Update(key("n"))
+	if got := m.(model).input.Value(); got != "" {
+		t.Errorf("query = %q, want empty — the prompt leaked a keystroke", got)
+	}
+}
+
+// Only "y" may destroy a file; any other answer cancels.
+func TestOnlyYConfirms(t *testing.T) {
+	for _, k := range []string{"n", "q", "z", "Y"} {
+		m, _ := newTestModelAt(t)
+		target := m.(model).results[0].Session.Path
+		m, _ = m.Update(key("ctrl+d"))
+		m, _ = m.Update(key(k))
+		_, err := os.Stat(target)
+		if k == "y" {
+			continue
+		}
+		if err != nil {
+			t.Errorf("key %q deleted the transcript, want cancel", k)
+		}
+	}
+}
+
+func TestDeleteWithNoResultsIsSafe(t *testing.T) {
+	m := typeString(newTestModel(t), "zzzznope")
+	m, _ = m.Update(key("ctrl+d"))
+	if m.(model).pending != nil {
+		t.Error("nothing selected, so nothing should be armed")
+	}
+	m, _ = m.Update(key("y"))
+	_ = m.View()
+}
+
+// Deleting the last row must leave the cursor on a valid entry.
+func TestDeleteLastRowKeepsCursorValid(t *testing.T) {
+	m, _ := newTestModelAt(t)
+	for range m.(model).results[1:] {
+		m, _ = m.Update(key("down"))
+	}
+	last := m.(model).cursor
+	m, _ = m.Update(key("ctrl+d"))
+	m, _ = m.Update(key("y"))
+	mm := m.(model)
+	if mm.cursor >= len(mm.results) {
+		t.Errorf("cursor %d out of range for %d results", mm.cursor, len(mm.results))
+	}
+	if mm.cursor != last-1 {
+		t.Errorf("cursor = %d, want %d", mm.cursor, last-1)
+	}
+	_ = m.View()
+}
+
+func TestConfirmationPromptIsShown(t *testing.T) {
+	m, _ := newTestModelAt(t)
+	name := m.(model).results[0].Session.Name
+	m, _ = m.Update(key("ctrl+d"))
+	if !strings.Contains(m.View().Content, name) {
+		t.Errorf("confirmation prompt should name the session %q", name)
 	}
 }
 
