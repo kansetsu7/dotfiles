@@ -273,10 +273,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.chosen = &s
 			}
 			return m, tea.Quit
-		case "up", "ctrl+p":
+		// ctrl+j/ctrl+k are handled here, ahead of the search input, so they
+		// shadow textinput's own bindings: ctrl+k would otherwise kill to end
+		// of line. ctrl+u still clears the query, which is what that binding
+		// was realistically used for in a single-line field.
+		case "up", "ctrl+k":
 			m.move(-1)
 			return m, nil
-		case "down", "ctrl+n":
+		case "down", "ctrl+j":
 			m.move(1)
 			return m, nil
 		case "pgup":

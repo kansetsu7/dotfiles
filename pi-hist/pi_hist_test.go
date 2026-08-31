@@ -210,6 +210,16 @@ func key(s string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyDown}
 	case "ctrl+d":
 		return tea.KeyPressMsg{Code: 'd', Mod: tea.ModCtrl}
+	case "ctrl+j":
+		return tea.KeyPressMsg{Code: 'j', Mod: tea.ModCtrl}
+	case "ctrl+k":
+		return tea.KeyPressMsg{Code: 'k', Mod: tea.ModCtrl}
+	case "ctrl+u":
+		return tea.KeyPressMsg{Code: 'u', Mod: tea.ModCtrl}
+	case "ctrl+n":
+		return tea.KeyPressMsg{Code: 'n', Mod: tea.ModCtrl}
+	case "ctrl+p":
+		return tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl}
 	}
 	return tea.KeyPressMsg{Code: rune(s[0]), Text: s}
 }
@@ -265,6 +275,64 @@ func TestModelTabWidensScope(t *testing.T) {
 	if got := len(m.(model).results); got != before+1 {
 		t.Errorf("after tab: got %d results, want %d (%v)",
 			got, before+1, names(m.(model).results))
+	}
+}
+
+func TestCtrlJKMoveSelection(t *testing.T) {
+	m := newTestModel(t)
+	if n := len(m.(model).results); n < 3 {
+		t.Fatalf("need at least 3 results to test movement, got %d", n)
+	}
+	m, _ = m.Update(key("ctrl+j"))
+	m, _ = m.Update(key("ctrl+j"))
+	if got := m.(model).cursor; got != 2 {
+		t.Errorf("after two ctrl+j: cursor = %d, want 2", got)
+	}
+	m, _ = m.Update(key("ctrl+k"))
+	if got := m.(model).cursor; got != 1 {
+		t.Errorf("after ctrl+k: cursor = %d, want 1", got)
+	}
+}
+
+// ctrl+k is bound to DeleteAfterCursor inside textinput, so it must be
+// intercepted before the input sees it, and must clamp rather than wrap.
+func TestCtrlJKDoNotEditQuery(t *testing.T) {
+	m := typeString(newTestModel(t), "payment")
+	for _, k := range []string{"ctrl+k", "ctrl+j", "ctrl+k"} {
+		m, _ = m.Update(key(k))
+	}
+	if got := m.(model).input.Value(); got != "payment" {
+		t.Errorf("query = %q, want \"payment\" — ctrl+k leaked into the input", got)
+	}
+	if got := m.(model).cursor; got != 0 {
+		t.Errorf("cursor = %d, want 0 (clamped at the top)", got)
+	}
+}
+
+// ctrl+n/ctrl+p no longer navigate. They now fall through to textinput, whose
+// NextSuggestion/PrevSuggestion bindings are inert here because suggestions
+// are never enabled — so they must move nothing and type nothing.
+func TestCtrlNPDoNotNavigate(t *testing.T) {
+	m := newTestModel(t)
+	m, _ = m.Update(key("ctrl+j")) // start at row 1 so ctrl+p could move either way
+	before := m.(model).cursor
+	for _, k := range []string{"ctrl+n", "ctrl+p", "ctrl+n"} {
+		m, _ = m.Update(key(k))
+	}
+	if got := m.(model).cursor; got != before {
+		t.Errorf("cursor moved from %d to %d; ctrl+n/p should no longer navigate", before, got)
+	}
+	if got := m.(model).input.Value(); got != "" {
+		t.Errorf("query = %q, want empty — ctrl+n/p leaked characters into the input", got)
+	}
+}
+
+// ctrl+u is the surviving way to clear the query now that ctrl+k is taken.
+func TestCtrlUStillClearsQuery(t *testing.T) {
+	m := typeString(newTestModel(t), "payment")
+	m, _ = m.Update(key("ctrl+u"))
+	if got := m.(model).input.Value(); got != "" {
+		t.Errorf("query = %q, want empty after ctrl+u", got)
 	}
 }
 

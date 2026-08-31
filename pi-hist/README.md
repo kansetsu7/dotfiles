@@ -38,7 +38,7 @@ pi-hist -a              # all sessions, not just Nerv worktrees
 | Key | Action |
 |---|---|
 | *(type)* | filter transcripts live |
-| `↑` `↓` / `^p` `^n` | move selection |
+| `↑` `↓` / `^k` `^j` | move selection |
 | `pgup` `pgdn` | scroll the preview pane |
 | `tab` | toggle scope: Nerv worktrees ↔ all sessions |
 | `^d` | delete the selected transcript (asks first) |
@@ -72,6 +72,11 @@ message so there is still something to judge it by.
 Only **user and assistant** messages are searched. Tool output is discarded at
 parse time: it is the bulk of a transcript (file dumps, diffs, grep results)
 and searching it buries the conversation you are looking for.
+
+`^j`/`^k` are intercepted ahead of the search input, which means they shadow
+`textinput`'s own `^k` binding for kill-to-end-of-line. In a single-line query
+field that binding is near-worthless, and `^u` still clears the whole query,
+which is what it was realistically used for.
 
 ### Deleting
 
