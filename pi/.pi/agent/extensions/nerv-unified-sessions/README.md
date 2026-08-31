@@ -19,38 +19,20 @@ This extension:
 
 ## Setup
 
-### Step 1: Manual Consolidation (one-time)
+### Step 1: Install Extension
 
-Run this to move all existing sessions:
+The extension is auto-discovered in `~/.pi/agent/extensions/`. No manual
+consolidation step is needed — on the next `pi` launch it will:
 
-```bash
-# Create unified directory
-mkdir -p ~/.pi/agent/sessions/--proj-nerv--
+1. Detect old session directories matching `--proj-nerv_*--`
+2. Move their sessions into `--proj-nerv--`
+3. Replace each one with a symlink: `--proj-nerv_hk-- → --proj-nerv--`
 
-# Move all sessions into it
-for dir in ~/.pi/agent/sessions/--proj-nerv_*--; do
-  if [ -d "$dir" ] && [ ! -L "$dir" ]; then
-    echo "Moving sessions from $(basename $dir)..."
-    mv "$dir"/*.jsonl ~/.pi/agent/sessions/--proj-nerv--/ 2>/dev/null || true
-  fi
-done
+After that first run it is a no-op: already-linked directories are left
+completely untouched, so it performs zero filesystem writes on every
+subsequent launch.
 
-# Verify
-echo "Total sessions consolidated:"
-ls -1 ~/.pi/agent/sessions/--proj-nerv--/ | wc -l
-```
-
-### Step 2: Install Extension
-
-The extension is auto-discovered in `~/.pi/agent/extensions/`. On next `pi` launch:
-
-1. The extension will detect remaining old session directories
-2. It will create symlinks: `--proj-nerv_hk-- → --proj-nerv--`, etc.
-3. New sessions go directly to `--proj-nerv--`
-
-**No manual action needed** — it's automatic on first run.
-
-### Step 3: Test
+### Step 2: Test
 
 ```bash
 cd /proj/nerv_hk
@@ -69,14 +51,29 @@ pi -r
 | `pi` in any nerv_* worktree | Sessions listed from `--proj-nerv--` |
 | `/resume` | Shows all Nerv sessions, regardless of which worktree you're in |
 | `--proj-nerv_*--` dirs | Symlinked to `--proj-nerv--` for backward compatibility |
+| Already-symlinked dir | Left untouched (no writes); only re-pointed if it aims elsewhere |
+| Name collision in unified | Existing file wins; the incoming one is kept as `<name>.conflict-<ts>` |
+| Old dir contains a subdirectory | Dir is left in place, not symlinked; its `.jsonl` files still move |
 | Other projects | Unaffected; still use their own session directories |
 
 ## Implementation Details
 
-- **Consolidation**: Runs once on extension load. Copies sessions from old dirs to unified one.
-- **Symlinks**: Replaces old directories with symlinks so pi's session discovery automatically routes to the unified directory.
-- **Graceful**: Only touches directories matching the `--proj-nerv_*--` pattern. Other sessions stay isolated.
-- **Safe**: Uses `fs.copyFileSync` to preserve existing data before removing old directories.
+- **Consolidation**: runs on extension load, and is idempotent — a directory
+  that is already a symlink to the unified dir is skipped without any writes.
+- **Symlinks**: replaces old directories with symlinks so pi's session
+  discovery automatically routes to the unified directory.
+- **Graceful**: only touches directories matching `PI_NERV_UNIFIED_SESSIONS_PATTERN`.
+  Other sessions stay isolated.
+- **Safe**: sessions are *moved* (`renameSync`, falling back to copy+unlink
+  across filesystems), and a source directory is only removed with `rmdirSync`
+  once it is verifiably empty. A partial or failed move leaves the directory
+  and its data in place rather than deleting it.
+
+### Detection footgun
+
+`fs.statSync()` follows symlinks, so `statSync(dir).isSymbolicLink()` is *always*
+false. An earlier version used it and therefore re-consolidated and re-created
+every symlink on each launch. Detection uses `fs.lstatSync()`.
 
 ## Reverting (if needed)
 
@@ -91,11 +88,22 @@ rm -f ~/.pi/agent/sessions/--proj-nerv_hk-- ~/.pi/agent/sessions/--proj-nerv_ck-
 # Then disable the extension: PI_NERV_UNIFIED_SESSIONS=off
 ```
 
+## Tests
+
+```bash
+node test.mjs
+```
+
+Runs against a throwaway session tree under `$TMPDIR`; your real
+`~/.pi/agent/sessions` is never touched.
+
 ## Config
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `PI_NERV_UNIFIED_SESSIONS` | on | `off`/`0`/`false` to disable |
+| `PI_NERV_UNIFIED_SESSIONS_DIR` | `--proj-nerv--` | Name of the unified session directory |
+| `PI_NERV_UNIFIED_SESSIONS_PATTERN` | `^--proj-nerv_.*--$` | Regex for directories to fold in |
 
 To disable:
 
