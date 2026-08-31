@@ -45,6 +45,30 @@ pi-hist -a              # all sessions, not just Nerv worktrees
 | `⏎` | chdir to the session's worktree and resume it in pi |
 | `esc` `^c` | quit |
 
+### What gets searched, and how results are ranked
+
+A query matches against both the **session name** and the **message text**, with
+no switch to choose between them. Results are then grouped into two tiers:
+
+| Tier | Matched | Shown |
+|---|---|---|
+| 1 | session name | first, name highlighted in the list |
+| 2 | message text only | after every name match, with a hit count |
+
+A session name is a label you deliberately chose for the work, so it is a
+stronger signal of intent than an incidental mention buried in a transcript.
+Ranking beats recency: an old `payment-notes` outranks a newer session that
+merely says "payment" once in passing.
+
+Within each tier the usual newest-first order is preserved, because the two
+tiers are built as separate lists rather than sorted — a comparison sort would
+have to be explicitly stable to achieve the same thing.
+
+A session can match on its name while containing no matching message. It is
+still listed (it would otherwise be unreachable by its own name), has no hit
+count, and its preview reads `matched on session name` followed by the opening
+message so there is still something to judge it by.
+
 Only **user and assistant** messages are searched. Tool output is discarded at
 parse time: it is the bulk of a transcript (file dumps, diffs, grep results)
 and searching it buries the conversation you are looking for.
@@ -136,6 +160,12 @@ cd ~/.dotfiles/pi-hist && go test ./...
 Covers worktree boundary matching (including the mac layout), transcript
 parsing, the exclusion of tool output, and model behaviour driven through
 `Update` — filtering, scope toggling, selection, and the empty-result path.
+
+Ranking is covered by fixtures built to defeat it: a name match dated oldest
+and a content-only match dated newest, so any implementation that fell back to
+recency would put them in the wrong order. Separate tests assert that a
+name-only match is still listed and explains itself, and that recency survives
+*within* each tier.
 
 Deletion is covered against the real filesystem: that `^d` alone removes
 nothing, that only `y` destroys a file, that cancelling leaves it intact, that

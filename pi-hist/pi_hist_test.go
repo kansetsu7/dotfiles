@@ -14,12 +14,16 @@ import (
 
 // writeSession writes a minimal but structurally faithful transcript.
 func writeSession(t *testing.T, dir, name, cwd, sessName string, msgs ...[2]string) string {
+	return writeSessionAt(t, dir, name, cwd, sessName, "2026-08-20T10:00:00.000Z", msgs...)
+}
+
+func writeSessionAt(t *testing.T, dir, name, cwd, sessName, ts string, msgs ...[2]string) string {
 	t.Helper()
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)
 	}
 	var b strings.Builder
-	b.WriteString(`{"type":"session","version":3,"id":"x","timestamp":"2026-08-20T10:00:00.000Z","cwd":"` + cwd + "\"}\n")
+	b.WriteString(`{"type":"session","version":3,"id":"x","timestamp":"` + ts + `","cwd":"` + cwd + "\"}\n")
 	b.WriteString(`{"type":"model_change","modelId":"claude-opus-5"}` + "\n")
 	if sessName != "" {
 		b.WriteString(`{"type":"session_info","name":"` + sessName + "\"}\n")
@@ -56,6 +60,16 @@ func fixtureRoot(t *testing.T) string {
 	writeSession(t, filepath.Join(root, "--proj-nerv--"), "e.jsonl",
 		"/proj/nerv_sg", "tool-only",
 		[2]string{"toolResult", "grep found payment in 12 files"})
+	// Name matches "payment" but the body does not; deliberately the OLDEST,
+	// so recency alone would rank it last.
+	writeSessionAt(t, filepath.Join(root, "--proj-nerv--"), "f.jsonl",
+		"/proj/nerv_ck", "payment-notes", "2026-08-01T10:00:00.000Z",
+		[2]string{"user", "unrelated scribbles about the ledger"})
+	// Body matches "payment" but the name does not; deliberately the NEWEST,
+	// so recency alone would rank it first.
+	writeSessionAt(t, filepath.Join(root, "--proj-nerv--"), "g.jsonl",
+		"/proj/nerv_sg", "ledger-audit", "2026-08-31T10:00:00.000Z",
+		[2]string{"user", "the payment ledger is off by a cent"})
 	return root
 }
 
@@ -110,8 +124,8 @@ func TestLoadSessions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(sessions) != 5 {
-		t.Fatalf("got %d sessions, want 5", len(sessions))
+	if len(sessions) != 7 {
+		t.Fatalf("got %d sessions, want 7", len(sessions))
 	}
 	byName := map[string]Session{}
 	for _, s := range sessions {
@@ -221,9 +235,9 @@ func newTestModel(t *testing.T) tea.Model {
 
 func TestModelFiltersToNervByDefault(t *testing.T) {
 	m := newTestModel(t)
-	// 4 Nerv sessions in the fixture; the dotfiles one must be excluded
-	if got := len(m.(model).results); got != 4 {
-		t.Fatalf("nerv scope: got %d results, want 4", got)
+	// 6 Nerv sessions in the fixture; the dotfiles one must be excluded
+	if got := len(m.(model).results); got != 6 {
+		t.Fatalf("nerv scope: got %d results, want 6", got)
 	}
 	for _, r := range m.(model).results {
 		if strings.Contains(r.Session.Tree, "dotfiles") {
@@ -233,25 +247,82 @@ func TestModelFiltersToNervByDefault(t *testing.T) {
 }
 
 func TestModelTypingFilters(t *testing.T) {
-	m := typeString(newTestModel(t), "payment")
+	m := typeString(newTestModel(t), "erb")
 	res := m.(model).results
 	if len(res) != 1 {
-		t.Fatalf("query 'payment': got %d results, want 1 (%v)", len(res), names(res))
+		t.Fatalf("query 'erb': got %d results, want 1 (%v)", len(res), names(res))
 	}
-	if res[0].Session.Name != "payment-fix" {
-		t.Errorf("got %q, want payment-fix", res[0].Session.Name)
+	if res[0].Session.Name != "erb-comment" {
+		t.Errorf("got %q, want erb-comment", res[0].Session.Name)
 	}
 }
 
 func TestModelTabWidensScope(t *testing.T) {
 	m := typeString(newTestModel(t), "payment")
-	if got := len(m.(model).results); got != 1 {
-		t.Fatalf("precondition: got %d, want 1", got)
-	}
+	before := len(m.(model).results)
 	m, _ = m.Update(key("tab")) // nerv -> all
 	// now the /root/.dotfiles session ("stow the payment package") joins
-	if got := len(m.(model).results); got != 2 {
-		t.Errorf("after tab: got %d results, want 2 (%v)", got, names(m.(model).results))
+	if got := len(m.(model).results); got != before+1 {
+		t.Errorf("after tab: got %d results, want %d (%v)",
+			got, before+1, names(m.(model).results))
+	}
+}
+
+// A session name is a label chosen for the work, so it outranks an incidental
+// mention in a transcript.
+func TestNameMatchesOutrankContentMatches(t *testing.T) {
+	m := typeString(newTestModel(t), "payment")
+	got := names(m.(model).results)
+	want := []string{
+		"payment-fix",   // name match, 08-20
+		"payment-notes", // name match, 08-01 (oldest, still beats content)
+		"ledger-audit",  // content only, 08-31 (newest, still ranked last)
+	}
+	if len(got) != len(want) {
+		t.Fatalf("got %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("position %d: got %q, want %q (full order %v)", i, got[i], want[i], got)
+		}
+	}
+}
+
+// A name match with no matching message must still be listed.
+func TestNameOnlyMatchIsIncluded(t *testing.T) {
+	m := typeString(newTestModel(t), "payment-notes")
+	res := m.(model).results
+	if len(res) != 1 {
+		t.Fatalf("got %d results, want 1 (%v)", len(res), names(res))
+	}
+	if !res[0].NameMatch {
+		t.Error("NameMatch should be set")
+	}
+	if len(res[0].Hits) != 0 {
+		t.Errorf("expected no content hits, got %d", len(res[0].Hits))
+	}
+	// the preview must explain why it is listed rather than render blank
+	if !strings.Contains(m.(model).View().Content, "matched on session name") {
+		t.Error("preview should say the match came from the name")
+	}
+}
+
+// Within each tier the existing recency order must survive.
+func TestRecencyPreservedWithinTiers(t *testing.T) {
+	m := typeString(newTestModel(t), "payment")
+	res := m.(model).results
+	var nameTier []result
+	for _, r := range res {
+		if r.NameMatch {
+			nameTier = append(nameTier, r)
+		}
+	}
+	for i := 1; i < len(nameTier); i++ {
+		if nameTier[i-1].Session.Time.Before(nameTier[i].Session.Time) {
+			t.Errorf("name tier not newest-first: %q(%s) before %q(%s)",
+				nameTier[i-1].Session.Name, nameTier[i-1].Session.Time.Format("01-02"),
+				nameTier[i].Session.Name, nameTier[i].Session.Time.Format("01-02"))
+		}
 	}
 }
 
@@ -470,11 +541,13 @@ func TestListRowsNeverWrap(t *testing.T) {
 func TestCounterDenominatorIsInScope(t *testing.T) {
 	m := typeString(newTestModel(t), "payment")
 	mm := m.(model)
-	if mm.inScope != 4 {
-		t.Errorf("inScope = %d, want 4 (nerv sessions in the fixture)", mm.inScope)
+	if mm.inScope != 6 {
+		t.Errorf("inScope = %d, want 6 (nerv sessions in the fixture)", mm.inScope)
 	}
-	if !strings.Contains(mm.View().Content, "1/4 sessions") {
-		t.Errorf("counter should read 1/4, got: %q",
+	// 3 of the 6 in-scope sessions match "payment"; the out-of-scope
+	// dotfiles session must not inflate the denominator
+	if !strings.Contains(mm.View().Content, "3/6 sessions") {
+		t.Errorf("counter should read 3/6, got: %q",
 			strings.Split(mm.View().Content, "\n")[0])
 	}
 }

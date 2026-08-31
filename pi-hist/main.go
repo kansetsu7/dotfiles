@@ -60,8 +60,9 @@ var (
 )
 
 type result struct {
-	Session Session
-	Hits    []Hit
+	Session   Session
+	Hits      []Hit
+	NameMatch bool
 }
 
 type model struct {
@@ -103,23 +104,40 @@ func initialModel(all []Session, query string, nervOnly bool) model {
 }
 
 // recompute rebuilds the visible result set. With an empty query every
-// in-scope session is listed (browse mode); otherwise only sessions with at
-// least one matching message survive.
+// in-scope session is listed (browse mode); otherwise a session survives if
+// its name matches or any message does.
+//
+// Name matches are listed first. A session name is a label you chose for the
+// work, so it is a stronger signal than an incidental mention buried in a
+// transcript. Building the two groups separately keeps the sort stable, so
+// within each group sessions stay in recency order.
 func (m *model) recompute() {
 	query := m.input.Value()
 	m.results = m.results[:0]
 	m.inScope = 0
+	var contentOnly []result
 	for _, s := range m.all {
 		if m.nervOnly && !isNerv(s.CWD, m.roots) {
 			continue
 		}
 		m.inScope++
-		hits := s.Search(query)
-		if query != "" && len(hits) == 0 {
+		if query == "" {
+			m.results = append(m.results, result{Session: s})
 			continue
 		}
-		m.results = append(m.results, result{Session: s, Hits: hits})
+		hits := s.Search(query)
+		nameMatch := s.NameMatches(query)
+		if !nameMatch && len(hits) == 0 {
+			continue
+		}
+		r := result{Session: s, Hits: hits, NameMatch: nameMatch}
+		if nameMatch {
+			m.results = append(m.results, r)
+		} else {
+			contentOnly = append(contentOnly, r)
+		}
 	}
+	m.results = append(m.results, contentOnly...)
 	if m.cursor >= len(m.results) {
 		m.cursor = max(0, len(m.results)-1)
 	}
@@ -182,13 +200,22 @@ func (m *model) syncPreview() {
 	b.WriteString(dimStyle.Render(r.Session.Path) + "\n\n")
 
 	query := m.input.Value()
-	if query == "" {
+	switch {
+	case query == "":
 		b.WriteString(dimStyle.Render(fmt.Sprintf("%d messages — type to search", len(r.Session.Messages))))
 		if first, ok := firstUser(r.Session); ok {
 			b.WriteString("\n\n" + roleStyle.Render("first message") + "\n")
 			b.WriteString(wrap(snippet(first, "", 400), w))
 		}
-	} else {
+	case len(r.Hits) == 0:
+		// Matched on the name alone; show the opening message so there is
+		// still something to judge the session by.
+		b.WriteString(dimStyle.Render("matched on session name"))
+		if first, ok := firstUser(r.Session); ok {
+			b.WriteString("\n\n" + roleStyle.Render("first message") + "\n")
+			b.WriteString(wrap(snippet(first, "", 400), w))
+		}
+	default:
 		for i, h := range r.Hits {
 			if i > 0 {
 				b.WriteString("\n")
@@ -324,6 +351,7 @@ func (m model) View() tea.View {
 
 func (m model) listView() string {
 	rows := m.visibleRows()
+	query := m.input.Value()
 	var b strings.Builder
 	if len(m.results) == 0 {
 		b.WriteString(dimStyle.Render("no matches"))
@@ -338,10 +366,13 @@ func (m model) listView() string {
 		if n := len(r.Hits); n > 0 {
 			count = dimStyle.Render(fmt.Sprintf(" (%d)", n))
 		}
+		// Highlighting the name is the cue for why a name-only match is in
+		// the list at all — it has no hit count to show.
+		name := highlight(trunc(r.Session.Name, 16), query)
 		line := marker +
 			dimStyle.Render(r.Session.Time.Format("01-02")) + " " +
 			treeStyle.Render(trunc(r.Session.Tree, 12)) + " " +
-			trunc(r.Session.Name, 16) + count
+			name + count
 		// clip per row so no content can wrap into the next line
 		b.WriteString(lipgloss.NewStyle().MaxWidth(listWidth).Render(line) + "\n")
 	}

@@ -61,6 +61,16 @@ type Hit struct {
 	Msg   Message
 }
 
+// NameMatches reports whether the session's display name contains query.
+// Names are deliberate labels you chose for the work, so a name match is a
+// stronger signal of intent than an incidental mention in the transcript.
+func (s Session) NameMatches(query string) bool {
+	if query == "" {
+		return false
+	}
+	return strings.Contains(strings.ToLower(s.Name), strings.ToLower(query))
+}
+
 const unnamed = "(unnamed)"
 
 func sessionRoot() string {
