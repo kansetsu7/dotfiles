@@ -146,3 +146,5 @@ When editing files in the left column, check if related files need updates:
 | `skills/merge-insights/main.go` (`classifyType` / classification regexes) | `skills/merge-insights/SKILL.md` (the verbatim "How MR types are classified" methodology block must match the code) |
 | `pi/.pi/agent/extensions/*/index.ts` (behaviour or env vars) | the sibling `README.md` (behaviour table + config table) and `test.mjs` |
 | `pi/.pi/agent/extensions/force-session-name/` (name/location) | `pi/.pi/agent/extensions/session-header/README.md` (links to it as its companion) |
+| `skills/pi-extension-audit/audit.sh` (sections / output labels) | `skills/pi-extension-audit/SKILL.md` (the output table in Step 1 names each section) |
+| `skills/pi-extension-audit/SKILL.md` | `commands/pi-audit.md` (thin trigger that delegates to it) |
