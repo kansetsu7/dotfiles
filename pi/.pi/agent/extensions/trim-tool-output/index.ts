@@ -18,10 +18,10 @@
 import { mkdir, readdir, stat, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import type { TextContent } from "@earendil-works/pi-ai";
 import { formatSize } from "@earendil-works/pi-coding-agent";
 import type {
 	ExtensionAPI,
-	TextContent,
 	ToolResultEvent,
 } from "@earendil-works/pi-coding-agent";
 import { buildSalienceRegex, parseExtraPatterns } from "./patterns.ts";
