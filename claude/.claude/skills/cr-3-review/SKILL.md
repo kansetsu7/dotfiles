@@ -170,7 +170,6 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description of the problem>
 - **Suggestion:** <recommended fix>
-- **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
 - **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
@@ -183,7 +182,6 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description>
 - **Suggestion:** <recommended fix>
-- **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
 - **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
@@ -196,7 +194,6 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description>
 - **Suggestion:** <recommended fix>
-- **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
 - **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
@@ -209,7 +206,6 @@ Write the review directly to `.claude/code-review.md` using this structure:
 - **Source:** 🤖 AI / 👤 Reviewer / 🤖 AI + 👤 Reviewer
 - **Issue:** <description>
 - **Suggestion:** <recommended fix>
-- **Status:** [ ] Pending
 - **Decision:** _Accept / Drop / Won't Fix_
 - **Approach:** _Suggested fix / Alternative_
 - **Notes:** _[Your response, alternative approach details, or discussion points]_
