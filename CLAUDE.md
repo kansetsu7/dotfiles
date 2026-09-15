@@ -146,6 +146,7 @@ When editing files in the left column, check if related files need updates:
 | `skills/merge-insights/main.go` (`classifyType` / classification regexes) | `skills/merge-insights/SKILL.md` (the verbatim "How MR types are classified" methodology block must match the code) |
 | `pi/.pi/agent/extensions/*/index.ts` (behaviour or env vars) | the sibling `README.md` (behaviour table + config table) and `test.mjs` |
 | `pi/.pi/agent/extensions/force-session-name/` (name/location) | `pi/.pi/agent/extensions/session-header/README.md` (links to it as its companion) |
+| `pi/.pi/agent/extensions/rm-session/index.ts` (`NAME_HANDOFF` key/protocol) | `pi/.pi/agent/extensions/force-session-name/index.ts` (`takeNameHandoff` consumes the same `globalThis.__piPendingSessionName`), plus both READMEs |
 | `skills/pi-extension-audit/audit.sh` (sections / output labels) | `skills/pi-extension-audit/SKILL.md` (the output table in Step 1 names each section) |
 | `skills/pi-extension-audit/SKILL.md` | `commands/pi-audit.md` (thin trigger that delegates to it) |
 | `pi-hist/main.go` (keybindings / flags) | `pi-hist/README.md` (the keys table and usage block must match) |

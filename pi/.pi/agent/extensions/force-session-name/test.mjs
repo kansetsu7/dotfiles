@@ -159,6 +159,39 @@ async function setup({
 	check("fork: name replaced on the fork", state.name === "Try redis cache");
 }
 
+// 1b. a name handed off by another extension (rm-session's reset) replaces the
+//     prompt instead of asking about a name that is not in question
+{
+	const { h, ctx, state } = await setup({ answers: ["Should not be asked"] });
+	globalThis.__piPendingSessionName = "Carried over";
+	const res = await h.session_before_switch(
+		{ type: "session_before_switch", reason: "new" },
+		ctx,
+	);
+	check("handoff: no prompt", state.prompts.length === 0);
+	check("handoff: switch not cancelled", res?.cancel !== true);
+	check("handoff: consumed", globalThis.__piPendingSessionName === undefined);
+
+	await h.session_start({ type: "session_start", reason: "new" }, ctx);
+	check("handoff: name applied to the new session", state.name === "Carried over");
+	check("handoff: still no prompt", state.prompts.length === 0);
+}
+
+// 1c. a stale handoff is dropped, not applied to some later unrelated switch
+{
+	const { h, ctx, state } = await setup({ answers: ["Typed name"] });
+	globalThis.__piPendingSessionName = "Stale";
+	await h.session_before_switch(
+		{ type: "session_before_switch", reason: "resume" },
+		ctx,
+	);
+	check("stale handoff: dropped on a non-new switch", globalThis.__piPendingSessionName === undefined);
+	await h.session_before_switch({ type: "session_before_switch", reason: "new" }, ctx);
+	await h.session_start({ type: "session_start", reason: "new" }, ctx);
+	check("stale handoff: normal prompt still runs", state.prompts.length === 1);
+	check("stale handoff: typed name wins", state.name === "Typed name");
+}
+
 // 2b. a pending name never leaks into an unrelated later switch
 {
 	const { h, ctx, state } = await setup({ answers: ["Abandoned", "Real name"] });

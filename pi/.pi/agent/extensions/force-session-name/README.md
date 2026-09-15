@@ -27,6 +27,7 @@ inherit the parent's name, so a tree of experiments shows N identical rows.
 | `/name foo` typed manually | Block clears immediately |
 | `Esc`, then `/resume` | Allowed — the block belongs to the session you left, so the resumed one starts clean |
 | Print/JSON mode (`-p`), no UI | Skipped (nothing to prompt with) |
+| `/new` with a name already decided (see below) | Prompt skipped — the supplied name is applied |
 
 Slash commands always pass through while blocked, so `/name`, `/resume`,
 `/quit` remain usable.
@@ -51,6 +52,19 @@ time any extension is asked. That path therefore falls back to prompting in
 
 `PI_FORCE_SESSION_NAME_BLOCK=off` turns off both forms of obstruction: escaping
 no longer cancels the switch or blocks messages, it only warns.
+
+### Name handoff from other extensions
+
+A `/new` whose name is already settled should not be prompted for. Another
+extension can publish it on `globalThis.__piPendingSessionName` immediately
+before triggering the switch; `session_before_switch` consumes it (read-once)
+and applies it in `session_start` exactly as if it had been typed.
+
+[rm-session](../rm-session/) uses this: its reset starts a fresh session that
+deliberately keeps the current name, so prompting would be asking about
+something that is not in question. The handoff is consumed even without a UI
+and on non-`new` switches, so a stale value cannot leak into a later,
+unrelated switch.
 
 ### Why resume only prefills `/resume`
 

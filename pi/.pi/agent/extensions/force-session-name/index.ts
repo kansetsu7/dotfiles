@@ -115,6 +115,24 @@ const clearPendingNames = (): void => {
 	askedBeforeSwitch = false;
 };
 
+/**
+ * A name another extension already decided on for the session about to start
+ * (rm-session's reset carries the current name into the replacement session).
+ * Prompting for it would be asking about something that is not in question, so
+ * the handoff is consumed in place of the dialog. Read-once: a switch that
+ * nobody set it for must still prompt normally.
+ */
+const NAME_HANDOFF = "__piPendingSessionName";
+
+const takeNameHandoff = (): string | undefined => {
+	const global = globalThis as Record<string, unknown>;
+	const handoff = global[NAME_HANDOFF];
+	global[NAME_HANDOFF] = undefined;
+	return typeof handoff === "string" && normalize(handoff).length > 0
+		? normalize(handoff)
+		: undefined;
+};
+
 export default function forceSessionName(pi: ExtensionAPI): void {
 	if (!ENABLED) return;
 
@@ -242,11 +260,21 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 	// `/new`: ask while the current session is still alive, so escaping can
 	// cancel the switch instead of leaving an unnamed session behind.
 	pi.on("session_before_switch", async (event, ctx) => {
-		if (!ctx.hasUI) return;
-
 		// Any switch attempt starts clean; a name from an abandoned attempt must
 		// not leak into this one.
 		clearPendingNames();
+
+		// Someone already supplied the name for this switch — take it and skip
+		// the prompt. Done before the `hasUI` bail so the handoff is not left
+		// dangling for a later, unrelated switch.
+		const handoff = takeNameHandoff();
+		if (event.reason === "new" && handoff) {
+			pendingNewName = handoff;
+			askedBeforeSwitch = true;
+			return;
+		}
+
+		if (!ctx.hasUI) return;
 		if (event.reason !== "new" || !REASONS.has("new")) return;
 
 		const name = await askBeforeSwitch(ctx, "new");
