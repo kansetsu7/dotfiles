@@ -4,3 +4,6 @@ stow/nvim/.config/nvim/plugin/packer_compiled.lua
 .lsp
 nvim/.config/nvim/lazy-lock.json
 tmux/.config/tmux/plugins
+
+# Claude Code built-in skills synced automatically
+claude/.claude/skills/synced/
