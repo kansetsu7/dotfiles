@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.84.2",
+  "lastChangelogVersion": "0.85.1",
   "defaultProvider": "anthropic",
   "defaultModel": "claude-opus-5",
   "defaultThinkingLevel": "high",
@@ -9,7 +9,8 @@
   "packages": [
     "npm:@gotgenes/pi-anthropic-auth",
     "npm:pi-web-access",
-    "npm:pi-mcp-adapter"
+    "npm:pi-mcp-adapter",
+    "npm:pi-vim"
   ],
   "skills": [
     "~/.claude/skills"
