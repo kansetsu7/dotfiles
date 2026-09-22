@@ -1,7 +1,7 @@
 ---
 name: pi-extension-audit
 disable-model-invocation: true
-description: Audit the local pi extensions in `pi/.pi/agent/extensions/` after a pi coding agent upgrade. Runs typecheck, tests, and an export-surface diff against the last audited version, then reviews the CHANGELOG range for behavioural changes. Records the audited version in `pi/.pi/agent/extension-audit.json`.
+description: Audit the local pi extensions in `pi/.pi/agent/extensions/` after a pi coding agent upgrade. Runs typecheck, tests, an export-surface diff against the last audited version, and a self-check for drift between this skill and its script, then reviews the CHANGELOG range for behavioural changes. Records the audited version in `pi/.pi/agent/extension-audit.json`.
 ---
 
 # pi Extension Audit
@@ -30,7 +30,13 @@ extensions still *compile*.
 bash ~/.claude/skills/pi-extension-audit/audit.sh
 ```
 
-Add `--no-net` to skip the npm tarball download (export diff is then skipped).
+Flags:
+
+- `--no-net` — skip the npm tarball download (export diff is then skipped).
+- `--json-state <path>` — use a different state file than the default.
+- `--self-check` — run **only** the drift check below, then exit non-zero if
+  it drifted. Needs neither pi nor network, so other audits can call it cheaply.
+
 Override the repo root with `DOTFILES=/path/to/dotfiles` if it is not
 `~/.dotfiles`.
 
@@ -43,6 +49,18 @@ The script reports:
 | `EXPORT SURFACE DIFF` | Exports present in the last audited version but gone now, intersected with what the extensions actually import. |
 | `imported ... NOT in its current surface` | An import that resolves to nothing today. Flagged even when `removed` is 0, which means it is **pre-existing**, not upgrade fallout. |
 | `CHANGELOG RANGE` | The exact line range and version list to read in step 3. |
+| `SELF-CHECK` | Drift between this file and `audit.sh`: section labels, flags, state keys, and the `pi-audit.md` → skill reference. See below. |
+| `SUMMARY` | One-line pass/fail for typecheck, tests, and doc drift, plus the record command for step 5. |
+
+### What the self-check covers, and what it does not
+
+It is a **consistency** check, not a quality one. It proves this file still
+describes the script; it cannot tell you the workflow is still the right one.
+That judgment belongs to `/audit-instructions`, which reads the prose.
+
+A `DRIFT` line is never fixed by editing the script to match the docs. Decide
+which side is correct first — usually the script, since it is the side that
+runs.
 
 ## Step 2: Triage the mechanical findings
 

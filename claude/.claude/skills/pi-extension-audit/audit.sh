@@ -4,24 +4,104 @@
 # Emits a compact report on stdout. Everything here is deterministic — no LLM
 # judgment. The SKILL.md workflow layers changelog reading on top.
 #
-# Usage: audit.sh [--json-state <path>] [--no-net]
+# Usage: audit.sh [--json-state <path>] [--no-net] [--self-check]
 set -uo pipefail
 
 DOTFILES="${DOTFILES:-$HOME/.dotfiles}"
 STATE="${DOTFILES}/pi/.pi/agent/extension-audit.json"
 EXT_SRC="${DOTFILES}/pi/.pi/agent/extensions"
 NO_NET=0
+SELF_ONLY=0
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--json-state) STATE="$2"; shift 2 ;;
 		--no-net) NO_NET=1; shift ;;
+		--self-check) SELF_ONLY=1; shift ;;
 		*) echo "unknown arg: $1" >&2; exit 2 ;;
 	esac
 done
 
 say() { printf '%s\n' "$*"; }
 hr()  { printf '\n== %s ==\n' "$*"; }
+
+# ---------- documentation drift self-check ----------
+# SKILL.md describes this script; pi-audit.md delegates to SKILL.md. Code
+# breaking is loud, prose drifting away from it is silent. This makes it loud.
+# Deterministic like the rest of the file — no LLM judgment.
+SELF="$(readlink -f "$0")"
+SELF_DIR="$(dirname "$SELF")"
+SKILL_MD="$SELF_DIR/SKILL.md"
+CMD_MD="$SELF_DIR/../../commands/pi-audit.md"
+DRIFT=0
+
+self_check() {
+	hr "SELF-CHECK"
+
+	if [ ! -f "$SKILL_MD" ]; then
+		say "  DRIFT: no SKILL.md at $SKILL_MD"
+		DRIFT=1
+		return
+	fi
+
+	# 1. Report sections emitted here vs rows in the SKILL.md Step 1 table.
+	#    Labels are truncated at " (" so interpolated suffixes do not count.
+	local emitted documented missing phantom
+	emitted="$(grep -oE 'hr "[A-Z][^"]*"' "$SELF" \
+		| sed 's/^hr "//; s/"$//; s/ (.*$//' | sort -u)"
+	documented="$(sed -n 's/^| `\([A-Z][A-Z -]*\)`.*/\1/p' "$SKILL_MD" | sort -u)"
+
+	missing="$(comm -23 <(printf '%s\n' "$emitted") <(printf '%s\n' "$documented"))"
+	phantom="$(comm -13 <(printf '%s\n' "$emitted") <(printf '%s\n' "$documented"))"
+
+	if [ -n "$missing" ]; then
+		DRIFT=1
+		say "  DRIFT: emitted but absent from the SKILL.md section table:"
+		printf '     - %s\n' $missing
+	fi
+	if [ -n "$phantom" ]; then
+		DRIFT=1
+		say "  DRIFT: documented in SKILL.md but no longer emitted:"
+		printf '     - %s\n' $phantom
+	fi
+
+	# 2. CLI flags accepted here vs flags mentioned in SKILL.md.
+	local f
+	for f in $(grep -oE '^[[:space:]]+--[a-z-]+\)' "$SELF" | tr -d ' \t)'); do
+		grep -qF -- "$f" "$SKILL_MD" || {
+			DRIFT=1
+			say "  DRIFT: flag $f is accepted but undocumented in SKILL.md"
+		}
+	done
+
+	# 3. State-file keys written here vs the JSON example in SKILL.md.
+	local k
+	for k in $(grep -o 'JSON.stringify({[^}]*}' "$SELF" \
+		| grep -oE '[a-zA-Z_][a-zA-Z0-9_]*:' | tr -d ':' | sort -u); do
+		grep -qF "\"$k\"" "$SKILL_MD" || {
+			DRIFT=1
+			say "  DRIFT: state key '$k' is written but missing from the SKILL.md example"
+		}
+	done
+
+	# 4. The command layer must still resolve to this skill.
+	if [ -f "$CMD_MD" ]; then
+		grep -qF 'pi-extension-audit/SKILL.md' "$CMD_MD" || {
+			DRIFT=1
+			say "  DRIFT: $(basename "$CMD_MD") no longer points at pi-extension-audit/SKILL.md"
+		}
+	else
+		DRIFT=1
+		say "  DRIFT: no command file at $CMD_MD"
+	fi
+
+	[ "$DRIFT" -eq 0 ] && say "  clean — docs match this script"
+}
+
+if [ "$SELF_ONLY" -eq 1 ]; then
+	self_check
+	exit "$DRIFT"
+fi
 
 # ---------- locate pi ----------
 PI_BIN="$(command -v pi || true)"
@@ -222,9 +302,12 @@ else
 	fi
 fi
 
+self_check
+
 hr "SUMMARY"
 say "  typecheck: $([ "${TC_RC:-1}" -eq 0 ] && echo PASS || echo "FAIL/SKIP (rc=${TC_RC:-?})")"
 say "  tests:     $([ "$TEST_FAIL" -eq 0 ] && echo PASS || echo FAIL)"
+say "  doc drift: $([ "$DRIFT" -eq 0 ] && echo CLEAN || echo DRIFTED)"
 say "  state file: $STATE"
 say ""
 say "If the audit concludes clean, record it:"
