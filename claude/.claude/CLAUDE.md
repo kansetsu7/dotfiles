@@ -6,7 +6,8 @@
 
 Break complex work into stages tracked in `.claude/plan.md` (goal, success
 criteria, tests, status per stage). Update status as you progress; remove the
-file when all stages are done.
+file when all stages are done. (pi applies the same rules to a root-level
+`plan.md`; see `~/.pi/agent/AGENTS.md`.)
 
 ### 2. When Stuck (After 3 Attempts)
 
@@ -17,15 +18,15 @@ Use `/unstuck` skill for structured problem-solving workflow.
 
 When Bash is needed for shell-only ops, prefer `fd`, `rg`, `ast-grep`, `jq`, `yq`.
 
-## Testing
-
-Use agents to run tests.
-
 ## Plan Mode
 - Make the plan extremely concise. Sacrifice grammar for the sake of concision.
 - At the end of each plan, give me a list of unresolved questions to answer, if any.
 
 ## Commit Style
+
+> Kept in sync with the `Commit style` section of `~/.pi/agent/AGENTS.md`.
+> Claude Code does not read `AGENTS.md` and pi does not read this file, so one
+> copy per harness is necessary. Edit both or neither.
 
 **Scope**: The commit message must describe ONLY what is actually staged.
 Before writing the message, check `git diff --cached --stat` and never

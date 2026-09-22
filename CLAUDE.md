@@ -174,4 +174,5 @@ When editing files in the left column, check if related files need updates:
 | `skills/pi-extension-audit/audit.sh` (sections / flags / state keys) | `skills/pi-extension-audit/SKILL.md` (Step 1 documents each). Enforced mechanically — run `audit.sh --self-check`, which fails on drift |
 | `skills/pi-extension-audit/SKILL.md` | `commands/pi-audit.md` (thin trigger that delegates to it); the `--self-check` link is enforced by the same check |
 | `commands/audit-instructions.md` (mechanical checks in Step 1) | `skills/pi-extension-audit/audit.sh` (it invokes `--self-check`) |
+| `~/.pi/agent/AGENTS.md` (`Commit style`) | `claude/.claude/CLAUDE.md` (`## Commit Style`) — the same rules duplicated per harness, since pi does not read `CLAUDE.md` and Claude Code does not read `AGENTS.md`. Edit both or neither |
 | `pi-hist/main.go` (keybindings / flags) | `pi-hist/README.md` (the keys table and usage block must match) |
