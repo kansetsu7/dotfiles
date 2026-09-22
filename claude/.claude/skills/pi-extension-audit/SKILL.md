@@ -106,11 +106,18 @@ under the new version — the cheapest signal is observing an extension's own
 side effects in a real session (e.g. `trim-tool-output` appends a
 `[trim-tool-output: kept ...]` notice to large tool results).
 
-Also check anything that mutates state on startup actually behaved:
+Also check anything that mutates session state on startup actually behaved.
+`force-session-name` is the usable probe — it names the session before the first
+message, so the entry is there even in a session that did nothing else:
 
 ```bash
-ls -la ~/.pi/agent/sessions/   # nerv-unified-sessions rewrites symlinks here
+jq -c 'select(.type=="session_info")' "$PI_SESSION_FILE"
 ```
+
+Exactly one entry per naming action. A **duplicate** `session_info` with the
+same name means `setSessionName()` ran twice — that call appends
+unconditionally, with no dedupe — which is worth a finding even though the
+resolved name stays correct.
 
 ## Step 5: Report, then record
 
