@@ -63,7 +63,7 @@ Ctrl+D. Install `trash` if you want the file to be recoverable.
 
 ### Keeping the name
 
-The name is carried into the replacement session twice, on purpose:
+The name is carried into the replacement session by two routes, on purpose:
 
 - `newSession({ setup })` writes it straight into the new session — the path
   taken when [force-session-name](../force-session-name/) is off, absent, or
@@ -72,7 +72,13 @@ The name is carried into the replacement session twice, on purpose:
   `/new` under the hood. Being asked for a name pi already knows is noise, so
   the name is also published on `globalThis.__piPendingSessionName` before the
   switch; force-session-name consumes it in `session_before_switch` in place of
-  its prompt. `setup()` then sees the name already applied and skips.
+  its prompt.
+
+`setup()` runs when the session is created, which is *before* `session_start`,
+so it is always the route that writes. force-session-name is the side that
+dedupes: it compares the current name before calling `setSessionName()`, which
+appends unconditionally and would otherwise produce two identical
+`session_info` entries.
 
 ## Config (environment variables)
 

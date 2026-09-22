@@ -21,13 +21,20 @@
  *    (`targetSessionFile` unset — `new`/`resume`/`fork` must leave the file
  *    alone), `reset` deletes only on the `new` teardown its own
  *    `ctx.newSession()` triggers.
- *  - The name is carried over twice, deliberately. `setup()` writes it into
- *    the replacement session directly, which is what happens when
+ *  - The name is carried over by two routes, deliberately. `setup()` writes it
+ *    into the replacement session directly, which is what happens when
  *    force-session-name is disabled or absent. When it *is* loaded, its
  *    `session_before_switch` prompt would fire first and ask for a name pi
  *    already knows — so the name is also handed off through a module-global
  *    (`globalThis[NAME_HANDOFF]`) that force-session-name consumes in place of
- *    prompting. `setup()` then sees the name already applied and skips.
+ *    prompting.
+ *
+ *    The ordering is easy to get backwards: `setup()` runs when the session is
+ *    created, *before* `session_start` fires, so it is always the writer and
+ *    its `getSessionName() !== name` guard never skips. force-session-name is
+ *    the side that must not write again — it dedupes against the current name
+ *    before calling `setSessionName()`, which would otherwise append a second,
+ *    identical `session_info` entry.
  *  - `armed` is per-session state on purpose. A session switch reloads the
  *    extension, which disarms the deletion — if you asked to retire *this*
  *    session and then navigated away, the safe reading is that you changed
@@ -162,8 +169,8 @@ export default function rmSession(pi: ExtensionAPI): void {
 		try {
 			const { cancelled } = await ctx.newSession({
 				setup: async (sessionManager) => {
-					// A no-op when force-session-name already applied the handoff;
-					// the source of truth when it is off, absent, or headless.
+					// Runs at creation, before session_start, so this is the write
+					// that lands; force-session-name dedupes against it afterwards.
 					if (name && sessionManager.getSessionName() !== name) {
 						sessionManager.appendSessionInfo(name);
 					}

@@ -66,6 +66,12 @@ something that is not in question. The handoff is consumed even without a UI
 and on non-`new` switches, so a stale value cannot leak into a later,
 unrelated switch.
 
+Applying the name is idempotent: `pi.setSessionName()` appends a `session_info`
+entry with no dedupe, and rm-session's `newSession({ setup })` callback has
+already written the name by the time `session_start` fires. Re-applying it
+would leave two identical `session_info` entries in the transcript, so the
+current name is compared first.
+
 ### Why resume only prefills `/resume`
 
 Event handlers receive an `ExtensionContext`, but `switchSession()` is only on

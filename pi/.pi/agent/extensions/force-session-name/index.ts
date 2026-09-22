@@ -139,6 +139,20 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 	let pending = false;
 	let prompting = false;
 
+	/**
+	 * `pi.setSessionName()` appends a `session_info` entry unconditionally:
+	 * there is no dedupe against the current name. Another extension can have
+	 * applied the same name already: rm-session's reset writes it from the
+	 * `newSession({ setup })` callback, which runs when the session is created,
+	 * i.e. *before* the `session_start` handler below gets to apply the handoff.
+	 * Writing again there would leave two identical `session_info` entries.
+	 */
+	const applyName = (name: string): boolean => {
+		if (pi.getSessionName() === name) return false;
+		pi.setSessionName(name);
+		return true;
+	};
+
 	const setPending = (ctx: ExtensionContext, value: boolean): void => {
 		pending = value;
 		ctx.ui.setStatus(
@@ -240,7 +254,7 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 				reason === "fork" && inherited ? `${inherited} (fork)` : undefined;
 			const name = await askForName(ctx, reason, suggestion);
 			if (name) {
-				pi.setSessionName(name);
+				applyName(name);
 				setPending(ctx, false);
 				ctx.ui.notify(`Session named: ${name}`, "info");
 				return;
@@ -331,7 +345,7 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 			const asked = askedBeforeSwitch;
 			clearPendingNames();
 			if (name) {
-				pi.setSessionName(name);
+				applyName(name);
 				ctx.ui.notify(`Session named: ${name}`, "info");
 				return;
 			}

@@ -79,6 +79,7 @@ async function setup({
 		status: undefined,
 		selects: [],
 		editorText: "",
+		nameWrites: [],
 	};
 	const pi = {
 		on: (event, fn) => {
@@ -86,6 +87,8 @@ async function setup({
 		},
 		getSessionName: () => state.name,
 		setSessionName: (n) => {
+			// pi appends a session_info entry per call, with no dedupe.
+			state.nameWrites.push(n);
 			state.name = n;
 		},
 	};
@@ -175,6 +178,41 @@ async function setup({
 	await h.session_start({ type: "session_start", reason: "new" }, ctx);
 	check("handoff: name applied to the new session", state.name === "Carried over");
 	check("handoff: still no prompt", state.prompts.length === 0);
+}
+
+// 1b-bis. regression: rm-session's reset applies the handed-off name from
+//     newSession({ setup }), which runs *before* session_start. Re-applying it
+//     here would append a second, identical session_info entry.
+{
+	const { h, ctx, state } = await setup({ answers: ["Should not be asked"] });
+	globalThis.__piPendingSessionName = "Carried over";
+	await h.session_before_switch(
+		{ type: "session_before_switch", reason: "new" },
+		ctx,
+	);
+	// The new session already carries the name when session_start fires.
+	state.name = "Carried over";
+	await h.session_start({ type: "session_start", reason: "new" }, ctx);
+	check(
+		"handoff: name already applied is not written again",
+		state.nameWrites.length === 0,
+	);
+	check("handoff: name still correct", state.name === "Carried over");
+}
+
+// 1b-ter. the same path still writes when nobody applied the name first
+{
+	const { h, ctx, state } = await setup({ answers: ["Should not be asked"] });
+	globalThis.__piPendingSessionName = "Carried over";
+	await h.session_before_switch(
+		{ type: "session_before_switch", reason: "new" },
+		ctx,
+	);
+	await h.session_start({ type: "session_start", reason: "new" }, ctx);
+	check(
+		"handoff: unapplied name is written exactly once",
+		state.nameWrites.length === 1 && state.nameWrites[0] === "Carried over",
+	);
 }
 
 // 1c. a stale handoff is dropped, not applied to some later unrelated switch
