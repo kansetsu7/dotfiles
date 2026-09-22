@@ -1,9 +1,12 @@
 # Agent Guidelines
 
 Global instructions for the pi coding agent. pi's harness is deliberately
-thin (tools: `read`, `bash`, `edit`, `write`, `glob`, `grep`; no subagents,
-no built-in task tracker), so behaviors are stated explicitly here rather
-than assumed.
+thin: no subagents, no plan mode, no built-in task tracker. The built-in
+tools are `read`, `bash`, `edit`, `write` — the read-only `grep`, `find`,
+and `ls` tools exist but are **not** enabled by default, so shell-only
+search is the norm here. Anything else (web search, fetch, MCP) comes from
+`packages` in `settings.json`. Behaviors are therefore stated explicitly
+below rather than assumed.
 
 ## Process
 
