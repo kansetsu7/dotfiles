@@ -63,6 +63,10 @@ for c in "$(dirname "$PI_PKG")/../typescript/bin/tsc" "$PI_PKG/node_modules/type
 done
 [ -n "$TSC" ] || TSC="$(command -v tsc || true)"
 
+# pi loads extensions as ESM (jiti), so the harness must be ESM too — otherwise
+# "module": "nodenext" treats every file as CommonJS and rejects import.meta.
+printf '{ "type": "module" }\n' > "$HARNESS/package.json"
+
 cat > "$HARNESS/tsconfig.json" <<'JSON'
 {
   "compilerOptions": {

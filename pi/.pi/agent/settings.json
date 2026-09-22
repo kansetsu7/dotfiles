@@ -13,7 +13,8 @@
     "npm:pi-vim"
   ],
   "skills": [
-    "~/.claude/skills"
+    "~/.claude/skills",
+    "!../../.claude/skills/synced/**"
   ],
   "prompts": [
     "~/.claude/commands"
