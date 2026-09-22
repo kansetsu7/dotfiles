@@ -55,7 +55,11 @@ passes, each cheap:
 bash ~/.claude/skills/pi-extension-audit/audit.sh --self-check
 
 # b. Dead references — paths and files named in instructions that do not exist.
-rg -oN '`[^`]*\.(md|sh|ts|mjs|json|go)`' --glob '*.md' ~/.claude claude/.claude \
+#    Scoped deliberately: ~/.claude/CLAUDE.md and ~/.claude/skills are symlinks
+#    back into this repo, and plugins/ + skills/synced/ are vendored, not ours.
+#    Unscoped this returns ~1019 hits instead of ~123, almost all noise.
+rg -oN '`[^`]*\.(md|sh|ts|mjs|json|go)`' --glob '*.md' \
+  --glob '!**/plugins/**' --glob '!**/synced/**' claude/.claude \
   | sort -u
 
 # c. Skills missing required frontmatter keys.
@@ -65,8 +69,19 @@ for f in claude/.claude/skills/*/SKILL.md; do
 done
 ```
 
-Resolve each path from (b) before reading further — a stale path is a finding,
-not a judgment call.
+Resolve each path from (b) against `claude/.claude/` (most are written relative
+to it, e.g. `scripts/detect-branch-base.sh`), not the repo root.
+
+A path that fails to resolve is a finding **only if it is meant to exist in
+this repo**. Three classes are expected to be absent and are not findings:
+
+- **Generated artifacts** — `.claude/plan.md`, `.claude/fix-plan.md`,
+  `.claude/code-review.md`; created by a workflow, not committed.
+- **Target-repo files** — `docs/README.md`, `docs/rails_testing_philosophy.md`;
+  they live in the project being worked on, not in dotfiles.
+- **URLs and placeholders** — `<slug>`, `{name}`, `https://…`.
+
+Everything else is a stale path: a finding, not a judgment call.
 
 Also check the `File Dependencies` table in `CLAUDE.md`: every row asserts a
 coupling. Verify the left-hand file still exists and the right-hand file still
