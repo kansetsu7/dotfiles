@@ -6,7 +6,7 @@
  *
  *   node test.mjs
  */
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -153,7 +153,7 @@ async function setup({
 	check("fork: prompts despite inherited name", state.prompts.length === 1);
 	check(
 		"fork: suggests parent-derived name",
-		state.prompts[0].placeholder === "Parent task (fork)",
+		state.prompts[0].placeholder === "Parent task (fork) — press Enter to accept",
 	);
 	check("fork: not cancelled", res?.cancel !== true);
 	check("fork: parent keeps its name", state.name === "Parent task");
@@ -508,6 +508,132 @@ async function setup({
 		s5.selects.length === 0 && s5.name === "No picker",
 	);
 	delete process.env.PI_FORCE_SESSION_NAME_PICKER;
+}
+
+// 9. git branch as the default name inside a configured work directory
+{
+	// A repo that looks like a company checkout: <root>/repo/.git/HEAD
+	const workRoot = mkdtempSync(join(tmpdir(), "fsn-work-"));
+	const repo = join(workRoot, "repo");
+	const nested = join(repo, "app", "src");
+	mkdirSync(join(repo, ".git"), { recursive: true });
+	mkdirSync(nested, { recursive: true });
+	const setHead = (contents) =>
+		writeFileSync(join(repo, ".git", "HEAD"), contents);
+	setHead("ref: refs/heads/feature/ABC-123-payment-arrangement\n");
+	const BRANCH_NAME = "feature/ABC-123-payment-arrangement";
+
+	const personalRoot = mkdtempSync(join(tmpdir(), "fsn-personal-"));
+	mkdirSync(join(personalRoot, ".git"), { recursive: true });
+	writeFileSync(join(personalRoot, ".git", "HEAD"), "ref: refs/heads/main\n");
+
+	process.env.PI_FORCE_SESSION_NAME_BRANCH_DIRS = workRoot;
+
+	// empty submit = accept the offered branch
+	const { h, ctx, state } = await setup({ answers: [""], cwd: repo });
+	await h.session_before_switch({ type: "session_before_switch", reason: "new" }, ctx);
+	await h.session_start({ type: "session_start", reason: "new" }, ctx);
+	check(
+		"branch: offered as the placeholder default",
+		state.prompts[0].placeholder === `${BRANCH_NAME} — press Enter to accept`,
+	);
+	check("branch: empty submit accepts it", state.name === BRANCH_NAME);
+
+	// typing still wins
+	const { h: h2, ctx: c2, state: s2 } = await setup({
+		answers: ["Something else"],
+		cwd: repo,
+	});
+	await h2.session_before_switch({ type: "session_before_switch", reason: "new" }, c2);
+	await h2.session_start({ type: "session_start", reason: "new" }, c2);
+	check("branch: a typed name overrides it", s2.name === "Something else");
+
+	// a subdirectory of the repo resolves the same branch
+	const { h: h3, ctx: c3, state: s3 } = await setup({ answers: [""], cwd: nested });
+	await h3.session_before_switch({ type: "session_before_switch", reason: "new" }, c3);
+	await h3.session_start({ type: "session_start", reason: "new" }, c3);
+	check("branch: found from a nested cwd", s3.name === BRANCH_NAME);
+
+	// startup (bare `pi`) gets the same default
+	const { h: h4, ctx: c4, state: s4 } = await setup({ answers: [""], cwd: repo });
+	await h4.session_start({ type: "session_start", reason: "startup" }, c4);
+	check("branch: startup uses it too", s4.name === BRANCH_NAME);
+
+	// detached HEAD is a bare sha — not a session name
+	setHead("9f4c1b2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b\n");
+	const { h: h5, ctx: c5, state: s5 } = await setup({ answers: ["", "", ""], cwd: repo });
+	await h5.session_before_switch({ type: "session_before_switch", reason: "new" }, c5);
+	check(
+		"branch: detached HEAD offers nothing",
+		s5.prompts[0].placeholder === "e.g. Refactor auth module" && s5.name === undefined,
+	);
+	setHead(`ref: refs/heads/${BRANCH_NAME}\n`);
+
+	// outside the configured roots the branch is ignored, even in a git repo
+	const { h: h6, ctx: c6, state: s6 } = await setup({ answers: ["", "Typed"], cwd: personalRoot });
+	await h6.session_before_switch({ type: "session_before_switch", reason: "new" }, c6);
+	await h6.session_start({ type: "session_start", reason: "new" }, c6);
+	check(
+		"branch: personal project gets no default",
+		s6.prompts[0].placeholder === "e.g. Refactor auth module" && s6.name === "Typed",
+	);
+
+	// a work dir that is not a repo at all
+	const plainDir = join(workRoot, "not-a-repo");
+	mkdirSync(plainDir, { recursive: true });
+	const { h: h7, ctx: c7, state: s7 } = await setup({ answers: ["", "Typed"], cwd: plainDir });
+	await h7.session_before_switch({ type: "session_before_switch", reason: "new" }, c7);
+	check(
+		"branch: no repo, no default",
+		s7.prompts[0].placeholder === "e.g. Refactor auth module",
+	);
+
+	// linked worktree: .git is a file pointing at the real gitdir
+	const wtGitDir = join(repo, ".git", "worktrees", "hotfix");
+	mkdirSync(wtGitDir, { recursive: true });
+	writeFileSync(join(wtGitDir, "HEAD"), "ref: refs/heads/hotfix/CK-9\n");
+	const worktree = join(workRoot, "hotfix");
+	mkdirSync(worktree, { recursive: true });
+	writeFileSync(join(worktree, ".git"), `gitdir: ${wtGitDir}\n`);
+	const { h: h8, ctx: c8, state: s8 } = await setup({ answers: [""], cwd: worktree });
+	await h8.session_before_switch({ type: "session_before_switch", reason: "new" }, c8);
+	await h8.session_start({ type: "session_start", reason: "new" }, c8);
+	check("branch: worktree HEAD is used", s8.name === "hotfix/CK-9");
+
+	// fork keeps the parent-derived default: the branch would collide with the
+	// session it was forked from
+	const { h: h9, ctx: c9, state: s9 } = await setup({
+		answers: [""],
+		cwd: repo,
+		name: "Parent task",
+	});
+	await h9.session_before_fork(
+		{ type: "session_before_fork", entryId: "e1", position: "at" },
+		c9,
+	);
+	await h9.session_start({ type: "session_start", reason: "fork" }, c9);
+	check("branch: fork still defaults to the parent name", s9.name === "Parent task (fork)");
+
+	// opt-out
+	process.env.PI_FORCE_SESSION_NAME_BRANCH = "off";
+	const { h: h10, ctx: c10, state: s10 } = await setup({ answers: ["", "Typed"], cwd: repo });
+	await h10.session_before_switch({ type: "session_before_switch", reason: "new" }, c10);
+	check(
+		"branch: BRANCH=off disables the default",
+		s10.prompts[0].placeholder === "e.g. Refactor auth module",
+	);
+	delete process.env.PI_FORCE_SESSION_NAME_BRANCH;
+	delete process.env.PI_FORCE_SESSION_NAME_BRANCH_DIRS;
+
+	// a work root is matched on path boundaries: /proj must not swallow /project
+	process.env.PI_FORCE_SESSION_NAME_BRANCH_DIRS = join(workRoot, "rep");
+	const { h: h11, ctx: c11, state: s11 } = await setup({ answers: ["", "Typed"], cwd: repo });
+	await h11.session_before_switch({ type: "session_before_switch", reason: "new" }, c11);
+	check(
+		"branch: prefix match respects path boundaries",
+		s11.prompts[0].placeholder === "e.g. Refactor auth module",
+	);
+	delete process.env.PI_FORCE_SESSION_NAME_BRANCH_DIRS;
 }
 
 // 8. kill switch

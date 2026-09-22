@@ -27,6 +27,10 @@
  *    so `/name`, `/resume`, `/quit` etc. still work.
  *  - Forks always prompt even though `getSessionName()` is non-empty, because
  *    that name came from the parent branch.
+ *  - Inside a configured work directory the dialog offers the current git
+ *    branch as the default: submitting an empty input accepts it. `ctx.ui.input`
+ *    only takes a *placeholder* (pi never forwards `initialValue` to the input
+ *    component), so "prefilled" has to mean "Enter accepts it".
  *
  * Config (env):
  *   PI_FORCE_SESSION_NAME=off        disable entirely
@@ -35,8 +39,13 @@
  *   PI_FORCE_SESSION_NAME_MAX_PROMPTS default 3 re-asks per trigger
  *   PI_FORCE_SESSION_NAME_BLOCK=off  warn only: never cancel a switch or block input
  *   PI_FORCE_SESSION_NAME_PICKER=off skip new/resume choice, ask for a name
+ *   PI_FORCE_SESSION_NAME_BRANCH=off do not default to the git branch
+ *   PI_FORCE_SESSION_NAME_BRANCH_DIRS comma list of roots where it applies
  */
 
+import { readFileSync, statSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import {
 	SessionManager,
 	type ExtensionAPI,
@@ -65,6 +74,17 @@ const PICKER = !isOff(process.env.PI_FORCE_SESSION_NAME_PICKER);
 const BLOCK_INPUT = !isOff(process.env.PI_FORCE_SESSION_NAME_BLOCK);
 const MIN_LEN = Math.max(1, num(process.env.PI_FORCE_SESSION_NAME_MIN_LEN, 3));
 const MAX_PROMPTS = Math.max(1, num(process.env.PI_FORCE_SESSION_NAME_MAX_PROMPTS, 3));
+const BRANCH = !isOff(process.env.PI_FORCE_SESSION_NAME_BRANCH);
+
+// Work projects are named after the branch far more often than not; personal
+// ones are not, so the default is a path allowlist rather than "any git repo".
+const DEFAULT_BRANCH_DIRS = ["/proj", "/project/playbooks", "/project/vm"];
+const expandHome = (p: string): string =>
+	p === "~" || p.startsWith("~/") ? join(homedir(), p.slice(1)) : p;
+const configuredBranchDirs = csv(process.env.PI_FORCE_SESSION_NAME_BRANCH_DIRS);
+const BRANCH_DIRS = (
+	configuredBranchDirs.length > 0 ? configuredBranchDirs : DEFAULT_BRANCH_DIRS
+).map((dir) => resolve(expandHome(dir)));
 
 const configuredReasons = csv(process.env.PI_FORCE_SESSION_NAME_REASONS).filter(
 	(r): r is Reason => (ALL_REASONS as string[]).includes(r),
@@ -97,6 +117,58 @@ const RESUME_COMMAND = "/resume";
 
 const normalize = (raw: string): string =>
 	raw.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+
+/** `cwd` is inside one of the configured work roots (exact dir or below it). */
+const isWorkDir = (cwd: string): boolean => {
+	const path = resolve(cwd);
+	return BRANCH_DIRS.some((dir) => path === dir || path.startsWith(`${dir}/`));
+};
+
+/**
+ * The `.git` of the repo containing `cwd`, or undefined. A linked worktree has
+ * a `.git` *file* pointing at the real gitdir, whose HEAD is the worktree's.
+ */
+const findGitDir = (cwd: string): string | undefined => {
+	let dir = resolve(cwd);
+	for (;;) {
+		const dotGit = join(dir, ".git");
+		try {
+			const stat = statSync(dotGit);
+			if (stat.isDirectory()) return dotGit;
+			const pointer = /^gitdir:\s*(.+)$/m.exec(readFileSync(dotGit, "utf8"));
+			if (pointer) return resolve(dir, pointer[1].trim());
+		} catch {
+			// no .git here — keep walking up
+		}
+		const parent = dirname(dir);
+		if (parent === dir) return undefined;
+		dir = parent;
+	}
+};
+
+/**
+ * Current branch, read straight from `.git/HEAD` — no `git` process, and no
+ * dependency on one being installed. Detached HEAD holds a bare sha, which is
+ * not a useful session name, so it yields undefined.
+ */
+const gitBranch = (cwd: string): string | undefined => {
+	try {
+		const gitDir = findGitDir(cwd);
+		if (!gitDir) return undefined;
+		const head = readFileSync(join(gitDir, "HEAD"), "utf8");
+		const ref = /^ref:\s*refs\/heads\/(.+)$/m.exec(head);
+		return ref ? normalize(ref[1]) : undefined;
+	} catch {
+		return undefined;
+	}
+};
+
+/** Branch name to offer as the default, when this cwd is a work project. */
+const branchSuggestion = (cwd: string): string | undefined => {
+	if (!BRANCH || !isWorkDir(cwd)) return undefined;
+	const branch = gitBranch(cwd);
+	return branch && branch.length >= MIN_LEN ? branch : undefined;
+};
 
 // The replacement session runtime (and with it a fresh extension instance) is
 // only created after `session_before_*` returns, so the accepted name has to
@@ -161,6 +233,18 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 		);
 	};
 
+	/**
+	 * What to name the session if the user just presses Enter: the branch in a
+	 * work project, or the parent's name for a fork. Forks keep the inherited
+	 * name because a fork of a branch's session is still about that branch —
+	 * the branch alone would collide with the session it was forked from.
+	 */
+	const defaultName = (ctx: ExtensionContext, reason: Reason): string | undefined => {
+		const inherited = pi.getSessionName();
+		if (reason === "fork" && inherited) return `${inherited} (fork)`;
+		return branchSuggestion(ctx.cwd);
+	};
+
 	async function askForName(
 		ctx: ExtensionContext,
 		reason: Reason,
@@ -174,10 +258,15 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 					: `Name required (min ${MIN_LEN} characters)`;
 			const answer = await ctx.ui.input(
 				title,
-				suggestion ?? "e.g. Refactor auth module",
+				suggestion
+					? `${suggestion} — press Enter to accept`
+					: "e.g. Refactor auth module",
 			);
 			if (answer === undefined) return undefined; // escaped
 			const name = normalize(answer);
+			// pi has no way to prefill the input, so an empty submit is how the
+			// offered default gets accepted.
+			if (name === "" && suggestion) return suggestion;
 			if (name.length >= MIN_LEN) return name;
 			ctx.ui.notify(
 				`Session name must be at least ${MIN_LEN} characters.`,
@@ -234,9 +323,7 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 		ctx: ExtensionContext,
 		reason: Reason,
 	): Promise<string | undefined> {
-		const inherited = pi.getSessionName();
-		const suggestion =
-			reason === "fork" && inherited ? `${inherited} (fork)` : undefined;
+		const suggestion = defaultName(ctx, reason);
 		prompting = true;
 		try {
 			return await askForName(ctx, reason, suggestion);
@@ -249,10 +336,7 @@ export default function forceSessionName(pi: ExtensionAPI): void {
 		if (prompting) return;
 		prompting = true;
 		try {
-			const inherited = pi.getSessionName();
-			const suggestion =
-				reason === "fork" && inherited ? `${inherited} (fork)` : undefined;
-			const name = await askForName(ctx, reason, suggestion);
+			const name = await askForName(ctx, reason, defaultName(ctx, reason));
 			if (name) {
 				applyName(name);
 				setPending(ctx, false);

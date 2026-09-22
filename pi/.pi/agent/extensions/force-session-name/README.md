@@ -21,7 +21,8 @@ inherit the parent's name, so a tree of experiments shows N identical rows.
 | └ escaped the name dialog | Footer shows `⚠ unnamed session`; the next non-slash message re-prompts and is **blocked** until named |
 | `pi -c` / `--session` (has history) | Skipped — continuing work is not interrupted |
 | `/new` | Name dialog opens **before** the current session is torn down |
-| `/fork`, `/clone` | Same, pre-filled hint `<parent name> (fork)` |
+| `/fork`, `/clone` | Same, default `<parent name> (fork)` |
+| cwd is under a configured work root | The dialog offers the current git branch — press Enter to take it |
 | └ escaped either dialog | The switch/fork is **cancelled** — you stay in the current session |
 | Name too short | Re-prompts (up to `MAX_PROMPTS` times) |
 | `/name foo` typed manually | Block clears immediately |
@@ -31,6 +32,39 @@ inherit the parent's name, so a tree of experiments shows N identical rows.
 
 Slash commands always pass through while blocked, so `/name`, `/resume`,
 `/quit` remain usable.
+
+### Branch name as the default
+
+Work projects are almost always named after the branch, so inside a configured
+root the dialog offers it:
+
+```
+Name this new session
+> feature/ABC-123-payment-arrangement — press Enter to accept
+```
+
+Submitting an empty input takes that name; typing anything overrides it. It has
+to work that way round because `ctx.ui.input(title, placeholder)` only accepts a
+*placeholder* — pi's `ExtensionUIDialogOptions` exposes `signal` and `timeout`
+only, and `showExtensionInput()` never forwards an `initialValue` to the input
+component, so an extension cannot literally prefill the box. "Prefilled" is
+therefore spelled "Enter accepts it".
+
+The branch is read from `.git/HEAD` directly — no `git` subprocess, and linked
+worktrees resolve through their `gitdir:` pointer. Nothing is offered when:
+
+- the cwd is outside every root in `PI_FORCE_SESSION_NAME_BRANCH_DIRS` (personal
+  projects keep the generic `e.g. Refactor auth module` hint),
+- there is no repo above the cwd,
+- `HEAD` is detached (a bare sha is not a session name), or
+- the branch is shorter than `PI_FORCE_SESSION_NAME_MIN_LEN`.
+
+Roots match on path boundaries, so `/proj` covers `/proj/foo` but not
+`/project/foo`. `~` is expanded.
+
+Forks keep the `<parent name> (fork)` default instead: a fork of a branch's
+session is still about that branch, so the branch name alone would just collide
+with the session it was forked from.
 
 Picking *Resume* still arms the name gate: if you abandon the resume and type a
 normal message instead, the session is unnamed and gets prompted. Actually
@@ -96,11 +130,19 @@ picker.
 | `PI_FORCE_SESSION_NAME_MAX_PROMPTS` | `3` | Re-asks per trigger before cancelling or deferring to the input gate |
 | `PI_FORCE_SESSION_NAME_BLOCK` | on | `off` = warn only: never cancel a switch, never block input |
 | `PI_FORCE_SESSION_NAME_PICKER` | on | `off` = skip the new/resume choice and ask for a name directly |
+| `PI_FORCE_SESSION_NAME_BRANCH` | on | `off` = never offer the git branch as the default |
+| `PI_FORCE_SESSION_NAME_BRANCH_DIRS` | `/proj,/project/playbooks,/project/vm` | Comma list of roots where the branch default applies |
 
 To stop prompting on a bare `pi` launch and only prompt for `/new` and forks:
 
 ```sh
 export PI_FORCE_SESSION_NAME_REASONS=new,fork
+```
+
+To use branch names in another checkout tree as well:
+
+```sh
+export PI_FORCE_SESSION_NAME_BRANCH_DIRS=/proj,/project/playbooks,/project/vm,~/work
 ```
 
 ## Install
