@@ -1,6 +1,5 @@
 ---
 name: unstuck
-disable-model-invocation: true
 description: Structured problem-solving workflow for debugging. Use after 3 failed attempts at solving an issue, when stuck on a problem, or when encountering repeated errors.
 ---
 
