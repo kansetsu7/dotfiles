@@ -96,8 +96,14 @@ For every distinct instruction or rule, classify it as one of:
   "don't commit secrets", "create new commits instead of amending".
 
 - **Conflicting** — contradicts built-in behavior or another instruction.
-  Examples: "use rg instead of grep" (conflicts with a built-in Grep tool),
-  two files prescribing different commit formats.
+  Examples: two files prescribing different commit formats; an instruction to
+  load a skill that sets `disable-model-invocation` (it is hidden from the
+  system prompt, so the model cannot comply).
+
+  Judge "prefer `rg` over grep" **against the harness the file targets**. In
+  Claude Code it is redundant with the built-in Grep tool; in pi the `grep`
+  tool is not enabled by default, so in `~/.pi/agent/AGENTS.md` the same
+  sentence is Active. Same words, different class.
 
 - **Stale** — references files, tools, or patterns that no longer exist
   or are no longer used.
@@ -140,7 +146,7 @@ Output a concise report grouped by file:
 - Line NN: "never use --no-verify" — built-in system prompt rule
 
 ### Conflicting
-- Line NN: "use rg for search" — conflicts with built-in Grep tool
+- Line NN: "load the `grill-me` skill" — skill sets `disable-model-invocation`
 
 ### Stale
 - Line NN: references @.claude/tooling.md — file no longer exists
