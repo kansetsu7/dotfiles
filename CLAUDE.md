@@ -132,6 +132,28 @@ SKILL.md must include:
 - Input prerequisites and output files documented
 - Error handling and recovery guidance
 
+## Audits
+
+Two audits, run in this order. Each layer's correctness is defined by the
+layer beneath it, so auditing outside-in wastes effort on prose that may be
+describing something already wrong.
+
+| When | Run | Covers |
+|---|---|---|
+| After a pi upgrade | `/pi-audit` | Extensions vs the new pi: typecheck, tests, export diff, CHANGELOG. Includes the self-check for free. |
+| Periodically, or after editing a skill/command | `/audit-instructions` | The instruction artifacts themselves: CLAUDE.md, AGENTS.md, skills, commands. |
+
+Within either one, mechanical before judgment — never spend reasoning on what
+`bash claude/.claude/skills/pi-extension-audit/audit.sh --self-check` can
+decide. It is free, needs no pi and no network, and exits non-zero on drift.
+
+The auditors are not self-applicable: `/pi-audit` checks TypeScript against
+pi's `.d.ts`, so it can never audit its own markdown. Ground them instead in
+the two external fixed points — the deterministic script output, and past
+findings as regression cases (e.g. the `TextContent` gap fixed in `f23716e`,
+an undocumented break that typecheck caught). Judge a change to an auditor by
+whether it still catches those, not by re-reading the prose.
+
 ## File Dependencies
 
 When editing files in the left column, check if related files need updates:

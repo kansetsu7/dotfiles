@@ -19,6 +19,32 @@ Scope defaults to everything below. Narrow it if the user named a target.
 Skills and commands are instructions too — they are just instructions the model
 loads on demand. The same rot applies.
 
+## Order: innermost first
+
+When a target spans several layers, audit in dependency order. Each layer's
+correctness is *defined by* the layer beneath it, so judging a command before
+its skill is settled is wasted effort — the prose may faithfully describe
+something that is itself wrong.
+
+For `pi-extension-audit`, that is:
+
+1. `skills/pi-extension-audit/audit.sh` — deterministic, executable, zero
+   judgment. Verified by *running* it, not by reading it.
+2. `skills/pi-extension-audit/SKILL.md` — mostly describes the script, so it
+   can drift from it silently.
+3. `commands/pi-audit.md` — a thin trigger. Trivial once (2) is settled.
+
+The same shape holds generally: **script → skill → command**, and within a
+layer, **loud failures last, silent ones first**. A broken script is noticed
+immediately; prose quietly describing last year's behavior is not.
+
+This is also why there is no chicken-and-egg problem in auditing the auditors.
+They are not self-applicable — `/pi-audit` checks TypeScript against pi's
+`.d.ts` and cannot be pointed at markdown. Ground them in external fixed
+points instead: deterministic script output, and past findings replayed as
+regression cases. If a rewritten skill would no longer catch a break it
+historically caught, the rewrite is wrong.
+
 ## Step 1: Run the mechanical checks first
 
 Do not spend judgment on anything a script can decide. Three deterministic
