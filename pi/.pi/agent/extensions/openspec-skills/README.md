@@ -90,7 +90,8 @@ Claude Code skills pi should never see:
 The pattern is relative to `~/.pi/agent` (where global settings paths resolve
 from) and spells `.claude` out literally on purpose: pi calls minimatch without
 `{dot:true}`, so `**/synced/**` silently matches nothing — `**` will not cross
-the `.claude` segment. `~` is not expanded in pattern entries either.
+the `.claude` segment. Before pi 1.2.0, `~` was not expanded in pattern
+entries either (fixed upstream in #10765).
 
 ## Install
 

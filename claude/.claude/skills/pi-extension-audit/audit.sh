@@ -106,7 +106,16 @@ fi
 # ---------- locate pi ----------
 PI_BIN="$(command -v pi || true)"
 [ -n "$PI_BIN" ] || { say "FATAL: pi not on PATH"; exit 1; }
-PI_PKG="$(cd "$(dirname "$(readlink -f "$PI_BIN")")/../.." && pwd)"
+PI_REAL="$(readlink -f "$PI_BIN")"
+# Managed installs put a sh launcher on PATH that execs
+# <agent>/install/releases/<current-version>/node_modules/.bin/pi.
+PI_INSTALL="$(dirname "$(dirname "$PI_REAL")")/install"
+if [ -f "$PI_INSTALL/current-version" ]; then
+	PI_REAL="$(readlink -f "$PI_INSTALL/releases/$(cat "$PI_INSTALL/current-version")/node_modules/.bin/pi")"
+fi
+# cli.js depth varies (dist/cli.js, dist/bundle/cli.js) — walk up to package.json.
+PI_PKG="$(dirname "$PI_REAL")"
+while [ "$PI_PKG" != / ] && [ ! -f "$PI_PKG/package.json" ]; do PI_PKG="$(dirname "$PI_PKG")"; done
 [ -f "$PI_PKG/package.json" ] || { say "FATAL: cannot locate pi package from $PI_BIN"; exit 1; }
 
 CUR_VER="$(node -p "require('$PI_PKG/package.json').version")"
@@ -130,12 +139,17 @@ trap 'rm -rf "$HARNESS"' EXIT
 mkdir -p "$HARNESS/node_modules/@earendil-works"
 cp -r "$EXT_SRC"/* "$HARNESS"/ 2>/dev/null || true
 
-VENDOR="$PI_PKG/node_modules/@earendil-works"
+# Dependencies are nested under the package (npm -g) or hoisted beside it (managed).
+HOISTED="$(dirname "$(dirname "$PI_PKG")")"
 ln -sfn "$PI_PKG"                     "$HARNESS/node_modules/@earendil-works/pi-coding-agent"
 for p in pi-tui pi-ai; do
-	[ -d "$VENDOR/$p" ] && ln -sfn "$VENDOR/$p" "$HARNESS/node_modules/@earendil-works/$p"
+	for v in "$PI_PKG/node_modules/@earendil-works/$p" "$HOISTED/@earendil-works/$p"; do
+		[ -d "$v" ] && { ln -sfn "$v" "$HARNESS/node_modules/@earendil-works/$p"; break; }
+	done
 done
-[ -d "$PI_PKG/node_modules/@types" ] && ln -sfn "$PI_PKG/node_modules/@types" "$HARNESS/node_modules/@types"
+for t in "$PI_PKG/node_modules/@types" "$HOISTED/@types"; do
+	[ -d "$t" ] && { ln -sfn "$t" "$HARNESS/node_modules/@types"; break; }
+done
 
 TSC=""
 for c in "$(dirname "$PI_PKG")/../typescript/bin/tsc" "$PI_PKG/node_modules/typescript/bin/tsc"; do
@@ -179,7 +193,7 @@ TEST_FAIL=0
 for d in "$EXT_SRC"/*/; do
 	name="$(basename "$d")"
 	if [ -f "$d/test.mjs" ]; then
-		out="$(cd "$d" && timeout 180 node test.mjs 2>&1 | tail -1)"
+		out="$(cd "$d" && PI_PKG_ROOT="$PI_PKG" timeout 180 node test.mjs 2>&1 | tail -1)"
 		printf '  %-24s %s\n' "$name" "$out"
 		case "$out" in *"0 failed"*) ;; *) TEST_FAIL=1 ;; esac
 	else

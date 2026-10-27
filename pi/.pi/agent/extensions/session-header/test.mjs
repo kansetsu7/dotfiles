@@ -5,23 +5,27 @@
  *
  *   node test.mjs
  */
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { dirname } from "node:path";
 
+const PI_INSTALL =
+	process.env.PI_MANAGED_INSTALL_ROOT ?? `${process.env.HOME}/.pi/agent/install`;
 const PIROOT =
-	"/root/npm-global/lib/node_modules/@earendil-works/pi-coding-agent";
+	process.env.PI_PKG_ROOT ??
+	`${PI_INSTALL}/releases/${readFileSync(`${PI_INSTALL}/current-version`, "utf8").trim()}/node_modules/@earendil-works/pi-coding-agent`;
 const require = createRequire(`${PIROOT}/`);
 const { createJiti } = require("jiti");
 // truncateToWidth() emits ANSI resets around the ellipsis, so column counts
 // have to come from the same helper pi uses, not String.length.
-const { visibleWidth } = require(
-	`${PIROOT}/node_modules/@earendil-works/pi-tui/dist/index.js`,
-);
+const PITUI = dirname(require.resolve("@earendil-works/pi-tui/package.json"));
+const { visibleWidth } = require(PITUI);
 // moduleCache off: placement is read at module scope, so each setup() must
 // re-evaluate the module to pick up env changes made by a test.
 const jiti = createJiti(import.meta.url, {
 	alias: {
 		"@earendil-works/pi-coding-agent": PIROOT,
-		"@earendil-works/pi-tui": `${PIROOT}/node_modules/@earendil-works/pi-tui`,
+		"@earendil-works/pi-tui": PITUI,
 	},
 	moduleCache: false,
 });

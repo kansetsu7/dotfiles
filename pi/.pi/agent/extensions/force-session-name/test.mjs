@@ -6,13 +6,16 @@
  *
  *   node test.mjs
  */
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+const PI_INSTALL =
+	process.env.PI_MANAGED_INSTALL_ROOT ?? `${process.env.HOME}/.pi/agent/install`;
 const PIROOT =
-	"/root/npm-global/lib/node_modules/@earendil-works/pi-coding-agent";
+	process.env.PI_PKG_ROOT ??
+	`${PI_INSTALL}/releases/${readFileSync(`${PI_INSTALL}/current-version`, "utf8").trim()}/node_modules/@earendil-works/pi-coding-agent`;
 const require = createRequire(`${PIROOT}/`);
 const { createJiti } = require("jiti");
 // moduleCache off: config is read at module scope, so each setup() must
