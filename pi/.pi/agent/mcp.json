@@ -10,7 +10,9 @@
         "ASANA_CLIENT_ID": "1217523615853912",
         "ASANA_CLIENT_SECRET": "!gpg -dq $HOME/.config/credentials/asana-client-secret.env.gpg"
       },
-      "lifecycle": "lazy"
+      "description": "Asana tasks, projects, and comments",
+      "exposure": "deferred",
+      "enabled": false
     }
   }
 }
