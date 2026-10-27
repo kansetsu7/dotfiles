@@ -103,8 +103,8 @@ The script prints the exact line range. Read it and look specifically for:
 
 Typecheck and unit tests both use mocks. Confirm the extensions genuinely load
 under the new version — the cheapest signal is observing an extension's own
-side effects in a real session (e.g. `trim-tool-output` appends a
-`[trim-tool-output: kept ...]` notice to large tool results).
+side effects in a real session (e.g. the `session_info` entry
+`force-session-name` writes, checked below).
 
 Also check anything that mutates session state on startup actually behaved.
 `force-session-name` is the usable probe — it names the session before the first
