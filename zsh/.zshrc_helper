@@ -76,13 +76,15 @@ bulk_search_and_replace() {
   rg $1 -l | xargs sed -i "s/$1/$2/g"
 }
 
-cd_adam() {
-  local folder_path
-  local adam_path
+jw() {
+  local root
+  root=$(git rev-parse --show-toplevel 2>/dev/null)
 
-  [[ $PWD =~ '(.*ck|.*sg|.*nerv_nz|.*ave_ck|.*hk)' ]] && folder_path=$match[1]
-
-  cd "$folder_path/clojure/projects/adam"
+  if [[ -n $root && -d $root/$1 ]]; then
+    cd "$root/$1"
+  else
+    j "$@"
+  fi
 }
 
 amoeba_test_reset() {

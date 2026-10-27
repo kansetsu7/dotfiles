@@ -198,12 +198,12 @@ alias sg="j $PROJECT_PATH/${NERV_PREFIX}sg"
 alias av="j $PROJECT_PATH/${NERV_PREFIX}ave_ck"
 alias aba="j $PROJECT_PATH/amoeba"
 alias angel="j $PROJECT_PATH/angel"
-alias adam="j clojure/projects/adam"
-alias asuka="j clojure/projects/asuka"
-alias lth="j lilith"
+alias adam="jw clojure/projects/adam"
+alias asuka="jw clojure/projects/asuka"
+alias lth="jw lilith"
 alias asu=asuka
-alias lcl='j clojure/components/lcl'
-alias magi='j clojure/components/magi'
+alias lcl='jw clojure/components/lcl'
+alias magi='jw clojure/components/magi'
 alias pb="j ${MOUNTED_PROJ_PATH:-$PROJECT_PATH}/playbooks"
 alias pb2="j ${MOUNTED_PROJ_PATH:-$PROJECT_PATH}/playbooks2"
 alias vm="j ${MOUNTED_PROJ_PATH:-$PROJECT_PATH}/vm"
@@ -275,9 +275,9 @@ alias ccop='clj-kondo --lint src --config .clj-kondo/config.edn --cache false'
 alias ccup='brew reinstall clj-kondo'
 
 # Adam
-alias cjn='cd_adam && clj -M:dev:nrepl'
-alias ct='cd_adam && clj -M:test:runner --focus $1'
-alias ctrf='cd_adam && clj -M:test:runner --watch --focus $1'
+alias cjn='jw clojure/projects/adam && clj -M:dev:nrepl'
+alias ct='jw clojure/projects/adam && clj -M:test:runner --focus $1'
+alias ctrf='jw clojure/projects/adam && clj -M:test:runner --watch --focus $1'
 
 # Asuka
 alias rw='npm run watch'
