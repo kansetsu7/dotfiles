@@ -16,9 +16,10 @@ for folder in "${folders[@]}"; do
 done
 
 # Real dirs, not folded stow links: apps write runtime state (gpg keyring,
-# Claude Code sessions/credentials, nvim plugins) into these.
+# Claude Code sessions/credentials, pi auth/sessions/install, nvim plugins)
+# into these.
 mkdir -p -m 700 /root/.gnupg /root/.claude
-mkdir -p /root/.local/share
+mkdir -p /root/.local/share /root/.pi/agent
 
 cd /root/.dotfiles  # should match with dotfiles volume in compose.yml
 
@@ -38,6 +39,7 @@ stow --verbose \
   lazygit \
   lazydocker \
   claude \
+  pi \
   sql \
 
 # lazydocker: pick the OS-specific config (its `up`/`upService` templates use
@@ -57,6 +59,11 @@ ZDOTDIR=/root source /root/.zshrc
 
 # install
 npm install -g --prefix=/root/npm-global @anthropic-ai/claude-code@latest @google/gemini-cli
+
+# pi: managed install under ~/.pi/agent, linked as ~/.local/bin/pi. Only when
+# missing — re-running the installer prompts to reinstall/uninstall; update with
+# `pi update`. The `packages` in settings.json are installed on first start.
+command -v pi > /dev/null || curl -fsSL https://pi.dev/install.sh | sh
 
 # GitLab MCP, registered at *user* scope. The stowed ~/.mcp.json is project
 # scope: Claude Code finds it by walking up from the project dir, so /root/.mcp.json
