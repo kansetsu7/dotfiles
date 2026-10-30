@@ -16,6 +16,9 @@ for folder in "${folders[@]}"; do
   mkdir -p $HOME/.config/"$folder"
 done
 mkdir -p $HOME/.docker
+# Real dirs, not folded stow links: apps write runtime state (gpg keyring,
+# Claude Code sessions/credentials) into these.
+mkdir -p -m 700 $HOME/.gnupg $HOME/.claude
 
 cd ~/.dotfiles
 

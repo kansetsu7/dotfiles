@@ -15,6 +15,11 @@ for folder in "${folders[@]}"; do
   mkdir -p /root/.config/$folder
 done
 
+# Real dirs, not folded stow links: apps write runtime state (gpg keyring,
+# Claude Code sessions/credentials, nvim plugins) into these.
+mkdir -p -m 700 /root/.gnupg /root/.claude
+mkdir -p /root/.local/share
+
 cd /root/.dotfiles  # should match with dotfiles volume in compose.yml
 
 # No folding: installers (e.g. pi) write relative links into ~/.local/bin, which
