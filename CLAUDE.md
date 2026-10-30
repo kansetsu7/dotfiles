@@ -50,6 +50,10 @@ stow --verbose nvim
 
 # If conflicts with existing files, adopt them into repo
 stow --adopt --verbose nvim
+
+# `bin` must stay unfolded: ~/.local/bin is a real directory that installers
+# write to (see install/docker.zsh)
+stow --verbose --no-folding --restow bin
 ```
 
 ## Skill Authoring Guidelines

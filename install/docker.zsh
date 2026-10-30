@@ -17,8 +17,12 @@ done
 
 cd /root/.dotfiles  # should match with dotfiles volume in compose.yml
 
+# No folding: installers (e.g. pi) write relative links into ~/.local/bin, which
+# would land in the repo and dangle if it were a symlink to bin/.local/bin.
+# --restow also unfolds the link on volumes stowed before this was added.
+stow --verbose --no-folding --restow bin
+
 stow --verbose \
-  bin \
   git \
   nvim \
   readline \
