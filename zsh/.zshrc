@@ -74,7 +74,7 @@ if [[ -f "$HOME/.zshrc_configs/$OS_TYPE/.zshrc_helper" ]]; then
 fi
 
 # [ -f ~/.ssh/abagile-dev.pem ] && ssh-add ~/.ssh/abagile-dev.pem 2&> /dev/null
-[ -f ~/.ssh/id_pair ] && ssh-add -l | grep -q id_pair || ssh-add ~/.ssh/id_pair 2&> /dev/null
+[ -f ~/.ssh/id_pair ] && ! ssh-add -l 2>/dev/null | grep -qF "$(ssh-keygen -lf ~/.ssh/id_pair | awk '{print $2}')" && ssh-add -q ~/.ssh/id_pair 2>/dev/null
 
 # this setting is also affect language in Vim
 export LC_ALL=en_US.UTF-8
