@@ -32,6 +32,9 @@ skill for a structured problem-solving workflow instead of retrying blindly.
 - **No unsolicited comments** — don't add explanatory code comments unless
   asked or the code is genuinely non-obvious.
 - **Prefer `fd`, `rg`, `ast-grep`, `jq`, `yq`** for shell-only operations.
+- **bobi MCP (company knowledge base) is opt-in per task** — only query it
+  when the user explicitly asks, or ask permission first when business
+  context is genuinely missing. Don't call it proactively.
 - **In the dockerized dev env only**, use `--prefix=/root/npm-global` for npm
   global installs so they persist on the `/root` volume across container
   restarts (e.g. `npm install -g --prefix=/root/npm-global <pkg>`). On macOS

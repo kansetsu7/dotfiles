@@ -13,6 +13,9 @@
       "description": "Asana tasks, projects, and comments",
       "exposure": "deferred",
       "enabled": false
+    },
+    "bobi": {
+      "url": "https://bobi.abagile.com/mcp"
     }
   }
 }
